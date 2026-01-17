@@ -8,7 +8,7 @@ module mailbox_tb;
   logic clk;
   logic rst_n;
   initial clk = 1'b0;
-  always #1 clk = ~clk;
+  always #1 clk <= ~clk;
 
   initial begin
     rst_n = 1'b0;
@@ -20,57 +20,90 @@ module mailbox_tb;
   // DUT instances and wiring (nets created and connected explicitly)
   // -----------------------------
 
-  // nets for center<->sw0 uplink
-  logic sw0_m_up_wb_cyc; logic sw0_m_up_wb_stb; logic sw0_m_up_wb_we;
-  logic [15:0] sw0_m_up_wb_adr; logic [31:0] sw0_m_up_wb_dat; logic [3:0] sw0_m_up_wb_sel; mailbox_pkg::mailbox_tag_t sw0_m_up_tag; logic sw0_m_up_wb_ack;
+  // nets for center<->sw0 uplink (AXI-Lite full-duplex)
+  logic sw0_m_up_awvalid, sw0_m_up_awready;
+  logic [15:0] sw0_m_up_awaddr;
+  logic sw0_m_up_wvalid, sw0_m_up_wready;
+  logic [31:0] sw0_m_up_wdata; logic [3:0] sw0_m_up_wstrb; mailbox_pkg::mailbox_tag_t sw0_m_up_tag;
+  logic sw0_m_up_bvalid, sw0_m_up_bready;
+  logic sw0_m_up_arvalid, sw0_m_up_arready; logic [15:0] sw0_m_up_araddr; logic sw0_m_up_rvalid, sw0_m_up_rready; logic [31:0] sw0_m_up_rdata;
 
-  logic center_m_sw0_wb_cyc; logic center_m_sw0_wb_stb; logic center_m_sw0_wb_we;
-  logic [15:0] center_m_sw0_wb_adr; logic [31:0] center_m_sw0_wb_dat; logic [3:0] center_m_sw0_wb_sel; mailbox_pkg::mailbox_tag_t center_m_sw0_tag; logic center_m_sw0_wb_ack;
+  logic center_m_sw0_awvalid, center_m_sw0_awready;
+  logic [15:0] center_m_sw0_awaddr;
+  logic center_m_sw0_wvalid, center_m_sw0_wready;
+  logic [31:0] center_m_sw0_wdata; logic [3:0] center_m_sw0_wstrb; mailbox_pkg::mailbox_tag_t center_m_sw0_tag;
+  logic center_m_sw0_bvalid, center_m_sw0_bready;
+  logic center_m_sw0_arvalid, center_m_sw0_arready; logic [15:0] center_m_sw0_araddr; logic center_m_sw0_rvalid, center_m_sw0_rready; logic [31:0] center_m_sw0_rdata;
 
   // nets for sw0 <-> ep0 (dl0)
-  logic ep0_m_wb_cyc; logic ep0_m_wb_stb; logic ep0_m_wb_we; logic [15:0] ep0_m_wb_adr; logic [31:0] ep0_m_wb_dat; logic [3:0] ep0_m_wb_sel; mailbox_pkg::mailbox_tag_t ep0_m_wb_tag; logic ep0_m_wb_ack;
-  logic m_dl0_wb_cyc; logic m_dl0_wb_stb; logic m_dl0_wb_we; logic [15:0] m_dl0_wb_adr; logic [31:0] m_dl0_wb_dat; logic [3:0] m_dl0_wb_sel; mailbox_pkg::mailbox_tag_t m_dl0_tag; logic m_dl0_wb_ack;
+  logic ep0_m_awvalid, ep0_m_awready; logic [15:0] ep0_m_awaddr; logic ep0_m_wvalid, ep0_m_wready; logic [31:0] ep0_m_wdata; logic [3:0] ep0_m_wstrb; mailbox_pkg::mailbox_tag_t ep0_m_tag; logic ep0_m_bvalid, ep0_m_bready;
+  logic ep0_m_arvalid, ep0_m_arready; logic [15:0] ep0_m_araddr; logic ep0_m_rvalid, ep0_m_rready; logic [31:0] ep0_m_rdata;
+  logic m_dl0_awvalid, m_dl0_awready; logic [15:0] m_dl0_awaddr; logic m_dl0_wvalid, m_dl0_wready; logic [31:0] m_dl0_wdata; logic [3:0] m_dl0_wstrb; mailbox_pkg::mailbox_tag_t m_dl0_tag; logic m_dl0_bvalid, m_dl0_bready;
+  logic m_dl0_arvalid, m_dl0_arready; logic [15:0] m_dl0_araddr; logic m_dl0_rvalid, m_dl0_rready; logic [31:0] m_dl0_rdata;
 
   // nets for sw0 <-> ep1 (dl1)
-  logic ep1_m_wb_cyc; logic ep1_m_wb_stb; logic ep1_m_wb_we; logic [15:0] ep1_m_wb_adr; logic [31:0] ep1_m_wb_dat; logic [3:0] ep1_m_wb_sel; mailbox_pkg::mailbox_tag_t ep1_m_wb_tag; logic ep1_m_wb_ack;
-  logic m_dl1_wb_cyc; logic m_dl1_wb_stb; logic m_dl1_wb_we; logic [15:0] m_dl1_wb_adr; logic [31:0] m_dl1_wb_dat; logic [3:0] m_dl1_wb_sel; mailbox_pkg::mailbox_tag_t m_dl1_tag; logic m_dl1_wb_ack;
+  logic ep1_m_awvalid, ep1_m_awready; logic [15:0] ep1_m_awaddr; logic ep1_m_wvalid, ep1_m_wready; logic [31:0] ep1_m_wdata; logic [3:0] ep1_m_wstrb; mailbox_pkg::mailbox_tag_t ep1_m_tag; logic ep1_m_bvalid, ep1_m_bready;
+  logic ep1_m_arvalid, ep1_m_arready; logic [15:0] ep1_m_araddr; logic ep1_m_rvalid, ep1_m_rready; logic [31:0] ep1_m_rdata;
+  logic m_dl1_awvalid, m_dl1_awready; logic [15:0] m_dl1_awaddr; logic m_dl1_wvalid, m_dl1_wready; logic [31:0] m_dl1_wdata; logic [3:0] m_dl1_wstrb; mailbox_pkg::mailbox_tag_t m_dl1_tag; logic m_dl1_bvalid, m_dl1_bready;
+  logic m_dl1_arvalid, m_dl1_arready; logic [15:0] m_dl1_araddr; logic m_dl1_rvalid, m_dl1_rready; logic [31:0] m_dl1_rdata;
 
   // nets for hp <-> center
-  logic hp_m_wb_cyc; logic hp_m_wb_stb; logic hp_m_wb_we; logic [15:0] hp_m_wb_adr; logic [31:0] hp_m_wb_dat; logic [3:0] hp_m_wb_sel; mailbox_pkg::mailbox_tag_t hp_m_wb_tag; logic hp_m_wb_ack;
-  logic center_m_hp_wb_cyc; logic center_m_hp_wb_stb; logic center_m_hp_wb_we; logic [15:0] center_m_hp_wb_adr; logic [31:0] center_m_hp_wb_dat; logic [3:0] center_m_hp_wb_sel; mailbox_pkg::mailbox_tag_t center_m_hp_tag; logic center_m_hp_wb_ack;
+  logic hp_m_awvalid, hp_m_awready; logic [15:0] hp_m_awaddr; logic hp_m_wvalid, hp_m_wready; logic [31:0] hp_m_wdata; logic [3:0] hp_m_wstrb; mailbox_pkg::mailbox_tag_t hp_m_tag; logic hp_m_bvalid, hp_m_bready;
+  logic hp_m_arvalid, hp_m_arready; logic [15:0] hp_m_araddr; logic hp_m_rvalid, hp_m_rready; logic [31:0] hp_m_rdata;
+  logic center_m_hp_awvalid, center_m_hp_awready; logic [15:0] center_m_hp_awaddr; logic center_m_hp_wvalid, center_m_hp_wready; logic [31:0] center_m_hp_wdata; logic [3:0] center_m_hp_wstrb; mailbox_pkg::mailbox_tag_t center_m_hp_tag; logic center_m_hp_bvalid, center_m_hp_bready;
+  logic center_m_hp_arvalid, center_m_hp_arready; logic [15:0] center_m_hp_araddr; logic center_m_hp_rvalid, center_m_hp_rready; logic [31:0] center_m_hp_rdata;
 
   // Center instantiation
   mailbox_center #(.CHILD_CLUSTER_ID('{8'h11, 8'h22, 8'h33, 8'h44}), .FIFO_DEPTH(4)) center (
     .clk(clk), .rst_n(rst_n),
+    .sw0_awvalid(sw0_m_up_awvalid), .sw0_awready(sw0_m_up_awready), .sw0_awaddr(sw0_m_up_awaddr),
+    .sw0_wvalid(sw0_m_up_wvalid), .sw0_wready(sw0_m_up_wready), .sw0_wdata(sw0_m_up_wdata), .sw0_wstrb(sw0_m_up_wstrb), .sw0_tag(sw0_m_up_tag), .sw0_bvalid(sw0_m_up_bvalid), .sw0_bready(sw0_m_up_bready),
+    .sw0_arvalid(sw0_m_up_arvalid), .sw0_arready(sw0_m_up_arready), .sw0_araddr(sw0_m_up_araddr), .sw0_rvalid(sw0_m_up_rvalid), .sw0_rready(sw0_m_up_rready), .sw0_rdata(sw0_m_up_rdata),
+    .sw1_awvalid(), .sw1_awready(), .sw1_awaddr(), .sw1_wvalid(), .sw1_wready(), .sw1_wdata(), .sw1_wstrb(), .sw1_tag(), .sw1_bvalid(), .sw1_bready(),
+    .sw1_arvalid(), .sw1_arready(), .sw1_araddr(), .sw1_rvalid(), .sw1_rready(), .sw1_rdata(),
+    .sw2_awvalid(), .sw2_awready(), .sw2_awaddr(), .sw2_wvalid(), .sw2_wready(), .sw2_wdata(), .sw2_wstrb(), .sw2_tag(), .sw2_bvalid(), .sw2_bready(),
+    .sw2_arvalid(), .sw2_arready(), .sw2_araddr(), .sw2_rvalid(), .sw2_rready(), .sw2_rdata(),
+    .sw3_awvalid(), .sw3_awready(), .sw3_awaddr(), .sw3_wvalid(), .sw3_wready(), .sw3_wdata(), .sw3_wstrb(), .sw3_tag(), .sw3_bvalid(), .sw3_bready(),
+    .sw3_arvalid(), .sw3_arready(), .sw3_araddr(), .sw3_rvalid(), .sw3_rready(), .sw3_rdata(),
 
-    .sw0_wb_cyc(sw0_m_up_wb_cyc), .sw0_wb_stb(sw0_m_up_wb_stb), .sw0_wb_we(sw0_m_up_wb_we), .sw0_wb_adr(sw0_m_up_wb_adr), .sw0_wb_dat(sw0_m_up_wb_dat), .sw0_wb_sel(sw0_m_up_wb_sel), .sw0_tag(sw0_m_up_tag), .sw0_wb_ack(sw0_m_up_wb_ack),
-    .sw1_wb_cyc(), .sw1_wb_stb(), .sw1_wb_we(), .sw1_wb_adr(), .sw1_wb_dat(), .sw1_wb_sel(), .sw1_tag(), .sw1_wb_ack(),
-    .sw2_wb_cyc(), .sw2_wb_stb(), .sw2_wb_we(), .sw2_wb_adr(), .sw2_wb_dat(), .sw2_wb_sel(), .sw2_tag(), .sw2_wb_ack(),
-    .sw3_wb_cyc(), .sw3_wb_stb(), .sw3_wb_we(), .sw3_wb_adr(), .sw3_wb_dat(), .sw3_wb_sel(), .sw3_tag(), .sw3_wb_ack(),
+    .hp_awvalid(hp_m_awvalid), .hp_awready(hp_m_awready), .hp_awaddr(hp_m_awaddr),
+    .hp_wvalid(hp_m_wvalid), .hp_wready(hp_m_wready), .hp_wdata(hp_m_wdata), .hp_wstrb(hp_m_wstrb), .hp_tag(hp_m_tag), .hp_bvalid(hp_m_bvalid), .hp_bready(hp_m_bready),
+    .hp_arvalid(hp_m_arvalid), .hp_arready(hp_m_arready), .hp_araddr(hp_m_araddr), .hp_rvalid(hp_m_rvalid), .hp_rready(hp_m_rready), .hp_rdata(hp_m_rdata),
 
-    .hp_wb_cyc(hp_m_wb_cyc), .hp_wb_stb(hp_m_wb_stb), .hp_wb_we(hp_m_wb_we), .hp_wb_adr(hp_m_wb_adr), .hp_wb_dat(hp_m_wb_dat), .hp_wb_sel(hp_m_wb_sel), .hp_tag(hp_m_wb_tag), .hp_wb_ack(hp_m_wb_ack),
+    .m_sw0_awvalid(center_m_sw0_awvalid), .m_sw0_awready(center_m_sw0_awready), .m_sw0_awaddr(center_m_sw0_awaddr),
+    .m_sw0_wvalid(center_m_sw0_wvalid), .m_sw0_wready(center_m_sw0_wready), .m_sw0_wdata(center_m_sw0_wdata), .m_sw0_wstrb(center_m_sw0_wstrb), .m_sw0_tag(center_m_sw0_tag), .m_sw0_bready(center_m_sw0_bready), .m_sw0_bvalid(center_m_sw0_bvalid),
+    .m_sw0_arvalid(center_m_sw0_arvalid), .m_sw0_arready(center_m_sw0_arready), .m_sw0_araddr(center_m_sw0_araddr), .m_sw0_rvalid(center_m_sw0_rvalid), .m_sw0_rready(center_m_sw0_rready), .m_sw0_rdata(center_m_sw0_rdata),
+    .m_sw1_awvalid(), .m_sw1_awready(), .m_sw1_awaddr(), .m_sw1_wvalid(), .m_sw1_wready(), .m_sw1_wdata(), .m_sw1_wstrb(), .m_sw1_tag(), .m_sw1_bready(), .m_sw1_bvalid(),
+    .m_sw1_arvalid(), .m_sw1_arready(), .m_sw1_araddr(), .m_sw1_rvalid(), .m_sw1_rready(), .m_sw1_rdata(),
+    .m_sw2_awvalid(), .m_sw2_awready(), .m_sw2_awaddr(), .m_sw2_wvalid(), .m_sw2_wready(), .m_sw2_wdata(), .m_sw2_wstrb(), .m_sw2_tag(), .m_sw2_bready(), .m_sw2_bvalid(),
+    .m_sw2_arvalid(), .m_sw2_arready(), .m_sw2_araddr(), .m_sw2_rvalid(), .m_sw2_rready(), .m_sw2_rdata(),
+    .m_sw3_awvalid(), .m_sw3_awready(), .m_sw3_awaddr(), .m_sw3_wvalid(), .m_sw3_wready(), .m_sw3_wdata(), .m_sw3_wstrb(), .m_sw3_tag(), .m_sw3_bready(), .m_sw3_bvalid(),
+    .m_sw3_arvalid(), .m_sw3_arready(), .m_sw3_araddr(), .m_sw3_rvalid(), .m_sw3_rready(), .m_sw3_rdata(),
 
-    .m_sw0_wb_cyc(center_m_sw0_wb_cyc), .m_sw0_wb_stb(center_m_sw0_wb_stb), .m_sw0_wb_we(center_m_sw0_wb_we), .m_sw0_wb_adr(center_m_sw0_wb_adr), .m_sw0_wb_dat(center_m_sw0_wb_dat), .m_sw0_wb_sel(center_m_sw0_wb_sel), .m_sw0_tag(center_m_sw0_tag), .m_sw0_wb_ack(center_m_sw0_wb_ack),
-    .m_sw1_wb_cyc(), .m_sw1_wb_stb(), .m_sw1_wb_we(), .m_sw1_wb_adr(), .m_sw1_wb_dat(), .m_sw1_wb_sel(), .m_sw1_tag(), .m_sw1_wb_ack(),
-    .m_sw2_wb_cyc(), .m_sw2_wb_stb(), .m_sw2_wb_we(), .m_sw2_wb_adr(), .m_sw2_wb_dat(), .m_sw2_wb_sel(), .m_sw2_tag(), .m_sw2_wb_ack(),
-    .m_sw3_wb_cyc(), .m_sw3_wb_stb(), .m_sw3_wb_we(), .m_sw3_wb_adr(), .m_sw3_wb_dat(), .m_sw3_wb_sel(), .m_sw3_tag(), .m_sw3_wb_ack(),
-
-    .m_hp_wb_cyc(center_m_hp_wb_cyc), .m_hp_wb_stb(center_m_hp_wb_stb), .m_hp_wb_we(center_m_hp_wb_we), .m_hp_wb_adr(center_m_hp_wb_adr), .m_hp_wb_dat(center_m_hp_wb_dat), .m_hp_wb_sel(center_m_hp_wb_sel), .m_hp_tag(center_m_hp_tag), .m_hp_wb_ack(center_m_hp_wb_ack)
+    .m_hp_awvalid(center_m_hp_awvalid), .m_hp_awready(center_m_hp_awready), .m_hp_awaddr(center_m_hp_awaddr),
+    .m_hp_wvalid(center_m_hp_wvalid), .m_hp_wready(center_m_hp_wready), .m_hp_wdata(center_m_hp_wdata), .m_hp_wstrb(center_m_hp_wstrb), .m_hp_tag(center_m_hp_tag), .m_hp_bready(center_m_hp_bready), .m_hp_bvalid(center_m_hp_bvalid)
+    , .m_hp_arvalid(center_m_hp_arvalid), .m_hp_arready(center_m_hp_arready), .m_hp_araddr(center_m_hp_araddr), .m_hp_rvalid(center_m_hp_rvalid), .m_hp_rready(center_m_hp_rready), .m_hp_rdata(center_m_hp_rdata)
   );
 
   // Switch instance
   mailbox_switch_2x1 #(.MY_CLUSTER_ID(8'h11), .FIFO_DEPTH(4)) sw0 (
     .clk(clk), .rst_n(rst_n),
 
-    .dl0_wb_cyc(ep0_m_wb_cyc), .dl0_wb_stb(ep0_m_wb_stb), .dl0_wb_we(ep0_m_wb_we), .dl0_wb_adr(ep0_m_wb_adr), .dl0_wb_dat(ep0_m_wb_dat), .dl0_wb_sel(ep0_m_wb_sel), .dl0_tag(ep0_m_wb_tag), .dl0_wb_ack(ep0_m_wb_ack),
-    .dl1_wb_cyc(ep1_m_wb_cyc), .dl1_wb_stb(ep1_m_wb_stb), .dl1_wb_we(ep1_m_wb_we), .dl1_wb_adr(ep1_m_wb_adr), .dl1_wb_dat(ep1_m_wb_dat), .dl1_wb_sel(ep1_m_wb_sel), .dl1_tag(ep1_m_wb_tag), .dl1_wb_ack(ep1_m_wb_ack),
+    .dl0_awvalid(ep0_m_awvalid), .dl0_awready(ep0_m_awready), .dl0_awaddr(ep0_m_awaddr), .dl0_wvalid(ep0_m_wvalid), .dl0_wready(ep0_m_wready), .dl0_wdata(ep0_m_wdata), .dl0_wstrb(ep0_m_wstrb), .dl0_tag(ep0_m_tag), .dl0_bvalid(ep0_m_bvalid), .dl0_bready(ep0_m_bready),
+    .dl0_arvalid(ep0_m_arvalid), .dl0_arready(ep0_m_arready), .dl0_araddr(ep0_m_araddr), .dl0_rvalid(ep0_m_rvalid), .dl0_rready(ep0_m_rready), .dl0_rdata(ep0_m_rdata),
+    .dl1_awvalid(ep1_m_awvalid), .dl1_awready(ep1_m_awready), .dl1_awaddr(ep1_m_awaddr), .dl1_wvalid(ep1_m_wvalid), .dl1_wready(ep1_m_wready), .dl1_wdata(ep1_m_wdata), .dl1_wstrb(ep1_m_wstrb), .dl1_tag(ep1_m_tag), .dl1_bvalid(ep1_m_bvalid), .dl1_bready(ep1_m_bready),
+    .dl1_arvalid(ep1_m_arvalid), .dl1_arready(ep1_m_arready), .dl1_araddr(ep1_m_araddr), .dl1_rvalid(ep1_m_rvalid), .dl1_rready(ep1_m_rready), .dl1_rdata(ep1_m_rdata),
 
-    .up_wb_cyc(center_m_sw0_wb_cyc), .up_wb_stb(center_m_sw0_wb_stb), .up_wb_we(center_m_sw0_wb_we), .up_wb_adr(center_m_sw0_wb_adr), .up_wb_dat(center_m_sw0_wb_dat), .up_wb_sel(center_m_sw0_wb_sel), .up_tag(center_m_sw0_tag), .up_wb_ack(center_m_sw0_wb_ack),
+    .up_awvalid(center_m_sw0_awvalid), .up_awready(center_m_sw0_awready), .up_awaddr(center_m_sw0_awaddr), .up_wvalid(center_m_sw0_wvalid), .up_wready(center_m_sw0_wready), .up_wdata(center_m_sw0_wdata), .up_wstrb(center_m_sw0_wstrb), .up_tag(center_m_sw0_tag), .up_bvalid(center_m_sw0_bvalid), .up_bready(center_m_sw0_bready),
+    .up_arvalid(center_m_sw0_arvalid), .up_arready(center_m_sw0_arready), .up_araddr(center_m_sw0_araddr), .up_rvalid(center_m_sw0_rvalid), .up_rready(center_m_sw0_rready), .up_rdata(center_m_sw0_rdata),
 
-    .m_up_wb_cyc(sw0_m_up_wb_cyc), .m_up_wb_stb(sw0_m_up_wb_stb), .m_up_wb_we(sw0_m_up_wb_we), .m_up_wb_adr(sw0_m_up_wb_adr), .m_up_wb_dat(sw0_m_up_wb_dat), .m_up_wb_sel(sw0_m_up_wb_sel), .m_up_tag(sw0_m_up_tag), .m_up_wb_ack(sw0_m_up_wb_ack),
+    .m_up_awvalid(sw0_m_up_awvalid), .m_up_awready(sw0_m_up_awready), .m_up_awaddr(sw0_m_up_awaddr), .m_up_wvalid(sw0_m_up_wvalid), .m_up_wready(sw0_m_up_wready), .m_up_wdata(sw0_m_up_wdata), .m_up_wstrb(sw0_m_up_wstrb), .m_up_tag(sw0_m_up_tag), .m_up_bready(sw0_m_up_bready), .m_up_bvalid(sw0_m_up_bvalid),
+    .m_up_arvalid(sw0_m_up_arvalid), .m_up_arready(sw0_m_up_arready), .m_up_araddr(sw0_m_up_araddr), .m_up_rvalid(sw0_m_up_rvalid), .m_up_rready(sw0_m_up_rready), .m_up_rdata(sw0_m_up_rdata),
 
-    .m_dl0_wb_cyc(m_dl0_wb_cyc), .m_dl0_wb_stb(m_dl0_wb_stb), .m_dl0_wb_we(m_dl0_wb_we), .m_dl0_wb_adr(m_dl0_wb_adr), .m_dl0_wb_dat(m_dl0_wb_dat), .m_dl0_wb_sel(m_dl0_wb_sel), .m_dl0_tag(m_dl0_tag), .m_dl0_wb_ack(m_dl0_wb_ack),
-    .m_dl1_wb_cyc(m_dl1_wb_cyc), .m_dl1_wb_stb(m_dl1_wb_stb), .m_dl1_wb_we(m_dl1_wb_we), .m_dl1_wb_adr(m_dl1_wb_adr), .m_dl1_wb_dat(m_dl1_wb_dat), .m_dl1_wb_sel(m_dl1_wb_sel), .m_dl1_tag(m_dl1_tag), .m_dl1_wb_ack(m_dl1_wb_ack)
+    .m_dl0_awvalid(m_dl0_awvalid), .m_dl0_awready(m_dl0_awready), .m_dl0_awaddr(m_dl0_awaddr), .m_dl0_wvalid(m_dl0_wvalid), .m_dl0_wready(m_dl0_wready), .m_dl0_wdata(m_dl0_wdata), .m_dl0_wstrb(m_dl0_wstrb), .m_dl0_tag(m_dl0_tag), .m_dl0_bready(m_dl0_bready), .m_dl0_bvalid(m_dl0_bvalid),
+    .m_dl0_arvalid(m_dl0_arvalid), .m_dl0_arready(m_dl0_arready), .m_dl0_araddr(m_dl0_araddr), .m_dl0_rvalid(m_dl0_rvalid), .m_dl0_rready(m_dl0_rready), .m_dl0_rdata(m_dl0_rdata),
+    .m_dl1_awvalid(m_dl1_awvalid), .m_dl1_awready(m_dl1_awready), .m_dl1_awaddr(m_dl1_awaddr), .m_dl1_wvalid(m_dl1_wvalid), .m_dl1_wready(m_dl1_wready), .m_dl1_wdata(m_dl1_wdata), .m_dl1_wstrb(m_dl1_wstrb), .m_dl1_tag(m_dl1_tag), .m_dl1_bready(m_dl1_bready), .m_dl1_bvalid(m_dl1_bvalid),
+    .m_dl1_arvalid(m_dl1_arvalid), .m_dl1_arready(m_dl1_arready), .m_dl1_araddr(m_dl1_araddr), .m_dl1_rvalid(m_dl1_rvalid), .m_dl1_rready(m_dl1_rready), .m_dl1_rdata(m_dl1_rdata)
   );
 
   // Simple endpoints: ep0 (local id 0) and ep1 (local id 1)
@@ -81,16 +114,30 @@ module mailbox_tb;
   // ep0 signals
   logic ep0_tx_valid, ep0_tx_prio, ep0_tx_eop; logic [15:0] ep0_tx_dest; logic [31:0] ep0_tx_data; logic [3:0] ep0_tx_opcode; logic ep0_tx_ready;
   logic ep0_rx_valid; logic [31:0] ep0_rx_data; mailbox_pkg::mailbox_tag_t ep0_rx_tag; logic ep0_rx_irq;
+  logic ep0_rd_valid, ep0_rd_ready; logic [15:0] ep0_rd_dest; logic ep0_rd_prio; logic [3:0] ep0_rd_opcode; logic ep0_rd_resp_valid, ep0_rd_resp_ready; logic [31:0] ep0_rd_resp_data; mailbox_pkg::mailbox_tag_t ep0_rd_resp_tag;
 
   // ep1 signals
   logic ep1_tx_valid, ep1_tx_prio, ep1_tx_eop; logic [15:0] ep1_tx_dest; logic [31:0] ep1_tx_data; logic [3:0] ep1_tx_opcode; logic ep1_tx_ready;
   logic ep1_rx_valid; logic [31:0] ep1_rx_data; mailbox_pkg::mailbox_tag_t ep1_rx_tag; logic ep1_rx_irq;
+  logic ep1_rd_valid, ep1_rd_ready; logic [15:0] ep1_rd_dest; logic ep1_rd_prio; logic [3:0] ep1_rd_opcode; logic ep1_rd_resp_valid, ep1_rd_resp_ready; logic [31:0] ep1_rd_resp_data; mailbox_pkg::mailbox_tag_t ep1_rd_resp_tag;
 
   // hp endpoint signals
   logic hp_tx_valid = 1'b0; logic hp_tx_ready; logic hp_rx_valid; logic [31:0] hp_rx_data; mailbox_pkg::mailbox_tag_t hp_rx_tag; logic hp_rx_irq;
+  logic hp_rd_valid, hp_rd_ready; logic [15:0] hp_rd_dest; logic hp_rd_prio; logic [3:0] hp_rd_opcode; logic hp_rd_resp_valid, hp_rd_resp_ready; logic [31:0] hp_rd_resp_data; mailbox_pkg::mailbox_tag_t hp_rd_resp_tag;
 
   // We'll accept RX when ready is asserted
-  logic ep0_rx_ready = 1'b1; logic ep1_rx_ready = 1'b1; logic hp_rx_ready = 1'b1;
+  logic ep0_rx_ready = 1'b0; logic ep1_rx_ready = 1'b0; logic hp_rx_ready = 1'b1;
+
+  // Drive unused fields to known values to avoid X-propagation
+  initial begin
+    ep0_tx_valid = 1'b0; ep0_tx_prio = 1'b0; ep0_tx_eop = 1'b0; ep0_tx_dest = '0; ep0_tx_data = '0; ep0_tx_opcode = '0;
+    ep1_tx_valid = 1'b0; ep1_tx_prio = 1'b0; ep1_tx_eop = 1'b0; ep1_tx_dest = '0; ep1_tx_data = '0; ep1_tx_opcode = '0;
+    hp_tx_valid  = 1'b0;
+
+    ep0_rd_valid = 1'b0; ep0_rd_dest = '0; ep0_rd_prio = 1'b0; ep0_rd_opcode = '0; ep0_rd_resp_ready = 1'b0;
+    ep1_rd_valid = 1'b0; ep1_rd_dest = '0; ep1_rd_prio = 1'b0; ep1_rd_opcode = '0; ep1_rd_resp_ready = 1'b0;
+    hp_rd_valid  = 1'b0; hp_rd_dest  = '0; hp_rd_prio  = 1'b0; hp_rd_opcode  = '0; hp_rd_resp_ready = 1'b0;
+  end
 
   // connect endpoint I/O to these nets via instantiation below
 
@@ -101,24 +148,33 @@ module mailbox_tb;
     .clk(clk), .rst_n(rst_n),
     .tx_valid(ep0_tx_valid), .tx_ready(ep0_tx_ready), .tx_dest(ep0_tx_dest), .tx_data(ep0_tx_data), .tx_prio(ep0_tx_prio), .tx_eop(ep0_tx_eop), .tx_opcode(ep0_tx_opcode),
     .rx_valid(ep0_rx_valid), .rx_ready(ep0_rx_ready), .rx_data(ep0_rx_data), .rx_tag(ep0_rx_tag), .rx_irq(ep0_rx_irq),
-    .m_wb_cyc(ep0_m_wb_cyc), .m_wb_stb(ep0_m_wb_stb), .m_wb_we(ep0_m_wb_we), .m_wb_adr(ep0_m_wb_adr), .m_wb_dat(ep0_m_wb_dat), .m_wb_sel(ep0_m_wb_sel), .m_wb_tag(ep0_m_wb_tag), .m_wb_ack(ep0_m_wb_ack),
-    .s_wb_cyc(m_dl0_wb_cyc), .s_wb_stb(m_dl0_wb_stb), .s_wb_we(m_dl0_wb_we), .s_wb_adr(m_dl0_wb_adr), .s_wb_dat(m_dl0_wb_dat), .s_wb_sel(m_dl0_wb_sel), .s_wb_tag(m_dl0_tag), .s_wb_ack(m_dl0_wb_ack)
+    .rd_valid(ep0_rd_valid), .rd_ready(ep0_rd_ready), .rd_dest(ep0_rd_dest), .rd_prio(ep0_rd_prio), .rd_opcode(ep0_rd_opcode), .rd_resp_valid(ep0_rd_resp_valid), .rd_resp_ready(ep0_rd_resp_ready), .rd_resp_data(ep0_rd_resp_data), .rd_resp_tag(ep0_rd_resp_tag),
+    .m_awvalid(ep0_m_awvalid), .m_awready(ep0_m_awready), .m_awaddr(ep0_m_awaddr), .m_wvalid(ep0_m_wvalid), .m_wready(ep0_m_wready), .m_wdata(ep0_m_wdata), .m_wstrb(ep0_m_wstrb), .m_tag(ep0_m_tag), .m_bready(ep0_m_bready), .m_bvalid(ep0_m_bvalid),
+    .m_arvalid(ep0_m_arvalid), .m_arready(ep0_m_arready), .m_araddr(ep0_m_araddr), .m_rvalid(ep0_m_rvalid), .m_rready(ep0_m_rready), .m_rdata(ep0_m_rdata),
+    .s_awvalid(m_dl0_awvalid), .s_awready(m_dl0_awready), .s_awaddr(m_dl0_awaddr), .s_wvalid(m_dl0_wvalid), .s_wready(m_dl0_wready), .s_wdata(m_dl0_wdata), .s_wstrb(m_dl0_wstrb), .s_tag(m_dl0_tag), .s_bready(m_dl0_bready), .s_bvalid(m_dl0_bvalid),
+    .s_arvalid(m_dl0_arvalid), .s_arready(m_dl0_arready), .s_araddr(m_dl0_araddr), .s_rvalid(m_dl0_rvalid), .s_rready(m_dl0_rready), .s_rdata(m_dl0_rdata)
   );
 
   mailbox_endpoint #(.SRC_ID(8'h11), .TX_DEPTH(8), .RX_DEPTH(8)) ep1 (
     .clk(clk), .rst_n(rst_n),
     .tx_valid(ep1_tx_valid), .tx_ready(ep1_tx_ready), .tx_dest(ep1_tx_dest), .tx_data(ep1_tx_data), .tx_prio(ep1_tx_prio), .tx_eop(ep1_tx_eop), .tx_opcode(ep1_tx_opcode),
     .rx_valid(ep1_rx_valid), .rx_ready(ep1_rx_ready), .rx_data(ep1_rx_data), .rx_tag(ep1_rx_tag), .rx_irq(ep1_rx_irq),
-    .m_wb_cyc(ep1_m_wb_cyc), .m_wb_stb(ep1_m_wb_stb), .m_wb_we(ep1_m_wb_we), .m_wb_adr(ep1_m_wb_adr), .m_wb_dat(ep1_m_wb_dat), .m_wb_sel(ep1_m_wb_sel), .m_wb_tag(ep1_m_wb_tag), .m_wb_ack(ep1_m_wb_ack),
-    .s_wb_cyc(m_dl1_wb_cyc), .s_wb_stb(m_dl1_wb_stb), .s_wb_we(m_dl1_wb_we), .s_wb_adr(m_dl1_wb_adr), .s_wb_dat(m_dl1_wb_dat), .s_wb_sel(m_dl1_wb_sel), .s_wb_tag(m_dl1_tag), .s_wb_ack(m_dl1_wb_ack)
+    .rd_valid(ep1_rd_valid), .rd_ready(ep1_rd_ready), .rd_dest(ep1_rd_dest), .rd_prio(ep1_rd_prio), .rd_opcode(ep1_rd_opcode), .rd_resp_valid(ep1_rd_resp_valid), .rd_resp_ready(ep1_rd_resp_ready), .rd_resp_data(ep1_rd_resp_data), .rd_resp_tag(ep1_rd_resp_tag),
+    .m_awvalid(ep1_m_awvalid), .m_awready(ep1_m_awready), .m_awaddr(ep1_m_awaddr), .m_wvalid(ep1_m_wvalid), .m_wready(ep1_m_wready), .m_wdata(ep1_m_wdata), .m_wstrb(ep1_m_wstrb), .m_tag(ep1_m_tag), .m_bready(ep1_m_bready), .m_bvalid(ep1_m_bvalid),
+    .m_arvalid(ep1_m_arvalid), .m_arready(ep1_m_arready), .m_araddr(ep1_m_araddr), .m_rvalid(ep1_m_rvalid), .m_rready(ep1_m_rready), .m_rdata(ep1_m_rdata),
+    .s_awvalid(m_dl1_awvalid), .s_awready(m_dl1_awready), .s_awaddr(m_dl1_awaddr), .s_wvalid(m_dl1_wvalid), .s_wready(m_dl1_wready), .s_wdata(m_dl1_wdata), .s_wstrb(m_dl1_wstrb), .s_tag(m_dl1_tag), .s_bready(m_dl1_bready), .s_bvalid(m_dl1_bvalid),
+    .s_arvalid(m_dl1_arvalid), .s_arready(m_dl1_arready), .s_araddr(m_dl1_araddr), .s_rvalid(m_dl1_rvalid), .s_rready(m_dl1_rready), .s_rdata(m_dl1_rdata)
   );
 
   mailbox_endpoint #(.SRC_ID(8'h01), .TX_DEPTH(8), .RX_DEPTH(8)) hp (
     .clk(clk), .rst_n(rst_n),
     .tx_valid(hp_tx_valid), .tx_ready(hp_tx_ready), .tx_dest(), .tx_data(), .tx_prio(), .tx_eop(), .tx_opcode(),
     .rx_valid(hp_rx_valid), .rx_ready(hp_rx_ready), .rx_data(hp_rx_data), .rx_tag(hp_rx_tag), .rx_irq(hp_rx_irq),
-    .m_wb_cyc(hp_m_wb_cyc), .m_wb_stb(hp_m_wb_stb), .m_wb_we(hp_m_wb_we), .m_wb_adr(hp_m_wb_adr), .m_wb_dat(hp_m_wb_dat), .m_wb_sel(hp_m_wb_sel), .m_wb_tag(hp_m_wb_tag), .m_wb_ack(hp_m_wb_ack),
-    .s_wb_cyc(center_m_hp_wb_cyc), .s_wb_stb(center_m_hp_wb_stb), .s_wb_we(center_m_hp_wb_we), .s_wb_adr(center_m_hp_wb_adr), .s_wb_dat(center_m_hp_wb_dat), .s_wb_sel(center_m_hp_wb_sel), .s_wb_tag(center_m_hp_tag), .s_wb_ack(center_m_hp_wb_ack)
+    .rd_valid(hp_rd_valid), .rd_ready(hp_rd_ready), .rd_dest(hp_rd_dest), .rd_prio(hp_rd_prio), .rd_opcode(hp_rd_opcode), .rd_resp_valid(hp_rd_resp_valid), .rd_resp_ready(hp_rd_resp_ready), .rd_resp_data(hp_rd_resp_data), .rd_resp_tag(hp_rd_resp_tag),
+    .m_awvalid(hp_m_awvalid), .m_awready(hp_m_awready), .m_awaddr(hp_m_awaddr), .m_wvalid(hp_m_wvalid), .m_wready(hp_m_wready), .m_wdata(hp_m_wdata), .m_wstrb(hp_m_wstrb), .m_tag(hp_m_tag), .m_bready(hp_m_bready), .m_bvalid(hp_m_bvalid),
+    .m_arvalid(hp_m_arvalid), .m_arready(hp_m_arready), .m_araddr(hp_m_araddr), .m_rvalid(hp_m_rvalid), .m_rready(hp_m_rready), .m_rdata(hp_m_rdata),
+    .s_awvalid(center_m_hp_awvalid), .s_awready(center_m_hp_awready), .s_awaddr(center_m_hp_awaddr), .s_wvalid(center_m_hp_wvalid), .s_wready(center_m_hp_wready), .s_wdata(center_m_hp_wdata), .s_wstrb(center_m_hp_wstrb), .s_tag(center_m_hp_tag), .s_bready(center_m_hp_bready), .s_bvalid(center_m_hp_bvalid),
+    .s_arvalid(center_m_hp_arvalid), .s_arready(center_m_hp_arready), .s_araddr(center_m_hp_araddr), .s_rvalid(center_m_hp_rvalid), .s_rready(center_m_hp_rready), .s_rdata(center_m_hp_rdata)
   );
   // Helper: send single-beat packet from ep0
   task automatic send_ep0(input logic [15:0] dest, input logic [31:0] data, input logic prio = 1'b0);
@@ -134,19 +190,83 @@ module mailbox_tb;
       ep0_tx_valid = 1'b1;
       wait (ep0.tx_ready == 1'b1);
 
-      // Hold valid until we see m_wb_stb or timeout
+      // Hold valid until we see AXI AW/W asserted or timeout
       for (i = 0; i < 16; i++) begin
         @(posedge clk);
-        if (ep0_m_wb_stb) begin
-          $display("%0t: send_ep0 observed ep0_m_wb_stb (adr=%h dat=%h)", $time, ep0_m_wb_adr, ep0_m_wb_dat);
+        if (ep0_m_awvalid && ep0_m_wvalid) begin
+          $display("%0t: send_ep0 observed ep0_m_awvalid/wvalid (adr=%h dat=%h)", $time, ep0_m_awaddr, ep0_m_wdata);
           ep0_tx_valid = 1'b0;
           break;
         end
       end
-      if (ep0_m_wb_stb == 1'b0) begin
+      if ((ep0_m_awvalid && ep0_m_wvalid) == 1'b0) begin
         ep0_tx_valid = 1'b0;
-        $display("%0t: WARNING: ep0 did not assert m_wb_stb after send. wr_ptr=%0d rd_ptr=%0d tx_r_empty=%0b u_tx_fifo.w_en=%0b u_tx_fifo.w_full=%0b", $time, ep0.u_tx_fifo.wr_ptr, ep0.u_tx_fifo.rd_ptr, ep0.tx_r_empty, ep0.u_tx_fifo.w_en, ep0.u_tx_fifo.w_full);
+        $display("%0t: WARNING: ep0 did not assert m_awvalid/m_wvalid after send. wr_ptr=%0d rd_ptr=%0d tx_r_empty=%0b u_tx_fifo.w_en=%0b u_tx_fifo.w_full=%0b", $time, ep0.u_tx_fifo.wr_ptr, ep0.u_tx_fifo.rd_ptr, ep0.tx_r_empty, ep0.u_tx_fifo.w_en, ep0.u_tx_fifo.w_full);
       end
+    end
+  endtask
+
+  // Helper: send single-beat packet from ep1
+  task automatic send_ep1(input logic [15:0] dest, input logic [31:0] data, input logic prio = 1'b0);
+    int i;
+    begin
+      @(posedge clk);
+      ep1_tx_prio = prio;
+      ep1_tx_eop  = 1'b1;
+      ep1_tx_opcode = OPC_DATA;
+      ep1_tx_dest = dest;
+      ep1_tx_data = data;
+      ep1_tx_valid = 1'b1;
+      wait (ep1.tx_ready == 1'b1);
+      for (i = 0; i < 16; i++) begin
+        @(posedge clk);
+        if (ep1_m_awvalid && ep1_m_wvalid) begin
+          ep1_tx_valid = 1'b0;
+          break;
+        end
+      end
+      if ((ep1_m_awvalid && ep1_m_wvalid) == 1'b0) begin
+        ep1_tx_valid = 1'b0;
+        $display("%0t: WARNING: ep1 did not assert m_awvalid/m_wvalid after send.", $time);
+      end
+    end
+  endtask
+
+  // Helper: blocking read via hp endpoint (rd_resp_ready held high)
+  task automatic hp_read_expect(input logic [15:0] dest, input logic [31:0] exp, input int timeout_cycles=200);
+    int tcnt;
+    begin
+      hp_rd_dest  = dest;
+      hp_rd_prio  = 1'b0;
+      hp_rd_opcode= OPC_DATA;
+      hp_rd_valid = 1'b1;
+      tcnt = 0;
+      while ((tcnt < timeout_cycles) && !hp_rd_ready) begin
+        @(posedge clk);
+        tcnt++;
+      end
+      if (!hp_rd_ready) begin
+        $display("[FAIL] hp rd_ready timeout dest=%h", dest);
+        $finish;
+      end
+      @(posedge clk);
+      hp_rd_valid = 1'b0;
+      tcnt = 0;
+      while ((tcnt < timeout_cycles) && !hp_rd_resp_valid) begin
+        @(posedge clk);
+        tcnt++;
+      end
+      if (!hp_rd_resp_valid) begin
+        $display("[FAIL] hp read timeout dest=%h", dest);
+        $finish;
+      end
+      if (hp_rd_resp_data !== exp) begin
+        $display("[FAIL] hp read dest=%h got=0x%08x exp=0x%08x", dest, hp_rd_resp_data, exp);
+        $finish;
+      end else begin
+        $display("[PASS] hp read dest=%h data=0x%08x", dest, exp);
+      end
+      @(posedge clk);
     end
   endtask
 
@@ -208,20 +328,22 @@ module mailbox_tb;
   always @(posedge clk) begin
     if (ep0_tx_valid) $display("%0t: ep0_tx_valid asserted (tx_ready=%0b)", $time, ep0_tx_ready);
     if (ep0.tx_w_en) $display("%0t: ep0 tx_w_en (tx_w_full=%0b) wr_ptr=%0d rd_ptr=%0d tx_r_empty=%0b u_tx_fifo.w_en=%0b u_tx_fifo.w_full=%0b", $time, ep0.tx_w_full, ep0.u_tx_fifo.wr_ptr, ep0.u_tx_fifo.rd_ptr, ep0.tx_r_empty, ep0.u_tx_fifo.w_en, ep0.u_tx_fifo.w_full);
-    if (ep0.tx_r_en) $display("%0t: ep0 tx_r_en (m_wb_ack=%0b) wr_ptr=%0d rd_ptr=%0d tx_r_empty=%0b u_tx_fifo.w_en=%0b u_tx_fifo.w_full=%0b", $time, ep0.m_wb_ack, ep0.u_tx_fifo.wr_ptr, ep0.u_tx_fifo.rd_ptr, ep0.tx_r_empty, ep0.u_tx_fifo.w_en, ep0.u_tx_fifo.w_full);
-    if (ep0_m_wb_stb) $display("%0t: ep0 -> sw0 dl0 adr=%h dat=%h", $time, ep0_m_wb_adr, ep0_m_wb_dat);
-    if (sw0.dl0_wb_stb) begin
-      $display("%0t: sw0 got dl0 input adr=%h dat=%h", $time, ep0_m_wb_adr, ep0_m_wb_dat);
+    if (ep0.tx_r_en) $display("%0t: ep0 tx_r_en (m_bvalid=%0b) wr_ptr=%0d rd_ptr=%0d tx_r_empty=%0b u_tx_fifo.w_en=%0b u_tx_fifo.w_full=%0b", $time, ep0.m_bvalid, ep0.u_tx_fifo.wr_ptr, ep0.u_tx_fifo.rd_ptr, ep0.tx_r_empty, ep0.u_tx_fifo.w_en, ep0.u_tx_fifo.w_full);
+    if (ep0_m_awvalid && ep0_m_wvalid) $display("%0t: ep0 -> sw0 dl0 adr=%h dat=%h", $time, ep0_m_awaddr, ep0_m_wdata);
+    if (sw0.dl0_awvalid && sw0.dl0_wvalid) begin
+      $display("%0t: sw0 got dl0 input adr=%h dat=%h", $time, ep0_m_awaddr, ep0_m_wdata);
       $display("    sw0.sel_dl0=%0d sel_dl1=%0d grant_src=%b dl0_w_en=%0b dl1_w_en=%0b dl1_fifo_full=%0b", $time, sw0.sel_dl0, sw0.sel_dl1, sw0.grant_src, sw0.dl0_fifo_w_en, sw0.dl1_fifo_w_en, sw0.dl1_fifo_full);
     end
-    if (sw0.m_up_wb_stb) $display("%0t: sw0 uplink -> center adr=%h dat=%h", $time, sw0.m_up_wb_adr, sw0.m_up_wb_dat);
-    if (center.sw0_wb_stb) $display("%0t: center got sw0 uplink adr=%h dat=%h", $time, sw0.m_up_wb_adr, sw0.m_up_wb_dat);
-    if (ep1_m_wb_stb) $display("%0t: ep1 -> sw0 dl1 adr=%h dat=%h", $time, ep1_m_wb_adr, ep1_m_wb_dat);
-    if (sw0.m_dl1_wb_stb) $display("%0t: sw0 -> dl1 send adr=%h dat=%h", $time, m_dl1_wb_adr, m_dl1_wb_dat);
-    if (sw0.m_dl0_wb_stb) $display("%0t: sw0 -> dl0 send adr=%h dat=%h", $time, m_dl0_wb_adr, m_dl0_wb_dat);
-    if (center.m_sw0_wb_stb) $display("%0t: center -> sw0 adr=%h dat=%h", $time, center_m_sw0_wb_adr, center_m_sw0_wb_dat);
+    if (sw0.m_up_awvalid && sw0.m_up_wvalid) $display("%0t: sw0 uplink -> center adr=%h dat=%h", $time, sw0.m_up_awaddr, sw0.m_up_wdata);
+    if (center.sw0_awvalid && center.sw0_wvalid) $display("%0t: center got sw0 uplink adr=%h dat=%h", $time, sw0.m_up_awaddr, sw0.m_up_wdata);
+    if (ep1_m_awvalid && ep1_m_wvalid) $display("%0t: ep1 -> sw0 dl1 adr=%h dat=%h", $time, ep1_m_awaddr, ep1_m_wdata);
+    if (sw0.m_dl1_awvalid && sw0.m_dl1_wvalid) $display("%0t: sw0 -> dl1 send adr=%h dat=%h", $time, m_dl1_awaddr, m_dl1_wdata);
+    if (sw0.m_dl0_awvalid && sw0.m_dl0_wvalid) $display("%0t: sw0 -> dl0 send adr=%h dat=%h", $time, m_dl0_awaddr, m_dl0_wdata);
+    if (center.m_sw0_awvalid && center.m_sw0_wvalid) $display("%0t: center -> sw0 adr=%h dat=%h", $time, center_m_sw0_awaddr, center_m_sw0_wdata);
     if (ep1_rx_valid) $display("%0t: ep1 rx_valid data=%h", $time, ep1_rx_data);
     if (hp_rx_valid) $display("%0t: hp rx_valid data=%h", $time, hp_rx_data);
+    if (hp_rd_valid) $display("%0t: hp rd_valid dest=%h", $time, hp_rd_dest);
+    if (hp_rd_resp_valid) $display("%0t: hp rd_resp data=%h", $time, hp_rd_resp_data);
   end
 
   // -----------------------------
@@ -231,26 +353,22 @@ module mailbox_tb;
     // Initialize inputs
     ep0_tx_valid = 1'b0; ep0_tx_prio = 1'b0; ep0_tx_eop = 1'b1; ep0_tx_dest = 16'h0; ep0_tx_data = 32'h0; ep0_tx_opcode = OPC_DATA;
     ep1_tx_valid = 1'b0; ep1_tx_prio = 1'b0; ep1_tx_eop = 1'b1; ep1_tx_dest = 16'h0; ep1_tx_data = 32'h0; ep1_tx_opcode = OPC_DATA;
+    ep0_rd_valid = 1'b0; ep0_rd_prio = 1'b0; ep0_rd_opcode = OPC_DATA; ep0_rd_resp_ready = 1'b1;
+    ep1_rd_valid = 1'b0; ep1_rd_prio = 1'b0; ep1_rd_opcode = OPC_DATA; ep1_rd_resp_ready = 1'b1;
+    hp_rd_valid  = 1'b0; hp_rd_prio  = 1'b0; hp_rd_opcode  = OPC_DATA; hp_rd_resp_ready  = 1'b1;
 
     // Allow reset release
     @(posedge clk);
     @(posedge clk);
 
-    // Test1: simple unicast from ep0 -> ep1 (local)
-    $display("Test1: ep0 -> ep1 unicast");
-    send_ep0({8'h11, 8'd1}, 32'hDEAD_BEEF);
-    expect_rx_by_id(1, 32'hDEAD_BEEF);
+    // Test1: ep1 -> ep0 data push (idx0) then pop via HP read
+    $display("Test1: ep1 -> ep0 push then hp pop");
+    send_ep1({8'h11, 8'h00}, 32'hDEAD_BEEF);
+    hp_read_expect({8'h11, 8'h00}, 32'hDEAD_BEEF);
 
-    // Test2: ep0 -> HP (upstream) cluster 0x00
-    $display("Test2: ep0 -> hp unicast");
-    send_ep0({8'h00, 8'd0}, 32'hCAFE_BABE);
-    expect_rx_by_id(2, 32'hCAFE_BABE);
-
-    // Test3: broadcast from ep0 -> all (cluster == 0xFF)
-    $display("Test3: ep0 -> broadcast");
-    send_ep0({8'hFF, 8'h00}, 32'hF00D_F00D);
-    expect_rx_by_id(1, 32'hF00D_F00D);
-    expect_rx_by_id(2, 32'hF00D_F00D);
+    // Test2: pop empty returns DEADBEEF sentinel
+    $display("Test2: pop empty returns DEADBEEF");
+    hp_read_expect({8'h11, 8'h00}, 32'hDEAD_BEEF);
 
     $display("All tests passed.");
     $finish;

@@ -7,8 +7,10 @@ This plan outlines the RTL deliverables and integration steps for the full mailb
 **Scope:** Root router connecting system/MCU and up to 4 cluster switches, plus a direct high-priority (HP) node.
 
 **Interfaces:**
-- 4× Downlinks: Center → Switch (full-duplex mailbox Wishbone-Lite write channels, baseline profile).
-- 1× Uplink per downlink (full-duplex Wishbone-Lite).
+- 4× Downlinks: Center → Switch (full-duplex mailbox **AXI4-Lite read+write** channels, baseline profile).
+- 1× Uplink per downlink (full-duplex AXI4-Lite read+write).
+
+> **Note:** The mailbox interconnect is the *control/status* plane and now uses **AXI4-Lite full-duplex (reads + writes)** for familiarity with the rest of the SoC. The **main system memory bus** (VRAM/data path) remains **AXI4** (see `docs/memory_map.md`). Mailbox addresses are strongly-ordered/non-cacheable; LSU should decode the mailbox region and avoid caching/reordering for those accesses. Both stores and loads to the mailbox address window are redirected into the mailbox network.
 - 1× HP port: direct endpoint (e.g., MCU or interrupt concentrator) with highest priority arbitration.
 
 **Functionality:**
@@ -32,8 +34,8 @@ This plan outlines the RTL deliverables and integration steps for the full mailb
 **Scope:** One uplink to Center, four downlinks to Leaves.
 
 **Interfaces:**
-- 1× Uplink (full-duplex Wishbone-Lite) to Center.
-- 4× Downlinks (full-duplex Wishbone-Lite) to Leaves.
+- 1× Uplink (full-duplex AXI4-Lite read+write) to Center.
+- 4× Downlinks (full-duplex AXI4-Lite read+write) to Leaves.
 
 **Functionality:**
 - Local vs upstream routing via `dest_cluster` compare; if equal, send to `dest_local`; else forward upstream.
@@ -55,8 +57,8 @@ This plan outlines the RTL deliverables and integration steps for the full mailb
 **Scope:** Variant switch for small clusters: one uplink to Center, two downlinks to Leaves.
 
 **Interfaces:**
-- 1× Uplink (full-duplex Wishbone-Lite) to Center.
-- 2× Downlinks (full-duplex Wishbone-Lite) to Leaves.
+- 1× Uplink (full-duplex AXI4-Lite read+write) to Center.
+- 2× Downlinks (full-duplex AXI4-Lite read+write) to Leaves.
 
 **Functionality:**
 - Same routing rules as 4×1: local vs upstream by `dest_cluster`; broadcast replicates to both locals and uplink when `dest_cluster==0xFF`.
@@ -77,18 +79,28 @@ This plan outlines the RTL deliverables and integration steps for the full mailb
 **Scope:** Leaf module instantiated in processor/peripheral tiles; connects to Switch via mailbox bus and exposes CSR/IRQ interface to the core.
 
 **Interfaces:**
-- Mailbox Wishbone-Lite full-duplex to Switch (Compact allowed for area: can drop `tag_prio/tag_parity`).
-- Core side: LSU sideband for TX, CSR for RX/STATUS, IRQ line.
+- Mailbox AXI4-Lite full-duplex (read+write) to Switch (Compact allowed for area: can drop `tag_prio/tag_parity`).
+- Core side: LSU sideband for TX/RX, CSR for RX/STATUS, IRQ line.
+
+**Addressing (refined for CSR subspace):**
+- `awaddr/araddr[15:8]` = Cluster ID
+- `awaddr/araddr[7:4]` = Endpoint ID (supports up to 16 endpoints per cluster)
+- `awaddr/araddr[3:0]` = Endpoint CSR index (16-word space per endpoint)
+	- CSR index 0 is the data path (RX ring pop on read; TX enqueue on write)
+	- CSR indices 1–15 are user-defined/control/status words; reads return the register contents directly (no pop)
 
 **Functionality:**
-- TX: Detect stores to 0x7000_xxxx in LSU; drive Wishbone-Lite master (write-only) with `wb_adr=dest_id`, `wb_dat_w=data`, tags for src/prio/eop/opcode; stall LSU if FIFO or downstream `ack` is backpressured.
-- RX: Switch drives Wishbone-Lite master toward Leaf to deliver inbound messages; Leaf slaves accept into RX FIFO; level IRQ when not empty; CSR read pops.
+- TX: Detect stores to mailbox window; drive AXI4-Lite write with AWADDR carrying Cluster/Endpoint/CSR index. For data sends, software uses CSR index 0; WDATA carries payload; WSTRB=4'hF; tags carry src/prio/eop/opcode. Stall LSU if TX FIFO or downstream `awready/wready` is backpressured.
+- RX: Switch drives AXI-Lite writes toward Leaf to deliver inbound messages (to CSR index 0); Leaf slave accepts when RX FIFO has space and asserts `bvalid`; level IRQ when not empty; CSR read pops.
+- Reads (pop semantics): Loads to CSR index 0 pop the RX FIFO. If RX is empty, return 32'hDEADBEEF and do not stall the fabric. One outstanding read per ingress (except CSR reads) to keep the bus passive.
+- Control CSRs (via CSR indices 1–15 at the targeted endpoint ID): bits include mute_tx/mute_rx, clear RX/TX FIFO, flood-mute, mute broadcast, and clear-all outputs. Switch control remains local (LocalID 0xFD), center control at Cluster 0x00/LocalID 0xFC.
 - Optional ACK/NACK opcode handling in CSR for reliability flows.
 - Error counter for parity (if enabled) and invalid dest responses (if surfaced).
 
 **LSU Modifications:**
 - Address decode for mailbox region; bypass data cache; mark as strongly ordered, non-cacheable.
-- Drive Wishbone-Lite master signals: `cyc/stb/we=1`, `adr=dest_id`, `dat_w=data`, `sel=4'hF`, plus tags (src_id/eop/prio/opcode/parity). Stall LSU on TX FIFO full or outstanding master not acked.
+- For stores: drive AXI4-Lite write signals `awvalid/wvalid=1`, `awaddr=dest_id`, `wdata=data`, `wstrb=4'hF`, plus tags (src_id/eop/prio/opcode/parity). Stall LSU on TX FIFO full or when downstream backpressures `awready/wready`.
+- For loads: drive AXI4-Lite read signals `arvalid=1`, `araddr=dest_id`, consume `rvalid/rdata` (and optional mailbox tag echoed or implicit). Stall LSU until `rvalid && rready` to deliver the mailbox payload/status word.
 
 **Verification (Leaf):**
 - Directed: TX stall on full, RX IRQ level behavior, CSR pop ordering, ACK/NACK roundtrip (if used).

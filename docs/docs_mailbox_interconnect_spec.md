@@ -23,27 +23,27 @@ To optimize for physical layout and timing closure (FPGA/ASIC), the network is s
 
 The system leverages the **MPU's "Mailbox Mesh" region (0x7000\_XXXX)** to map network destinations.
 
-### **2.1 Hierarchical & Aggregate Addressing**
+### **2.1 Hierarchical & Aggregate Addressing (with CSR index)**
 
-Destination is now 16 bits to accommodate more nodes. Split into **Cluster ID \[7:0\]** and **Local ID \[7:0\]**. Current implementation supports **up to 8 nodes per cluster (Local ID 0-7)**; higher Local IDs are reserved for future expansion and broadcasts.
+Destination is 16 bits carrying Cluster, Endpoint, and a 4-bit CSR index. Split into **Cluster ID \[15:8\]**, **Endpoint ID \[7:4\]** (up to 16 endpoints per cluster), and **CSR index \[3:0\]** (16 words per endpoint for data/CSRs). CSR index 0 is the data channel (RX ring pop on read, enqueue on write); indices 1–15 are user/control/status registers that read directly (no pop).
 
-**Address Format (byte aligned):** 0x7000\_{ClusterID\[7:0\]}{LocalID\[7:0\]}
+**Address Format (byte aligned):** 0x7000\_{ClusterID\[7:0\]}{EndpointID\[3:0\]}{CsrIdx\[3:0\]}
 
-| Cluster ID | Local ID | Target |
+| Cluster ID | Endpoint ID | Target |
 | :---- | :---- | :---- |
-| 0x00 | 0x00 | **MCU (Control Processor)** |
-| 0x00 | 0x01 | **Memory Controller** (DMA IRQ) |
-| 0x00 | 0x02 | **Display Engine** (VSYNC IRQ) |
-| 0x01 | 0x00 \- 0x07 | **Compute Cluster** (CUs 0-7) |
-| 0x02 | 0x00 \- 0x07 | **Matrix Cluster** (MXUs 0-7) |
-| ... | ... | Future clusters/cores up to 256×256 |
+| 0x00 | 0x0 | **MCU (Control Processor)** |
+| 0x00 | 0x1 | **Memory Controller** (DMA IRQ) |
+| 0x00 | 0x2 | **Display Engine** (VSYNC IRQ) |
+| 0x01 | 0x0 \- 0x7 | **Compute Cluster** (CUs 0-7) |
+| 0x02 | 0x0 \- 0x7 | **Matrix Cluster** (MXUs 0-7) |
+| ... | ... | Future clusters/cores up to 256×16 endpoints |
 | **Multicast** |  |  |
-| 0x01 | 0xFF | **Cluster 1 Broadcast** (All CUs in Cluster 1) |
-| 0x02 | 0xFF | **Cluster 2 Broadcast** (All MXUs in Cluster 2) |
-| 0xFF | 0x00 | **Group 0 Broadcast** (Local 0 of every Cluster) |
-| 0xFF | 0xFF | **Global Broadcast** (All Nodes) |
+| 0x01 | 0xF | **Cluster 1 Broadcast** (All CUs in Cluster 1) |
+| 0x02 | 0xF | **Cluster 2 Broadcast** (All MXUs in Cluster 2) |
+| 0xFF | 0x0 | **Group 0 Broadcast** (Endpoint 0 of every Cluster) |
+| 0xFF | 0xF | **Global Broadcast** (All Nodes) |
 
-*Example:* Writing to 0x7000\_0102 targets Cluster 0x01 (Compute), Local 0x02 (CU2). Writing to 0x7000\_01FF targets **ALL** cores in Cluster 1 (multicast).
+*Example:* Writing to 0x7000_0102 targets Cluster 0x01 (Compute), Endpoint 0x1, CSR index 0x2. Writing to 0x7000_01F0 targets **ALL** endpoints in Cluster 1 (broadcast, CSR index 0).
 
 ### **2.2 Packet Format**
 
@@ -56,49 +56,49 @@ Sideband (per transfer, not necessarily stored in flit): 4-bit `Opcode` from LSU
 
 Handshake: `Valid`/`Ready` on every hop. `Ready` reflects downstream FIFO space; backpressure propagates.
 
-### **2.3 Interconnect Bus Specification (Mailbox over Wishbone-Lite)**
+### **2.3 Interconnect Bus Specification (Mailbox over AXI4-Lite, read + write full-duplex)**
 
-Scope: point-to-point links between Endpoint↔Switch and Switch↔Center implemented as **full-duplex Wishbone-Lite** channels (two unidirectional Wishbone write paths: TX and RX). All links are synchronous to the fabric clock; use CDC FIFOs if crossing domains.
+Scope: point-to-point links between Endpoint↔Switch and Switch↔Center implemented as **full-duplex AXI4-Lite read + write** channels (two unidirectional write paths and two unidirectional read paths). Loads and stores to the mailbox address window are redirected into the mailbox network. All links are synchronous to the fabric clock; use CDC FIFOs if crossing domains.
 
 **Channel model:**
 
-* TX direction: source is Wishbone master issuing **writes only**; sink is Wishbone slave.  
+* TX direction: source is AXI-Lite master issuing writes; sink is AXI-Lite slave.  
 * RX direction: sink becomes master to return messages back (mirrored interface).  
-* Use Wishbone Classic/Pipelined handshake: `cyc`+`stb` from master, `ack` from slave. Transfer occurs when `cyc && stb && ack`.
+* Read direction (pop semantics): source is AXI-Lite master issuing reads on `ar*`; sink returns data on `r*` with a single-beat response. Reads pop the target RX FIFO; if empty, return 32'hDEADBEEF. One outstanding read per ingress (except CSR reads) to keep the bus passive.  
+* AW and W must be asserted together; B is the acceptance response. No bursting beyond single-beat writes (route-lock preserves multi-beat mailbox packets using `tag_eop`). Reads are single-beat and aligned to the mailbox word size.
 
 **Signals per direction (TX or RX):**
 
 * `clk`, `rst_n` — Shared clock/reset.  
-* `wb_cyc`, `wb_stb`, `wb_ack` — Wishbone handshake.  
-* `wb_we` — Always 1 (write-only channel).  
-* `wb_adr[15:0]` — Encodes `dest_id` (Cluster[7:0], Local[7:0]); for RX channel this can be tied or used for diagnostics.  
-* `wb_dat_w[31:0]` — Payload data.  
-* `wb_sel[3:0]` — Byte enables; typically 4'hF.  
-* `tag_src_id[7:0]` — Return address.  
-* `tag_eop` — End of packet.  
-* `tag_prio` — QoS hint (0/1).  
-* `tag_parity` — Even parity over `wb_dat_w|tag_src_id|tag_eop|tag_prio`.  
-* `tag_opcode[3:0]` — DATA/IRQ/ACK/NACK/RSV.  
-* `tag_hops[3:0]` — Optional hop-distance estimator; initialized to 0 at ingress, incremented (saturating) at each switch. Used for age/“distance” aware arbitration.
+* `awvalid/awready`, `awaddr[15:0]` — Address phase carrying Cluster/Endpoint/CSR index.  
+* `wvalid/wready`, `wdata[31:0]`, `wstrb[3:0]` — Data phase. `wstrb` typically 4'hF.  
+* `bvalid/bready` — Write response (OK only). Used as acceptance pulse; no error encoding.  
+* `tag_src_id[7:0]`, `tag_eop`, `tag_prio`, `tag_parity`, `tag_opcode[3:0]`, `tag_hops[3:0]` — Mailbox sideband aligned with AW/W. Parity is even over `wdata|tag_src_id|tag_eop|tag_prio` when enabled.
+
+**Signals per direction (read path AR/R):**
+
+* `arvalid/arready`, `araddr[15:0]` — Address phase carrying Cluster/Endpoint/CSR index.  
+* `rvalid/rready`, `rdata[31:0]`, `rresp` (always OKAY) — Data return (DEADBEEF if RX empty).  
+* Sideband tags (optional on read return): implementations may echo the request tag or return implicit status; baseline keeps tags on write path and treats reads as single-word pulls of status/mailbox payload or control CSR fields.
 
 **Handshake & timing:**
 
-* Master asserts `cyc`+`stb` with address/data/tags; holds them stable until `ack==1`.  
-* Slave may insert wait states by delaying `ack`.  
-* Transfer completes on the rising edge where `cyc && stb && ack`.  
-* `tag_eop` marks last beat of a burst; route-lock holds from first beat until the beat after `eop` is accepted.  
-* Reset: deassert `cyc`/`stb` during reset; `ack` must be 0 during reset.
+* Transfer occurs when `awvalid && wvalid && awready && wready`; `bvalid` must pulse for the same beat and deassert once `bready` is seen. Reads occur when `arvalid && arready` then complete on `rvalid && rready`; only one outstanding read per ingress (except CSR reads).  
+* Slaves gate `awready/wready` (and `arready` for reads) to reflect FIFO space and broadcast fanout readiness.  
+* Masters hold `awvalid/wvalid` until handshake; `bready` is typically tied high. Masters hold `arvalid` until `arready`; `rready` is typically tied high unless SW stalls consumption.  
+* `tag_eop` marks last beat of a mailbox burst; route-lock holds from first beat until the beat after `eop` is accepted.  
+* Reset: deassert `awvalid/wvalid`; `bvalid` must be 0 during reset.
 
 **Error handling:**
 
 * Parity error at slave: drop flit, increment error counter, optional IRQ.  
 * Unsupported `opcode`: treat as DATA.  
-* Optional `wb_err` not used; rely on drop+counter for simplicity.
+* AXI-Lite BRESP is always OKAY; drops are surfaced via counters only.
 
 **Transfer ordering and atomicity:**
 
-* In-order per Wishbone channel. Bursts are contiguous due to route-lock keyed by `tag_eop`.  
-* Broadcast replication preserves order per child; if any child stalls, upstream master sees withheld `ack`.
+* In-order per AXI-Lite write and read channel. Bursts are contiguous due to route-lock keyed by `tag_eop`.  
+* Broadcast replication preserves order per child; if any child stalls, upstream master sees withheld `awready/wready` (and therefore no `bvalid`).
 
 **QoS and distance-aware arbitration:**
 
@@ -117,20 +117,20 @@ Scope: point-to-point links between Endpoint↔Switch and Switch↔Center implem
 
 **Physical/CDC guidance:**
 
-* Single clock per link; add async FIFO if domains differ (keep Wishbone master on source side of FIFO).  
-* Optional skid buffer or register slice on `ack` return for timing in Switch↔Center paths.  
-* Limit `ack` fanout by per-port FIFOs; avoid combinational `ack` trees.
+* Single clock per link; add async FIFO if domains differ (keep AXI-Lite master on source side of FIFO).  
+* Optional skid buffer or register slice on `awready/wready/bvalid` for timing in Switch↔Center paths.  
+* Limit ready fanout by per-port FIFOs; avoid combinational backpressure trees.
 
 **Endpoint↔Switch (minimal profile):**
 
 * May omit `tag_prio` and `tag_parity` (Compact mode).  
-* Endpoint master only needs TX channel; RX channel master is the Switch.  
-* Byte enables fixed to 4'hF; no reads.
+* Endpoint masters issue writes for TX and reads for pop-style mailbox loads; Switch masters the reverse direction.  
+* Byte enables fixed to 4'hF; reads are single-beat pulls; RX empty returns 32'hDEADBEEF.
 
 **Switch↔Center (robust profile):**
 
 * Keep `tag_prio` and `tag_parity` enabled; carry `tag_opcode` for diagnostics/ACK.  
-* Per-child FIFO ≥4 to mask broadcast fanout; optional register slice on `ack`.
+* Per-child FIFO ≥4 to mask broadcast fanout; optional register slice on `awready/wready/bvalid`.
 
 ## **3\. Hardware Implementation**
 
@@ -201,6 +201,7 @@ Integrated into compute\_unit\_top.sv.
 * Mark 0x7000_xxxx as strongly-ordered, non-cacheable to avoid store merging/reordering.  
 * Invalid DestID: drop and increment an error counter; optional local IRQ for diagnostics.  
 * Optional ACK/NACK via Opcode for software that needs reliability.
+* Reads pop RX FIFO; empty returns 32'hDEADBEEF.
 
 ## **4\. Usage Examples (Software)**
 

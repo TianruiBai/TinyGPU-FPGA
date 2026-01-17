@@ -36,6 +36,11 @@ UML diagram (implemented vs planned): `docs/diagrams/system_architecture.puml`
 - **Control MCU (RISC-V)**: consumes mailbox, configures registers, manages fences.
 - **Compute Unit Cluster (4x)**: shared VRAM + texture cache.
 - **Memory Subsystem**: VRAM controller + QoS arbiter (Display > Compute > Host > MCU).
+- **System Memory Bus (AXI4)**: The main global memory fabric will be implemented with an **AXI4** memory-mapped interconnect for high-bandwidth bulk transfers and efficient DMA-style bursts. Expected properties:
+  - **AXI4 (full)** for VRAM/data path (burst support, IDs, QoS); **AXI4-Lite** or OSPI/CSR path for low-bandwidth MMIO and control registers.
+  - Recommend **64-bit data width** or wider where supported, configurable ID/QoS fields to support multiple outstanding masters (ROP/Texture/Scalar/Host). 
+  - The VRAM controller must expose QoS/prioritization (AXI QOS and ID usage) so display reads can be prioritized while preventing starvation of compute clients.
+  - LSU and DMA engines must translate CU global requests into AXI transactions honoring cacheable/non-cacheable attributes, burst alignment, and ordering (see `docs/memory_map.md` and `docs/microarchitecture.md` for normative details).
 - **Display Path**: scanout engine with line buffers; HUB75/HDMI.
 
 ## Data Flow

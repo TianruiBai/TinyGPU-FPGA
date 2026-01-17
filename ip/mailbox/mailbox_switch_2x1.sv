@@ -1,4 +1,5 @@
-// Mailbox Switch 2x1: one uplink, two downlinks with QoS + route-lock
+`timescale 1ns/1ps
+// Mailbox Switch 2x1: one uplink, two downlinks with QoS + route-lock (AXI4-Lite full-duplex)
 module mailbox_switch_2x1 #(
   parameter logic [7:0] MY_CLUSTER_ID = 8'h01,
   parameter int FIFO_DEPTH = 2,
@@ -7,62 +8,117 @@ module mailbox_switch_2x1 #(
   input  logic clk,
   input  logic rst_n,
 
-  // Downlink masters into this switch (from leaves)
-  input  logic        dl0_wb_cyc,
-  input  logic        dl0_wb_stb,
-  input  logic        dl0_wb_we,
-  input  logic [15:0] dl0_wb_adr,
-  input  logic [31:0] dl0_wb_dat,
-  input  logic [3:0]  dl0_wb_sel,
+  // Downlink AXI-Lite masters into this switch (from leaves)
+  input  logic        dl0_awvalid,
+  output logic        dl0_awready,
+  input  logic [15:0] dl0_awaddr,
+  input  logic        dl0_wvalid,
+  output logic        dl0_wready,
+  input  logic [31:0] dl0_wdata,
+  input  logic [3:0]  dl0_wstrb,
   input  mailbox_pkg::mailbox_tag_t dl0_tag,
-  output logic        dl0_wb_ack,
-  input  logic        dl1_wb_cyc,
-  input  logic        dl1_wb_stb,
-  input  logic        dl1_wb_we,
-  input  logic [15:0] dl1_wb_adr,
-  input  logic [31:0] dl1_wb_dat,
-  input  logic [3:0]  dl1_wb_sel,
-  input  mailbox_pkg::mailbox_tag_t dl1_tag,
-  output logic        dl1_wb_ack,
+  output logic        dl0_bvalid,
+  input  logic        dl0_bready,
 
-  // Uplink master into this switch (from center)
-  input  logic        up_wb_cyc,
-  input  logic        up_wb_stb,
-  input  logic        up_wb_we,
-  input  logic [15:0] up_wb_adr,
-  input  logic [31:0] up_wb_dat,
-  input  logic [3:0]  up_wb_sel,
+  input  logic        dl0_arvalid,
+  output logic        dl0_arready,
+  input  logic [15:0] dl0_araddr,
+  output logic        dl0_rvalid,
+  input  logic        dl0_rready,
+  output logic [31:0] dl0_rdata,
+
+  input  logic        dl1_awvalid,
+  output logic        dl1_awready,
+  input  logic [15:0] dl1_awaddr,
+  input  logic        dl1_wvalid,
+  output logic        dl1_wready,
+  input  logic [31:0] dl1_wdata,
+  input  logic [3:0]  dl1_wstrb,
+  input  mailbox_pkg::mailbox_tag_t dl1_tag,
+  output logic        dl1_bvalid,
+  input  logic        dl1_bready,
+
+  input  logic        dl1_arvalid,
+  output logic        dl1_arready,
+  input  logic [15:0] dl1_araddr,
+  output logic        dl1_rvalid,
+  input  logic        dl1_rready,
+  output logic [31:0] dl1_rdata,
+
+  // Uplink AXI-Lite master into this switch (from center)
+  input  logic        up_awvalid,
+  output logic        up_awready,
+  input  logic [15:0] up_awaddr,
+  input  logic        up_wvalid,
+  output logic        up_wready,
+  input  logic [31:0] up_wdata,
+  input  logic [3:0]  up_wstrb,
   input  mailbox_pkg::mailbox_tag_t up_tag,
-  output logic        up_wb_ack,
+  output logic        up_bvalid,
+  input  logic        up_bready,
+
+  input  logic        up_arvalid,
+  output logic        up_arready,
+  input  logic [15:0] up_araddr,
+  output logic        up_rvalid,
+  input  logic        up_rready,
+  output logic [31:0] up_rdata,
 
   // Master out to uplink (toward center)
-  output logic        m_up_wb_cyc,
-  output logic        m_up_wb_stb,
-  output logic        m_up_wb_we,
-  output logic [15:0] m_up_wb_adr,
-  output logic [31:0] m_up_wb_dat,
-  output logic [3:0]  m_up_wb_sel,
+  output logic        m_up_awvalid,
+  input  logic        m_up_awready,
+  output logic [15:0] m_up_awaddr,
+  output logic        m_up_wvalid,
+  input  logic        m_up_wready,
+  output logic [31:0] m_up_wdata,
+  output logic [3:0]  m_up_wstrb,
   output mailbox_pkg::mailbox_tag_t m_up_tag,
-  input  logic        m_up_wb_ack,
+  output logic        m_up_bready,
+  input  logic        m_up_bvalid,
+
+  output logic        m_up_arvalid,
+  input  logic        m_up_arready,
+  output logic [15:0] m_up_araddr,
+  input  logic        m_up_rvalid,
+  output logic        m_up_rready,
+  input  logic [31:0] m_up_rdata,
 
   // Masters out to downlinks (toward leaves)
-  output logic        m_dl0_wb_cyc,
-  output logic        m_dl0_wb_stb,
-  output logic        m_dl0_wb_we,
-  output logic [15:0] m_dl0_wb_adr,
-  output logic [31:0] m_dl0_wb_dat,
-  output logic [3:0]  m_dl0_wb_sel,
+  output logic        m_dl0_awvalid,
+  input  logic        m_dl0_awready,
+  output logic [15:0] m_dl0_awaddr,
+  output logic        m_dl0_wvalid,
+  input  logic        m_dl0_wready,
+  output logic [31:0] m_dl0_wdata,
+  output logic [3:0]  m_dl0_wstrb,
   output mailbox_pkg::mailbox_tag_t m_dl0_tag,
-  input  logic        m_dl0_wb_ack,
+  output logic        m_dl0_bready,
+  input  logic        m_dl0_bvalid,
 
-  output logic        m_dl1_wb_cyc,
-  output logic        m_dl1_wb_stb,
-  output logic        m_dl1_wb_we,
-  output logic [15:0] m_dl1_wb_adr,
-  output logic [31:0] m_dl1_wb_dat,
-  output logic [3:0]  m_dl1_wb_sel,
+  output logic        m_dl0_arvalid,
+  input  logic        m_dl0_arready,
+  output logic [15:0] m_dl0_araddr,
+  input  logic        m_dl0_rvalid,
+  output logic        m_dl0_rready,
+  input  logic [31:0] m_dl0_rdata,
+
+  output logic        m_dl1_awvalid,
+  input  logic        m_dl1_awready,
+  output logic [15:0] m_dl1_awaddr,
+  output logic        m_dl1_wvalid,
+  input  logic        m_dl1_wready,
+  output logic [31:0] m_dl1_wdata,
+  output logic [3:0]  m_dl1_wstrb,
   output mailbox_pkg::mailbox_tag_t m_dl1_tag,
-  input  logic        m_dl1_wb_ack
+  output logic        m_dl1_bready,
+  input  logic        m_dl1_bvalid,
+
+  output logic        m_dl1_arvalid,
+  input  logic        m_dl1_arready,
+  output logic [15:0] m_dl1_araddr,
+  input  logic        m_dl1_rvalid,
+  output logic        m_dl1_rready,
+  input  logic [31:0] m_dl1_rdata
 );
 
   import mailbox_pkg::*;
@@ -70,7 +126,7 @@ module mailbox_switch_2x1 #(
   typedef struct packed {
     logic [15:0] adr;
     logic [31:0] dat;
-    logic [3:0]  sel;
+    logic [3:0]  strb;
     mailbox_tag_t tag;
   } flit_t;
 
@@ -79,9 +135,14 @@ module mailbox_switch_2x1 #(
   // Ingress capture
   flit_t ingress_flit [3];
   logic  ingress_req  [3];
+  logic  ingress_accept [3];
+  logic  resp_pending [3];
 
   // Routing targets per ingress: [2]=up, [1]=dl1, [0]=dl0
   logic [2:0] ingress_tgt [3];
+  logic [2:0] ingress_bready;
+
+  assign ingress_bready = '{dl0_bready, dl1_bready, up_bready};
 
   // FIFO interfaces
   logic                 up_fifo_w_en,  dl0_fifo_w_en,  dl1_fifo_w_en;
@@ -190,17 +251,17 @@ module mailbox_switch_2x1 #(
 
   // Build ingress flits and targets
   always_comb begin
-    ingress_req[0]  = dl0_wb_cyc && dl0_wb_stb;
-    ingress_req[1]  = dl1_wb_cyc && dl1_wb_stb;
-    ingress_req[2]  = up_wb_cyc  && up_wb_stb;
+    ingress_req[0]  = dl0_awvalid && dl0_wvalid && !resp_pending[0];
+    ingress_req[1]  = dl1_awvalid && dl1_wvalid && !resp_pending[1];
+    ingress_req[2]  = up_awvalid  && up_wvalid  && !resp_pending[2];
 
-    ingress_tgt[0]  = decode_targets(dl0_wb_adr, 1'b0);
-    ingress_tgt[1]  = decode_targets(dl1_wb_adr, 1'b0);
-    ingress_tgt[2]  = decode_targets(up_wb_adr,  1'b1);
+    ingress_tgt[0]  = decode_targets(dl0_awaddr, 1'b0);
+    ingress_tgt[1]  = decode_targets(dl1_awaddr, 1'b0);
+    ingress_tgt[2]  = decode_targets(up_awaddr,  1'b1);
 
-    ingress_flit[0] = '{adr:dl0_wb_adr, dat:dl0_wb_dat, sel:dl0_wb_sel, tag:update_tag(dl0_tag, dl0_wb_dat)};
-    ingress_flit[1] = '{adr:dl1_wb_adr, dat:dl1_wb_dat, sel:dl1_wb_sel, tag:update_tag(dl1_tag, dl1_wb_dat)};
-    ingress_flit[2] = '{adr:up_wb_adr,  dat:up_wb_dat,  sel:up_wb_sel,  tag:update_tag(up_tag,  up_wb_dat)};
+    ingress_flit[0] = '{adr:dl0_awaddr, dat:dl0_wdata, strb:dl0_wstrb, tag:update_tag(dl0_tag, dl0_wdata)};
+    ingress_flit[1] = '{adr:dl1_awaddr, dat:dl1_wdata, strb:dl1_wstrb, tag:update_tag(dl1_tag, dl1_wdata)};
+    ingress_flit[2] = '{adr:up_awaddr,  dat:up_wdata,  strb:up_wstrb,  tag:update_tag(up_tag,  up_wdata)};
   end
 
   // Per-output arbitration
@@ -266,10 +327,15 @@ module mailbox_switch_2x1 #(
     up_fifo_w_en   = 1'b0; up_fifo_w_data   = '0;
     dl0_fifo_w_en  = 1'b0; dl0_fifo_w_data  = '0;
     dl1_fifo_w_en  = 1'b0; dl1_fifo_w_data  = '0;
-    dl0_wb_ack     = 1'b0; dl1_wb_ack      = 1'b0; up_wb_ack = 1'b0;
+    ingress_accept = '{default:1'b0};
+
+    dl0_awready = 1'b0; dl0_wready = 1'b0; dl0_bvalid = resp_pending[0];
+    dl1_awready = 1'b0; dl1_wready = 1'b0; dl1_bvalid = resp_pending[1];
+    up_awready  = 1'b0; up_wready  = 1'b0; up_bvalid  = resp_pending[2];
 
     for (int i = 0; i < 3; i++) begin
-      if (!grant_src[i]) continue;
+      if (!grant_src[i] || !ingress_req[i]) continue;
+      ingress_accept[i] = 1'b1;
       if (ingress_tgt[i][2]) begin
         up_fifo_w_en   = 1'b1;
         up_fifo_w_data = ingress_flit[i];
@@ -284,32 +350,44 @@ module mailbox_switch_2x1 #(
       end
 
       case (i)
-        0: dl0_wb_ack = 1'b1;
-        1: dl1_wb_ack = 1'b1;
-        default: up_wb_ack = 1'b1;
+        0: begin dl0_awready = 1'b1; dl0_wready = 1'b1; end
+        1: begin dl1_awready = 1'b1; dl1_wready = 1'b1; end
+        default: begin up_awready = 1'b1; up_wready = 1'b1; end
       endcase
 
       // DEBUG: show enqueue decision for this source
-      if (VERBOSE) $display("%0t: sw enqueue src=%0d up_w_en=%0b dl0_w_en=%0b dl1_w_en=%0b dl0_ack=%0b dl1_ack=%0b up_ack=%0b",
-               $time, i, up_fifo_w_en, dl0_fifo_w_en, dl1_fifo_w_en, dl0_wb_ack, dl1_wb_ack, up_wb_ack);
+      if (VERBOSE) $display("%0t: sw enqueue src=%0d up_w_en=%0b dl0_w_en=%0b dl1_w_en=%0b awready_sel=%0d",
+               $time, i, up_fifo_w_en, dl0_fifo_w_en, dl1_fifo_w_en, i);
+    end
+  end
+
+  // Track outstanding B responses
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      resp_pending <= '{default:1'b0};
+    end else begin
+      for (int i = 0; i < 3; i++) begin
+        if (resp_pending[i] && ingress_bready[i]) resp_pending[i] <= 1'b0;
+        else if (ingress_accept[i]) resp_pending[i] <= 1'b1;
+      end
     end
   end
 
   // Output FIFOs
   mailbox_fifo #(.WIDTH(FLIT_W), .DEPTH(FIFO_DEPTH)) u_up_fifo (
-    .clk(clk), .rst_n(rst_n),
+    .clk(clk), .rst_n(rst_n), .clr(1'b0),
     .w_en(up_fifo_w_en), .w_data(up_fifo_w_data), .w_full(up_fifo_full),
     .r_en(up_fifo_r_en), .r_data(up_fifo_r_data), .r_empty(up_fifo_empty)
   );
 
   mailbox_fifo #(.WIDTH(FLIT_W), .DEPTH(FIFO_DEPTH)) u_dl0_fifo (
-    .clk(clk), .rst_n(rst_n),
+    .clk(clk), .rst_n(rst_n), .clr(1'b0),
     .w_en(dl0_fifo_w_en), .w_data(dl0_fifo_w_data), .w_full(dl0_fifo_full),
     .r_en(dl0_fifo_r_en), .r_data(dl0_fifo_r_data), .r_empty(dl0_fifo_empty)
   );
 
   mailbox_fifo #(.WIDTH(FLIT_W), .DEPTH(FIFO_DEPTH)) u_dl1_fifo (
-    .clk(clk), .rst_n(rst_n),
+    .clk(clk), .rst_n(rst_n), .clr(1'b0),
     .w_en(dl1_fifo_w_en), .w_data(dl1_fifo_w_data), .w_full(dl1_fifo_full),
     .r_en(dl1_fifo_r_en), .r_data(dl1_fifo_r_data), .r_empty(dl1_fifo_empty)
   );
@@ -321,34 +399,177 @@ module mailbox_switch_2x1 #(
   assign dl0_w_flit = flit_t'(dl0_fifo_w_data);
   assign dl1_w_flit = flit_t'(dl1_fifo_w_data);
 
-  // Drive outbound Wishbone from FIFO heads
-  assign m_up_wb_cyc  = !up_fifo_empty;
-  assign m_up_wb_stb  = !up_fifo_empty;
-  assign m_up_wb_we   = 1'b1;
-  assign m_up_wb_adr  = up_head.adr;
-  assign m_up_wb_dat  = up_head.dat;
-  assign m_up_wb_sel  = up_head.sel;
-  assign m_up_tag     = up_head.tag;
+  // Drive outbound AXI-Lite from FIFO heads
+  assign m_up_awvalid  = !up_fifo_empty;
+  assign m_up_wvalid   = !up_fifo_empty;
+  assign m_up_awaddr   = up_head.adr;
+  assign m_up_wdata    = up_head.dat;
+  assign m_up_wstrb    = up_head.strb;
+  assign m_up_tag      = up_head.tag;
+  assign m_up_bready   = 1'b1;
 
-  assign m_dl0_wb_cyc = !dl0_fifo_empty;
-  assign m_dl0_wb_stb = !dl0_fifo_empty;
-  assign m_dl0_wb_we  = 1'b1;
-  assign m_dl0_wb_adr = dl0_head.adr;
-  assign m_dl0_wb_dat = dl0_head.dat;
-  assign m_dl0_wb_sel = dl0_head.sel;
-  assign m_dl0_tag    = dl0_head.tag;
+  assign m_dl0_awvalid = !dl0_fifo_empty;
+  assign m_dl0_wvalid  = !dl0_fifo_empty;
+  assign m_dl0_awaddr  = dl0_head.adr;
+  assign m_dl0_wdata   = dl0_head.dat;
+  assign m_dl0_wstrb   = dl0_head.strb;
+  assign m_dl0_tag     = dl0_head.tag;
+  assign m_dl0_bready  = 1'b1;
 
-  assign m_dl1_wb_cyc = !dl1_fifo_empty;
-  assign m_dl1_wb_stb = !dl1_fifo_empty;
-  assign m_dl1_wb_we  = 1'b1;
-  assign m_dl1_wb_adr = dl1_head.adr;
-  assign m_dl1_wb_dat = dl1_head.dat;
-  assign m_dl1_wb_sel = dl1_head.sel;
-  assign m_dl1_tag    = dl1_head.tag;
+  assign m_dl1_awvalid = !dl1_fifo_empty;
+  assign m_dl1_wvalid  = !dl1_fifo_empty;
+  assign m_dl1_awaddr  = dl1_head.adr;
+  assign m_dl1_wdata   = dl1_head.dat;
+  assign m_dl1_wstrb   = dl1_head.strb;
+  assign m_dl1_tag     = dl1_head.tag;
+  assign m_dl1_bready  = 1'b1;
 
-  assign up_fifo_r_en  = !up_fifo_empty  && m_up_wb_ack;
-  assign dl0_fifo_r_en = !dl0_fifo_empty && m_dl0_wb_ack;
-  assign dl1_fifo_r_en = !dl1_fifo_empty && m_dl1_wb_ack;
+  assign up_fifo_r_en  = !up_fifo_empty  && m_up_awready  && m_up_wready;
+  assign dl0_fifo_r_en = !dl0_fifo_empty && m_dl0_awready && m_dl0_wready;
+  assign dl1_fifo_r_en = !dl1_fifo_empty && m_dl1_awready && m_dl1_wready;
+
+  // ---------------------------------------------------------------------------
+  // AR/R channel (one outstanding per ingress; disallow broadcast reads)
+  // ---------------------------------------------------------------------------
+  logic [2:0] ar_req;
+  logic [2:0][2:0] ar_tgt;
+  logic [2:0] ar_req_masked;
+  logic [1:0] ar_pending_src [3]; // per output -> ingress idx holding response
+  logic [2:0] ar_busy_out;
+  logic [2:0] ingress_ar_busy;
+  int ar_sel [3];
+  logic [2:0] ingress_rvalid;
+  logic [2:0][31:0] ingress_rdata;
+
+  function automatic logic one_hot3(input logic [2:0] v);
+    return (v == 3'b001) || (v == 3'b010) || (v == 3'b100);
+  endfunction
+
+  assign ar_req[0] = dl0_arvalid && !ingress_ar_busy[0];
+  assign ar_req[1] = dl1_arvalid && !ingress_ar_busy[1];
+  assign ar_req[2] = up_arvalid  && !ingress_ar_busy[2];
+
+  assign ar_tgt[0] = decode_targets(dl0_araddr, 1'b0);
+  assign ar_tgt[1] = decode_targets(dl1_araddr, 1'b0);
+  assign ar_tgt[2] = decode_targets(up_araddr,  1'b1);
+
+  assign ar_req_masked[0] = ar_req[0] && one_hot3(ar_tgt[0]);
+  assign ar_req_masked[1] = ar_req[1] && one_hot3(ar_tgt[1]);
+  assign ar_req_masked[2] = ar_req[2] && one_hot3(ar_tgt[2]);
+
+  function automatic int pick_ar_src(
+    input logic [2:0] req_m,
+    input logic [2:0][2:0] tgt,
+    input int o
+  );
+    begin
+      pick_ar_src = -1;
+      for (int i = 0; i < 3; i++) begin
+        if (req_m[i] && tgt[i][o]) begin
+          pick_ar_src = i;
+          break;
+        end
+      end
+    end
+  endfunction
+
+  always_comb begin
+    for (int o = 0; o < 3; o++) begin
+      if (ar_busy_out[o]) ar_sel[o] = -1;
+      else ar_sel[o] = pick_ar_src(ar_req_masked, ar_tgt, o);
+    end
+  end
+
+  assign m_up_arvalid  = (ar_sel[2] != -1);
+  assign m_up_araddr   = (ar_sel[2] == 0) ? dl0_araddr : (ar_sel[2] == 1) ? dl1_araddr : up_araddr;
+  assign m_dl0_arvalid = (ar_sel[0] != -1);
+  assign m_dl0_araddr  = (ar_sel[0] == 0) ? dl0_araddr : (ar_sel[0] == 1) ? dl1_araddr : up_araddr;
+  assign m_dl1_arvalid = (ar_sel[1] != -1);
+  assign m_dl1_araddr  = (ar_sel[1] == 0) ? dl0_araddr : (ar_sel[1] == 1) ? dl1_araddr : up_araddr;
+
+  assign dl0_arready = (!ingress_ar_busy[0]) &&
+                       ((ar_sel[0]==0 && m_dl0_arready) || (ar_sel[1]==0 && m_dl1_arready) || (ar_sel[2]==0 && m_up_arready));
+  assign dl1_arready = (!ingress_ar_busy[1]) &&
+                       ((ar_sel[0]==1 && m_dl0_arready) || (ar_sel[1]==1 && m_dl1_arready) || (ar_sel[2]==1 && m_up_arready));
+  assign up_arready  = (!ingress_ar_busy[2]) &&
+                       ((ar_sel[0]==2 && m_dl0_arready) || (ar_sel[1]==2 && m_dl1_arready) || (ar_sel[2]==2 && m_up_arready));
+
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      for (int i = 0; i < 3; i++) ingress_ar_busy[i] <= 1'b0;
+      ar_busy_out <= '0;
+      for (int o = 0; o < 3; o++) ar_pending_src[o] <= '0;
+    end else begin
+      // Clear busy when R accepted
+      if (m_dl0_rvalid && m_dl0_rready) ar_busy_out[0] <= 1'b0;
+      if (m_dl1_rvalid && m_dl1_rready) ar_busy_out[1] <= 1'b0;
+      if (m_up_rvalid  && m_up_rready)  ar_busy_out[2] <= 1'b0;
+
+      for (int i = 0; i < 3; i++) begin
+        if (ingress_rvalid[i] && ((i==0 && dl0_rready) || (i==1 && dl1_rready) || (i==2 && up_rready))) begin
+          ingress_ar_busy[i] <= 1'b0;
+        end
+      end
+
+      if (m_dl0_arvalid && m_dl0_arready) begin
+        ar_busy_out[0]   <= 1'b1;
+        ar_pending_src[0] <= ar_sel[0][1:0];
+        ingress_ar_busy[ar_sel[0]] <= 1'b1;
+      end
+      if (m_dl1_arvalid && m_dl1_arready) begin
+        ar_busy_out[1]   <= 1'b1;
+        ar_pending_src[1] <= ar_sel[1][1:0];
+        ingress_ar_busy[ar_sel[1]] <= 1'b1;
+      end
+      if (m_up_arvalid && m_up_arready) begin
+        ar_busy_out[2]   <= 1'b1;
+        ar_pending_src[2] <= ar_sel[2][1:0];
+        ingress_ar_busy[ar_sel[2]] <= 1'b1;
+      end
+    end
+  end
+
+  always_comb begin
+    ingress_rvalid = '{default:1'b0};
+    ingress_rdata  = '{default:32'h0};
+
+    if (m_dl0_rvalid && ar_busy_out[0]) begin
+      case (ar_pending_src[0])
+        2'd0: begin ingress_rvalid[0]=1'b1; ingress_rdata[0]=m_dl0_rdata; end
+        2'd1: begin ingress_rvalid[1]=1'b1; ingress_rdata[1]=m_dl0_rdata; end
+        2'd2: begin ingress_rvalid[2]=1'b1; ingress_rdata[2]=m_dl0_rdata; end
+        default: ;
+      endcase
+    end
+    if (m_dl1_rvalid && ar_busy_out[1]) begin
+      case (ar_pending_src[1])
+        2'd0: begin ingress_rvalid[0]=1'b1; ingress_rdata[0]=m_dl1_rdata; end
+        2'd1: begin ingress_rvalid[1]=1'b1; ingress_rdata[1]=m_dl1_rdata; end
+        2'd2: begin ingress_rvalid[2]=1'b1; ingress_rdata[2]=m_dl1_rdata; end
+        default: ;
+      endcase
+    end
+    if (m_up_rvalid && ar_busy_out[2]) begin
+      case (ar_pending_src[2])
+        2'd0: begin ingress_rvalid[0]=1'b1; ingress_rdata[0]=m_up_rdata; end
+        2'd1: begin ingress_rvalid[1]=1'b1; ingress_rdata[1]=m_up_rdata; end
+        2'd2: begin ingress_rvalid[2]=1'b1; ingress_rdata[2]=m_up_rdata; end
+        default: ;
+      endcase
+    end
+  end
+
+  assign dl0_rvalid = ingress_rvalid[0];
+  assign dl1_rvalid = ingress_rvalid[1];
+  assign up_rvalid  = ingress_rvalid[2];
+
+  assign dl0_rdata  = ingress_rdata[0];
+  assign dl1_rdata  = ingress_rdata[1];
+  assign up_rdata   = ingress_rdata[2];
+
+  assign m_dl0_rready = ar_busy_out[0] && ((ar_pending_src[0]==2'd0 && dl0_rready) || (ar_pending_src[0]==2'd1 && dl1_rready) || (ar_pending_src[0]==2'd2 && up_rready));
+  assign m_dl1_rready = ar_busy_out[1] && ((ar_pending_src[1]==2'd0 && dl0_rready) || (ar_pending_src[1]==2'd1 && dl1_rready) || (ar_pending_src[1]==2'd2 && up_rready));
+  assign m_up_rready  = ar_busy_out[2] && ((ar_pending_src[2]==2'd0 && dl0_rready) || (ar_pending_src[2]==2'd1 && dl1_rready) || (ar_pending_src[2]==2'd2 && up_rready));
 
   // Lock + QoS bookkeeping
   function automatic logic is_latency(input mailbox_tag_t t);

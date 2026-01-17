@@ -72,9 +72,15 @@ module lsu #(
     output logic         mailbox_tx_eop,
     output logic [3:0]   mailbox_tx_opcode,
     input  logic         mailbox_tx_ready,
-    input  logic         mailbox_rx_valid,
-    input  logic [31:0]  mailbox_rx_data,
-    output logic         mailbox_rx_ready,
+    output logic         mailbox_rd_valid,
+    input  logic         mailbox_rd_ready,
+    output logic [15:0]  mailbox_rd_dest,
+    output logic         mailbox_rd_prio,
+    output logic [3:0]   mailbox_rd_opcode,
+    input  logic         mailbox_rd_resp_valid,
+    output logic         mailbox_rd_resp_ready,
+    input  logic [31:0]  mailbox_rd_resp_data,
+    input  mailbox_pkg::mailbox_tag_t mailbox_rd_resp_tag,
 
     // Writeback toward register files
     output logic         wb_valid,
@@ -82,6 +88,8 @@ module lsu #(
     output logic [4:0]   wb_reg_idx,
     output logic [127:0] wb_data
 );
+
+    import mailbox_pkg::*;
     // ------------------------------------------------------------------------
     // CORE LSU INTERNAL DEFINITIONS
     // ------------------------------------------------------------------------
@@ -143,6 +151,8 @@ module lsu #(
     logic [2:0] mailbox_load_funct3;
     logic [15:0] mailbox_dest_r;
     logic [31:0] mailbox_data_r;
+    logic [15:0] mailbox_load_dest;
+    logic        mailbox_rd_outstanding;
     wire        mailbox_ready_int;
 
     // Helpers to detect if the current MIU response is a cache refill (not an LSU response)
@@ -454,6 +464,8 @@ module lsu #(
             mailbox_load_pending <= 1'b0;
             mailbox_dest_r       <= 16'h0;
             mailbox_data_r       <= 32'h0;
+            mailbox_load_dest    <= 16'h0;
+            mailbox_rd_outstanding <= 1'b0;
         end else begin
             // Local read tracking
             if (valid_in && !is_global && !is_store) begin
@@ -619,12 +631,19 @@ module lsu #(
                     mailbox_load_pending <= 1'b1;
                     mailbox_load_rd      <= dest_reg_idx;
                     mailbox_load_funct3  <= scalar_funct3;
-                end else if (mailbox_load_pending && mailbox_rx_valid) begin
+                    mailbox_load_dest    <= addr[15:0];
+                end else if (mailbox_load_pending && mailbox_rd_resp_valid && mailbox_rd_resp_ready) begin
                     mailbox_load_pending <= 1'b0;
                 end
             end else begin
                 mailbox_pending <= 1'b0;
                 mailbox_load_pending <= 1'b0;
+            end
+
+            if (mailbox_rd_valid && mailbox_rd_ready) begin
+                mailbox_rd_outstanding <= 1'b1;
+            end else if (mailbox_rd_resp_valid && mailbox_rd_resp_ready) begin
+                mailbox_rd_outstanding <= 1'b0;
             end
         end
     end
@@ -637,11 +656,11 @@ module lsu #(
         wb_data      = '0;
 
         // Mailbox load completion takes priority
-        if (MAILBOX_ENABLE && mailbox_load_pending && mailbox_rx_valid) begin
+        if (MAILBOX_ENABLE && mailbox_load_pending && mailbox_rd_resp_valid) begin
             wb_valid     = 1'b1;
             wb_is_vector = 1'b0;
             wb_reg_idx   = mailbox_load_rd;
-            wb_data      = {96'h0, extract_subword_load(mailbox_rx_data, mailbox_load_funct3, 2'b00)};
+            wb_data      = {96'h0, extract_subword_load(mailbox_rd_resp_data, mailbox_load_funct3, 2'b00)};
         end else if (atomic_pending && atom_state == ATOM_WAIT_WRITE && lsu_internal_req_valid && lsu_internal_req_ready && !lsu_internal_req_is_load) begin
             wb_valid     = 1'b1;
             wb_is_vector = atom_is_vector;
@@ -752,9 +771,15 @@ module lsu #(
                || r_local_read_pending
                || miu_busy
                || mailbox_pending
-               || mailbox_load_pending;
+               || mailbox_load_pending
+               || mailbox_rd_outstanding;
 
     // Mailbox outputs
+    assign mailbox_rd_valid   = MAILBOX_ENABLE ? (mailbox_load_pending && !mailbox_rd_outstanding) : 1'b0;
+    assign mailbox_rd_dest    = MAILBOX_ENABLE ? mailbox_load_dest : 16'h0;
+    assign mailbox_rd_prio    = 1'b0;
+    assign mailbox_rd_opcode  = 4'h0;
+    assign mailbox_rd_resp_ready = MAILBOX_ENABLE ? 1'b1 : 1'b0;
     assign mailbox_tx_valid  = MAILBOX_ENABLE ? mailbox_pending : 1'b0;
     assign mailbox_tx_dest   = MAILBOX_ENABLE ? mailbox_dest_r  : 16'h0;
     assign mailbox_tx_data   = MAILBOX_ENABLE ? mailbox_data_r  : 32'h0;

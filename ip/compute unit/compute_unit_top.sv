@@ -39,24 +39,42 @@ module compute_unit_top #(
     input  logic [4:0]  data_resp_rd,
     input  logic [31:0] data_resp_data,
 
-    // Mailbox Wishbone link toward switch (TX master, RX slave)
-    output logic        mailbox_m_wb_cyc,
-    output logic        mailbox_m_wb_stb,
-    output logic        mailbox_m_wb_we,
-    output logic [15:0] mailbox_m_wb_adr,
-    output logic [31:0] mailbox_m_wb_dat,
-    output logic [3:0]  mailbox_m_wb_sel,
-    output mailbox_pkg::mailbox_tag_t mailbox_m_wb_tag,
-    input  logic        mailbox_m_wb_ack,
+    // Mailbox AXI-Lite link toward switch (TX master, RX slave)
+    output logic        mailbox_m_awvalid,
+    input  logic        mailbox_m_awready,
+    output logic [15:0] mailbox_m_awaddr,
+    output logic        mailbox_m_wvalid,
+    input  logic        mailbox_m_wready,
+    output logic [31:0] mailbox_m_wdata,
+    output logic [3:0]  mailbox_m_wstrb,
+    output mailbox_pkg::mailbox_tag_t mailbox_m_tag,
+    output logic        mailbox_m_bready,
+    input  logic        mailbox_m_bvalid,
 
-    input  logic        mailbox_s_wb_cyc,
-    input  logic        mailbox_s_wb_stb,
-    input  logic        mailbox_s_wb_we,
-    input  logic [15:0] mailbox_s_wb_adr,
-    input  logic [31:0] mailbox_s_wb_dat,
-    input  logic [3:0]  mailbox_s_wb_sel,
-    input  mailbox_pkg::mailbox_tag_t mailbox_s_wb_tag,
-    output logic        mailbox_s_wb_ack
+    output logic        mailbox_m_arvalid,
+    input  logic        mailbox_m_arready,
+    output logic [15:0] mailbox_m_araddr,
+    input  logic        mailbox_m_rvalid,
+    output logic        mailbox_m_rready,
+    input  logic [31:0] mailbox_m_rdata,
+
+    input  logic        mailbox_s_awvalid,
+    output logic        mailbox_s_awready,
+    input  logic [15:0] mailbox_s_awaddr,
+    input  logic        mailbox_s_wvalid,
+    output logic        mailbox_s_wready,
+    input  logic [31:0] mailbox_s_wdata,
+    input  logic [3:0]  mailbox_s_wstrb,
+    input  mailbox_pkg::mailbox_tag_t mailbox_s_tag,
+    input  logic        mailbox_s_bready,
+    output logic        mailbox_s_bvalid,
+
+    input  logic        mailbox_s_arvalid,
+    output logic        mailbox_s_arready,
+    input  logic [15:0] mailbox_s_araddr,
+    output logic        mailbox_s_rvalid,
+    input  logic        mailbox_s_rready,
+    output logic [31:0] mailbox_s_rdata
 );
     import mailbox_pkg::*;
     import isa_pkg::*;
@@ -1283,7 +1301,17 @@ module compute_unit_top #(
     logic        lsu_mailbox_tx_prio;
     logic        lsu_mailbox_tx_eop;
     logic [3:0]  lsu_mailbox_tx_opcode;
+    logic        lsu_mailbox_rd_valid;
+    logic [15:0] lsu_mailbox_rd_dest;
+    logic        lsu_mailbox_rd_prio;
+    logic [3:0]  lsu_mailbox_rd_opcode;
+    logic        lsu_mailbox_rd_resp_valid;
+    logic        lsu_mailbox_rd_resp_ready;
+    logic [31:0] lsu_mailbox_rd_resp_data;
+    mailbox_tag_t lsu_mailbox_rd_resp_tag;
     logic        mailbox_tx_ready_int;
+    logic        mailbox_rd_ready_int;
+    logic        mailbox_rd_resp_ready_int;
     logic        ep_tx_ready;
 
     logic        ep_rx_valid;
@@ -1291,6 +1319,10 @@ module compute_unit_top #(
     mailbox_tag_t ep_rx_tag;
     logic        ep_rx_irq;
     logic        ep_rx_ready_int;
+
+    // Drop RX stream flits (unused) and feed LSU mailbox read response ready
+    assign ep_rx_ready_int = 1'b1;
+    assign mailbox_rd_resp_ready_int = lsu_mailbox_rd_resp_ready;
 
     // Split-path LSU handles local vs global and blocking scalar behavior
     lsu #(
@@ -1362,9 +1394,15 @@ module compute_unit_top #(
         .mailbox_tx_eop(lsu_mailbox_tx_eop),
         .mailbox_tx_opcode(lsu_mailbox_tx_opcode),
         .mailbox_tx_ready(mailbox_tx_ready_int),
-        .mailbox_rx_valid(ep_rx_valid),
-        .mailbox_rx_data(ep_rx_data),
-        .mailbox_rx_ready(ep_rx_ready_int),
+        .mailbox_rd_valid(lsu_mailbox_rd_valid),
+        .mailbox_rd_ready(mailbox_rd_ready_int),
+        .mailbox_rd_dest(lsu_mailbox_rd_dest),
+        .mailbox_rd_prio(lsu_mailbox_rd_prio),
+        .mailbox_rd_opcode(lsu_mailbox_rd_opcode),
+        .mailbox_rd_resp_valid(lsu_mailbox_rd_resp_valid),
+        .mailbox_rd_resp_ready(lsu_mailbox_rd_resp_ready),
+        .mailbox_rd_resp_data(lsu_mailbox_rd_resp_data),
+        .mailbox_rd_resp_tag(lsu_mailbox_rd_resp_tag),
         
         .wb_valid(lsu_wb_valid),
         .wb_is_vector(lsu_wb_is_vector),
@@ -1397,39 +1435,79 @@ module compute_unit_top #(
                     .rx_tag(ep_rx_tag),
                     .rx_irq(ep_rx_irq),
 
-                    .m_wb_cyc(mailbox_m_wb_cyc),
-                    .m_wb_stb(mailbox_m_wb_stb),
-                    .m_wb_we(mailbox_m_wb_we),
-                    .m_wb_adr(mailbox_m_wb_adr),
-                    .m_wb_dat(mailbox_m_wb_dat),
-                    .m_wb_sel(mailbox_m_wb_sel),
-                    .m_wb_tag(mailbox_m_wb_tag),
-                    .m_wb_ack(mailbox_m_wb_ack),
+                    .rd_valid(lsu_mailbox_rd_valid),
+                    .rd_ready(mailbox_rd_ready_int),
+                    .rd_dest(lsu_mailbox_rd_dest),
+                    .rd_prio(lsu_mailbox_rd_prio),
+                    .rd_opcode(lsu_mailbox_rd_opcode),
+                    .rd_resp_valid(lsu_mailbox_rd_resp_valid),
+                    .rd_resp_ready(mailbox_rd_resp_ready_int),
+                    .rd_resp_data(lsu_mailbox_rd_resp_data),
+                    .rd_resp_tag(lsu_mailbox_rd_resp_tag),
 
-                    .s_wb_cyc(mailbox_s_wb_cyc),
-                    .s_wb_stb(mailbox_s_wb_stb),
-                    .s_wb_we(mailbox_s_wb_we),
-                    .s_wb_adr(mailbox_s_wb_adr),
-                    .s_wb_dat(mailbox_s_wb_dat),
-                    .s_wb_sel(mailbox_s_wb_sel),
-                    .s_wb_tag(mailbox_s_wb_tag),
-                    .s_wb_ack(mailbox_s_wb_ack)
+                    .m_awvalid(mailbox_m_awvalid),
+                    .m_awready(mailbox_m_awready),
+                    .m_awaddr(mailbox_m_awaddr),
+                    .m_wvalid(mailbox_m_wvalid),
+                    .m_wready(mailbox_m_wready),
+                    .m_wdata(mailbox_m_wdata),
+                    .m_wstrb(mailbox_m_wstrb),
+                    .m_tag(mailbox_m_tag),
+                    .m_bready(mailbox_m_bready),
+                    .m_bvalid(mailbox_m_bvalid),
+
+                    .m_arvalid(mailbox_m_arvalid),
+                    .m_arready(mailbox_m_arready),
+                    .m_araddr(mailbox_m_araddr),
+                    .m_rvalid(mailbox_m_rvalid),
+                    .m_rready(mailbox_m_rready),
+                    .m_rdata(mailbox_m_rdata),
+
+                    .s_awvalid(mailbox_s_awvalid),
+                    .s_awready(mailbox_s_awready),
+                    .s_awaddr(mailbox_s_awaddr),
+                    .s_wvalid(mailbox_s_wvalid),
+                    .s_wready(mailbox_s_wready),
+                    .s_wdata(mailbox_s_wdata),
+                    .s_wstrb(mailbox_s_wstrb),
+                    .s_tag(mailbox_s_tag),
+                    .s_bready(mailbox_s_bready),
+                    .s_bvalid(mailbox_s_bvalid),
+
+                    .s_arvalid(mailbox_s_arvalid),
+                    .s_arready(mailbox_s_arready),
+                    .s_araddr(mailbox_s_araddr),
+                    .s_rvalid(mailbox_s_rvalid),
+                    .s_rready(mailbox_s_rready),
+                    .s_rdata(mailbox_s_rdata)
                 );
             end else begin : g_mailbox_tieoff
                 assign mailbox_tx_ready_int = 1'b1;
+                assign mailbox_rd_ready_int = 1'b1;
+                assign lsu_mailbox_rd_resp_valid = 1'b0;
+                assign lsu_mailbox_rd_resp_data  = 32'h0;
+                assign lsu_mailbox_rd_resp_tag   = '0;
                 assign ep_tx_ready = 1'b1;
-                assign mailbox_m_wb_cyc = 1'b0;
-                assign mailbox_m_wb_stb = 1'b0;
-                assign mailbox_m_wb_we  = 1'b1;
-                assign mailbox_m_wb_adr = 16'h0;
-                assign mailbox_m_wb_dat = 32'h0;
-                assign mailbox_m_wb_sel = 4'h0;
-                assign mailbox_m_wb_tag = '0;
-                assign mailbox_s_wb_ack = 1'b0;
+                assign mailbox_m_awvalid = 1'b0;
+                assign mailbox_m_awaddr  = 16'h0;
+                assign mailbox_m_wvalid  = 1'b0;
+                assign mailbox_m_wdata   = 32'h0;
+                assign mailbox_m_wstrb   = 4'h0;
+                assign mailbox_m_tag     = '0;
+                assign mailbox_m_bready  = 1'b0;
+                assign mailbox_m_arvalid = 1'b0;
+                assign mailbox_m_araddr  = 16'h0;
+                assign mailbox_m_rready  = 1'b0;
                 assign ep_rx_valid      = 1'b0;
                 assign ep_rx_data       = 32'h0;
                 assign ep_rx_tag        = '0;
                 assign ep_rx_irq        = 1'b0;
+                assign mailbox_s_awready = 1'b0;
+                assign mailbox_s_wready  = 1'b0;
+                assign mailbox_s_bvalid  = 1'b0;
+                assign mailbox_s_arready = 1'b0;
+                assign mailbox_s_rvalid  = 1'b0;
+                assign mailbox_s_rdata   = 32'h0;
             end
         endgenerate
 

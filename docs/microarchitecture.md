@@ -56,12 +56,18 @@ Vector ops are fed from a small decoupling queue in `compute_unit_top.sv` (`VQ_D
 
 ## 5. LSU + Memory System
 `lsu.sv` handles:
-- Scalar loads/stores on the unified 32-bit global interface
-- Vector loads/stores (architecturally 128-bit; adapted/serialized onto the 32-bit global interface)
+- Scalar loads/stores on the unified global interface
+- Vector loads/stores (architecturally 128-bit; adapted/serialized onto the global interface)
 - Atomics (scalar + vector)
 - Local (on-chip) memory accesses via `local_mem_banked.sv`
 
-For global scalar stores (and for graphics/ROP stores), the LSU uses `write_merge_buf.sv` (8 entries) to combine byte-masked 32-bit writes and reduce external transaction overhead.
+**AXI4 mapping (normative):** The global memory interface is translated to an **AXI4** memory-mapped master (or masters) in the full system. Normative expectations:
+- Masters issued by CU (LSU/ROP/TEX) must form aligned AXI bursts where possible and respect the configured data width (baseline **64-bit** recommended).
+- Use AXI signals to convey semantics: `CACHE`/`PROT` for cacheability and security, `QOS` to express priority (display vs compute), and `ID` fields to allow multiple outstanding transactions.
+- `MEMBAR` semantics are implemented by draining all outstanding write bursts and waiting for corresponding write responses (AXI `B` channel) before completing the barrier.
+- Strongly-ordered MMIO (e.g., mailbox writes, doorbells) should be issued as non-cacheable, ordered transactions (AXI-Lite or single-beat AXI writes) and must not be reordered with respect to program ordering when visible to other agents.
+
+For global scalar stores (and for graphics/ROP stores), the LSU uses `write_merge_buf.sv` (8 entries) to combine byte-masked writes and reduce external transaction overhead. When translating merged writes to AXI4, coalesce into the fewest compatible bursts while preserving ordering and `PROT`/`CACHE` attributes.
 
 ## 6. Graphics + Texture
 Graphics/TEX macro-ops are handled by `graphics_pipeline.sv` with an internal queue (`GQ_DEPTH=8`). It supports:

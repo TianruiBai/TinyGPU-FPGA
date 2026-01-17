@@ -20,7 +20,8 @@ Scope: **host/command processor interface**, **VRAM interface**, **display inter
 
 ### 1.2 Physical buses (assumed)
 - **OSPI-H (Host)**: MCU ↔ FPGA register/doorbell/status path. Not used for bulk VRAM traffic.
-- **OSPI-V (VRAM)**: FPGA ↔ external PSRAM/VRAM.
+- **OSPI-V (VRAM)**: FPGA ↔ external PSRAM/VRAM.  
+- **System Memory Bus (AXI4)**: The internal VRAM fabric and high-bandwidth data transfers are carried on an **AXI4** memory-mapped interconnect (or an adapter to it). AXI4 provides burst transfers, QoS/ID fields, and ordering controls needed for display-priority arbitration and DMA-style traffic.
 - **Display link**: HUB75 or HDMI TMDS from FPGA.
 
 If OSPI-H and OSPI-V share pins in a given build, this document must still be satisfied logically (time-multiplexed arbitration is allowed but must preserve ordering rules below).

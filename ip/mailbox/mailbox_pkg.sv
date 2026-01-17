@@ -1,3 +1,4 @@
+`timescale 1ns/1ps
 // Package for mailbox interconnect common types and helpers
 package mailbox_pkg;
 

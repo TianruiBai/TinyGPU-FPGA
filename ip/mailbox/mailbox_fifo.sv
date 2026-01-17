@@ -1,3 +1,4 @@
+`timescale 1ns/1ps
 // Simple synchronous FIFO with parameterizable depth and width
 module mailbox_fifo #(
   parameter int WIDTH = 32,
@@ -6,6 +7,7 @@ module mailbox_fifo #(
 ) (
   input  logic             clk,
   input  logic             rst_n,
+  input  logic             clr,
   // Write
   input  logic             w_en,
   input  logic [WIDTH-1:0] w_data,
@@ -24,7 +26,7 @@ module mailbox_fifo #(
   assign r_data  = mem[rd_ptr[PTR_W-1:0]];
 
   always_ff @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
+    if (!rst_n || clr) begin
       wr_ptr <= '0;
     end else if (w_en && !w_full) begin
       mem[wr_ptr[PTR_W-1:0]] <= w_data;
@@ -35,7 +37,7 @@ module mailbox_fifo #(
   end
 
   always_ff @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
+    if (!rst_n || clr) begin
       rd_ptr <= '0;
     end else if (r_en && !r_empty) begin
       rd_ptr <= rd_ptr + 1'b1;

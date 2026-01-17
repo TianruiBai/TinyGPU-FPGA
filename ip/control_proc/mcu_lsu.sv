@@ -34,9 +34,15 @@ module mcu_lsu #(
     output logic        mailbox_tx_prio,
     output logic        mailbox_tx_eop,
     output logic [3:0]  mailbox_tx_opcode,
-    input  logic        mailbox_rx_valid,
-    input  logic [31:0] mailbox_rx_data,
-    output logic        mailbox_rx_ready,
+    output logic        mailbox_rd_valid,
+    input  logic        mailbox_rd_ready,
+    output logic [15:0] mailbox_rd_dest,
+    output logic        mailbox_rd_prio,
+    output logic [3:0]  mailbox_rd_opcode,
+    input  logic        mailbox_rd_resp_valid,
+    output logic        mailbox_rd_resp_ready,
+    input  logic [31:0] mailbox_rd_resp_data,
+    input  mailbox_pkg::mailbox_tag_t mailbox_rd_resp_tag,
 
     // Pipeline control / WB
     output logic        mem_wait,
@@ -64,6 +70,8 @@ module mcu_lsu #(
     logic        mailbox_load_pending;
     logic [4:0]  mailbox_load_rd;
     logic [2:0]  mailbox_load_funct3;
+    logic [15:0] mailbox_load_dest;
+    logic        mailbox_rd_outstanding;
     wire         mailbox_ready_int;
 
     // Request generation
@@ -137,6 +145,8 @@ module mcu_lsu #(
             mailbox_load_pending <= 1'b0;
             mailbox_dest_r <= 16'h0;
             mailbox_data_r <= 32'h0;
+            mailbox_load_dest <= 16'h0;
+            mailbox_rd_outstanding <= 1'b0;
         end else begin
             wb_valid <= 1'b0;
 
@@ -154,16 +164,24 @@ module mcu_lsu #(
                     mailbox_load_pending <= 1'b1;
                     mailbox_load_rd      <= ex_mem_rd;
                     mailbox_load_funct3  <= ex_mem_funct3;
-                end else if (mailbox_load_pending && mailbox_rx_valid) begin
+                    mailbox_load_dest    <= ex_mem_alu[15:0];
+                end else if (mailbox_load_pending && mailbox_rd_resp_valid && mailbox_rd_resp_ready) begin
                     mailbox_load_pending <= 1'b0;
                     wb_valid <= 1'b1;
                     wb_rd    <= mailbox_load_rd;
                     // Mailbox returns full word; respect requested sign/zero rules for load
-                    wb_data  <= load_format(mailbox_rx_data, mailbox_load_funct3, 2'b00);
+                    wb_data  <= load_format(mailbox_rd_resp_data, mailbox_load_funct3, 2'b00);
                 end
             end else begin
                 mailbox_pending <= 1'b0;
                 mailbox_load_pending <= 1'b0;
+            end
+
+            // Track mailbox read outstanding
+            if (mailbox_rd_valid && mailbox_rd_ready) begin
+                mailbox_rd_outstanding <= 1'b1;
+            end else if (mailbox_rd_resp_valid && mailbox_rd_resp_ready) begin
+                mailbox_rd_outstanding <= 1'b0;
             end
 
             case (amo_state)
@@ -240,7 +258,11 @@ module mcu_lsu #(
     // Mailbox outputs (stable while pending)
     assign mailbox_hit        = MAILBOX_ENABLE && ex_mem_valid && ex_mem_mem_write && (ex_mem_alu[31:16] == 16'h7000);
     assign mailbox_load_hit   = MAILBOX_ENABLE && ex_mem_valid && ex_mem_mem_read  && (ex_mem_alu[31:16] == 16'h7000);
-    assign mailbox_rx_ready   = MAILBOX_ENABLE && mailbox_load_pending;
+    assign mailbox_rd_valid   = MAILBOX_ENABLE ? (mailbox_load_pending && !mailbox_rd_outstanding) : 1'b0;
+    assign mailbox_rd_dest    = MAILBOX_ENABLE ? mailbox_load_dest : 16'h0;
+    assign mailbox_rd_prio    = 1'b0;
+    assign mailbox_rd_opcode  = 4'h0;
+    assign mailbox_rd_resp_ready = MAILBOX_ENABLE ? 1'b1 : 1'b0;
     assign mailbox_tx_valid  = MAILBOX_ENABLE ? mailbox_pending : 1'b0;
     assign mailbox_tx_dest   = MAILBOX_ENABLE ? mailbox_dest_r  : 16'h0;
     assign mailbox_tx_data   = MAILBOX_ENABLE ? mailbox_data_r  : 32'h0;

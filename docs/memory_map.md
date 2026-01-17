@@ -13,7 +13,9 @@ This is the unified 32-bit address map visible to the RISC-V MCU and the Compute
 | `0x0000_8000` | `0x0000_FFFF` | 32 KB | **Local BRAM / Scratch** *(as-built default local region)* |
 | `0x1000_0000` | `0x1000_0FFF` | 4 KB  | **Hardware Registers (CSRs)** *(planned)* |
 | `0x1000_1000` | `0x1000_1FFF` | 4 KB  | **Ingress Mailbox (FIFO)** *(planned)* |
-| `0x8000_0000` | `0x8FFF_FFFF` | 256 MB | **Global/VRAM window** *(RTL selects global when addr[31]==1; size depends on integration)* |
+| `0x8000_0000` | `0x8FFF_FFFF` | 256 MB | **Global/VRAM window** *(RTL selects global when addr[31]==1; size depends on integration)*  
+
+> See `docs/axi4.md` for AXI-4 system bus expectations and normative ordering/Burst/QoS guidance. |
 | `0x3000_0000` | `0x3000_FFFF` | 64 KB | **Compute Unit Instruction RAM (CU_IMEM)** *(planned)* |
 
 ---
