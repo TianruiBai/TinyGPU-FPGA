@@ -1,6 +1,5 @@
 # TinyGPU — FPGA Front End / Tiny GPU Prototype
 
-Short description
 
 TinyGPU is a collection of SystemVerilog RTL, firmware, testbenches and tooling used to prototype a small GPU-like subsystem ("Tiny GPU"). This repository contains the front-end RTL, the mailbox interconnect, endpoints, testbenches using Verilator, and several benchmarking programs and utilities used to validate performance and correctness.
 
