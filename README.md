@@ -93,17 +93,8 @@ Notes: Benchmarks are included for testing and are subject to their respective l
 
 License & legal
 
-- This repository contains third-party benchmark code which is distributed under their own licenses (see `coremark/LICENSE.md` and `benchmark-dhrystone/LICENSE`). The rest of the repository sources should have a license added by the project owner — add a `LICENSE` file at the repo root if you want to publish under Apache-2.0 or other chosen license.
+- This repository contains third-party benchmark code which is distributed under their own licenses (see `coremark/LICENSE.md` and `benchmark-dhrystone/LICENSE`).
 
 Contact / authors
 
 - See `docs/` and git history (after first commit) for authorship notes. If you provide a preferred copyright notice and license, I can add a `LICENSE` file and integrate it into the README.
-
----
-
-If you want, I can:
-- initialize a local git repo and create the first commit with the message above,
-- add a short `CONTRIBUTING.md` and `LICENSE` (if you pick one),
-- or open a PR-ready commit that cleans up debug prints and uses a `VERBOSE` build-time macro.
-
-Tell me which of those you'd like next and I'll do it."}]}')
