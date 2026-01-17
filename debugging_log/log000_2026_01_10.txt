@@ -1,0 +1,771 @@
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/lsu.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_vector.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/agu.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fp_alu.sv
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:08:55 on Jan 10,2026
+# vlog -sv -work work /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/csr_file.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/scoreboard.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fetch_unit.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/local_mem_banked.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_vector.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/compute_unit_top.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_fp.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/icache.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/decoder.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/graphics_pipeline.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_scalar.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/write_merge_buf.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/gpipe_dispatcher.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/texture_cache.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/rop_unit.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/raster_unit.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_scalar.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/lsu.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_vector.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/agu.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fp_alu.sv /home/polar/ProtoTracer-FPGA-FrontEND/testbench/compute_unit_full_tb.sv
+# -- Compiling module csr_file
+# -- Compiling module scoreboard
+# -- Compiling module fetch_unit
+# -- Compiling module local_mem_banked
+# -- Compiling module regfile_vector
+# -- Compiling package isa_pkg
+# -- Compiling module compute_unit_top
+# -- Importing package isa_pkg
+# -- Compiling module regfile_fp
+# -- Compiling module icache
+# ** Warning: ** while parsing file included at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/decoder.sv(1)
+# ** at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv(1): (vlog-2275) Existing package 'isa_pkg' will be overwritten.
+# -- Compiling package isa_pkg
+# -- Compiling module decoder
+# ** Warning: ** while parsing file included at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/graphics_pipeline.sv(1)
+# ** at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv(1): (vlog-2275) Existing package 'isa_pkg' will be overwritten.
+# -- Compiling package isa_pkg
+# -- Compiling module graphics_pipeline
+# ** Warning: /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/graphics_pipeline.sv(10): (vlog-13314) Defaulting port 'issue_ctrl' kind to 'var' rather than 'wire' due to default compile option setting of -svinputport=relaxed.
+# -- Compiling module regfile_scalar
+# ** Warning: /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv(1): (vlog-2275) Existing package 'isa_pkg' will be overwritten.
+# -- Compiling package isa_pkg
+# -- Compiling module write_merge_buf
+# ** Warning: ** while parsing file included at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/gpipe_dispatcher.sv(1)
+# ** at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv(1): (vlog-2275) Existing package 'isa_pkg' will be overwritten.
+# -- Compiling package isa_pkg
+# -- Compiling module gpipe_dispatcher
+# ** Warning: /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/gpipe_dispatcher.sv(6): (vlog-13314) Defaulting port 'ctrl' kind to 'var' rather than 'wire' due to default compile option setting of -svinputport=relaxed.
+# -- Compiling module texture_cache
+# -- Compiling module rop_unit
+# -- Compiling module raster_unit
+# ** Warning: ** while parsing file included at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_scalar.sv(1)
+# ** at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv(1): (vlog-2275) Existing package 'isa_pkg' will be overwritten.
+# -- Compiling package isa_pkg
+# -- Compiling module alu_scalar
+# -- Compiling module lsu
+# -- Compiling module alu_vector
+# -- Compiling module agu
+# -- Compiling module fp_alu
+# -- Compiling module compute_unit_full_tb
+#
+# Top level modules:
+#       icache
+#       gpipe_dispatcher
+#       compute_unit_full_tb
+# End time: 20:08:55 on Jan 10,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 7
+# vsim -c -t 1ns work.compute_unit_full_tb
+# Start time: 20:08:55 on Jan 10,2026
+# Loading sv_std.std
+# Loading work.isa_pkg
+# Loading work.compute_unit_full_tb
+# Loading work.compute_unit_top
+# Loading work.graphics_pipeline
+# Loading work.raster_unit
+# Loading work.rop_unit
+# Loading work.fetch_unit
+# Loading work.decoder
+# Loading work.scoreboard
+# Loading work.regfile_scalar
+# Loading work.regfile_fp
+# Loading work.regfile_vector
+# Loading work.agu
+# Loading work.alu_scalar
+# Loading work.fp_alu
+# Loading work.alu_vector
+# Loading work.texture_cache
+# Loading work.local_mem_banked
+# Loading work.csr_file
+# Loading work.lsu
+# Loading work.write_merge_buf
+# 56 cyc=1 pc=00000000 if_valid=1 inst0=8000008b d0_valid=1 stall_sb0=0 issue0=1 accept0=1 stall_issue=0 rs1=0 rs2=0 rd=1 u1=1 u2=0 urd=1
+# 66 cyc=2 pc=00000004 if_valid=1 inst0=8000008b d0_valid=1 stall_sb0=0 issue0=1 accept0=1 stall_issue=0 rs1=0 rs2=0 rd=1 u1=1 u2=0 urd=1
+# 76 cyc=3 pc=00000008 if_valid=1 inst0=0050010b d0_valid=1 stall_sb0=0 issue0=1 accept0=1 stall_issue=0 rs1=0 rs2=5 rd=2 u1=1 u2=0 urd=1
+# 86 cyc=4 pc=0000000c if_valid=1 inst0=0070018b d0_valid=1 stall_sb0=0 issue0=1 accept0=1 stall_issue=0 rs1=0 rs2=7 rd=3 u1=1 u2=0 urd=1
+# 96 cyc=5 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 96   SB busy_s[x2]=1 busy_s[x3]=1 busy_s[x4]=0
+# 96   WB.S rd=1 data=fffff800
+# 106 cyc=6 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 106   SB busy_s[x2]=1 busy_s[x3]=1 busy_s[x4]=0
+# 106   WB.S rd=1 data=fffff800
+# 116 cyc=7 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 116   SB busy_s[x2]=1 busy_s[x3]=1 busy_s[x4]=0
+# 116   WB.S rd=2 data=00000005
+# 126 cyc=8 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 126   SB busy_s[x2]=0 busy_s[x3]=1 busy_s[x4]=0
+# 126   WB.S rd=3 data=00000007
+# 136 cyc=9 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 136   SB busy_s[x2]=0 busy_s[x3]=0 busy_s[x4]=0
+# 146 cyc=10 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 146   SB busy_s[x2]=0 busy_s[x3]=0 busy_s[x4]=0
+# 156 cyc=11 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 156   SB busy_s[x2]=0 busy_s[x3]=0 busy_s[x4]=0
+# 166 cyc=12 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 166   SB busy_s[x2]=0 busy_s[x3]=0 busy_s[x4]=0
+# 176 cyc=13 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 176   SB busy_s[x2]=0 busy_s[x3]=0 busy_s[x4]=0
+# 186 cyc=14 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 186   SB busy_s[x2]=0 busy_s[x3]=0 busy_s[x4]=0
+# 196 cyc=15 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 196   SB busy_s[x2]=0 busy_s[x3]=0 busy_s[x4]=0
+# 206 cyc=16 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 206   SB busy_s[x2]=0 busy_s[x3]=0 busy_s[x4]=0
+# 216 cyc=17 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 216   SB busy_s[x2]=0 busy_s[x3]=0 busy_s[x4]=0
+# 226 cyc=18 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 226   SB busy_s[x2]=0 busy_s[x3]=0 busy_s[x4]=0
+# 236 cyc=19 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 236   SB busy_s[x2]=0 busy_s[x3]=0 busy_s[x4]=0
+# 246 cyc=20 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 246   SB busy_s[x2]=0 busy_s[x3]=0 busy_s[x4]=0
+# 256 cyc=21 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 256   SB busy_s[x2]=0 busy_s[x3]=0 busy_s[x4]=0
+# 266 cyc=22 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 266   SB busy_s[x2]=0 busy_s[x3]=0 busy_s[x4]=0
+# 276 cyc=23 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 276   SB busy_s[x2]=0 busy_s[x3]=0 busy_s[x4]=0
+# 286 cyc=24 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 286   SB busy_s[x2]=0 busy_s[x3]=0 busy_s[x4]=0
+# 296 cyc=25 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 296   SB busy_s[x2]=0 busy_s[x3]=0 busy_s[x4]=0
+# 306 cyc=26 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 306   SB busy_s[x2]=0 busy_s[x3]=0 busy_s[x4]=0
+# 316 cyc=27 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 316   SB busy_s[x2]=0 busy_s[x3]=0 busy_s[x4]=0
+# 326 cyc=28 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 326   SB busy_s[x2]=0 busy_s[x3]=0 busy_s[x4]=0
+# 336 cyc=29 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 336   SB busy_s[x2]=0 busy_s[x3]=0 busy_s[x4]=0
+# 346 cyc=30 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 346   SB busy_s[x2]=0 busy_s[x3]=0 busy_s[x4]=0
+# 356 cyc=31 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 356   SB busy_s[x2]=0 busy_s[x3]=0 busy_s[x4]=0
+# 366 cyc=32 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 366   SB busy_s[x2]=0 busy_s[x3]=0 busy_s[x4]=0
+# 376 cyc=33 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 376   SB busy_s[x2]=0 busy_s[x3]=0 busy_s[x4]=0
+# 386 cyc=34 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 386   SB busy_s[x2]=0 busy_s[x3]=0 busy_s[x4]=0
+# 396 cyc=35 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 396   SB busy_s[x2]=0 busy_s[x3]=0 busy_s[x4]=0
+# 406 cyc=36 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 406   SB busy_s[x2]=0 busy_s[x3]=0 busy_s[x4]=0
+# 416 cyc=37 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 416   SB busy_s[x2]=0 busy_s[x3]=0 busy_s[x4]=0
+# 426 cyc=38 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 426   SB busy_s[x2]=0 busy_s[x3]=0 busy_s[x4]=0
+# 436 cyc=39 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2 rs2=3 rd=4 u1=1 u2=1 urd=1
+# 436   SB busy_s[x2]=0 busy_s[x3]=0 busy_s[x4]=0
+# DEBUG: no global memory requests observed
+# DEBUG: PC=00000010 accept0=0 accept1=0 stall_pipe=0
+# ** Fatal: Core did not appear to execute (no data_req transactions)
+#    Time: 60045 ns  Scope: compute_unit_full_tb File: /home/polar/ProtoTracer-FPGA-FrontEND/testbench/compute_unit_full_tb.sv Line: 412
+# ** Note: $finish    : /home/polar/ProtoTracer-FPGA-FrontEND/testbench/compute_unit_full_tb.sv(412)
+#    Time: 60045 ns  Iteration: 1  Instance: /compute_unit_full_tb
+# End time: 20:08:56 on Jan 10,2026, Elapsed time: 0:00:01
+# Errors: 1, Warnings: 0
+polar@polar-hpzbookultrag1a14inchmobileworkstationpc:~/ProtoTracer-FPGA-FrontEND$ vsim -c -do /home/polar/ProtoTracer-FPGA-FrontEND/testbench/compute_unit_full_tb.do
+Reading pref.tcl
+
+# 2020.1
+
+# do /home/polar/ProtoTracer-FPGA-FrontEND/testbench/compute_unit_full_tb.do
+# /home/polar/ProtoTracer-FPGA-FrontEND
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/csr_file.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/scoreboard.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fetch_unit.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/local_mem_banked.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_vector.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/compute_unit_top.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_fp.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/icache.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/decoder.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/graphics_pipeline.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_scalar.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/write_merge_buf.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/gpipe_dispatcher.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/texture_cache.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/rop_unit.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/raster_unit.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_scalar.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/lsu.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_vector.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/agu.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fp_alu.sv
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:10:28 on Jan 10,2026
+# vlog -sv -work work /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/csr_file.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/scoreboard.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fetch_unit.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/local_mem_banked.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_vector.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/compute_unit_top.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_fp.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/icache.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/decoder.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/graphics_pipeline.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_scalar.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/write_merge_buf.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/gpipe_dispatcher.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/texture_cache.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/rop_unit.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/raster_unit.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_scalar.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/lsu.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_vector.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/agu.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fp_alu.sv /home/polar/ProtoTracer-FPGA-FrontEND/testbench/compute_unit_full_tb.sv
+# -- Compiling module csr_file
+# -- Compiling module scoreboard
+# -- Compiling module fetch_unit
+# -- Compiling module local_mem_banked
+# -- Compiling module regfile_vector
+# -- Compiling package isa_pkg
+# -- Compiling module compute_unit_top
+# -- Importing package isa_pkg
+# -- Compiling module regfile_fp
+# -- Compiling module icache
+# ** Warning: ** while parsing file included at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/decoder.sv(1)
+# ** at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv(1): (vlog-2275) Existing package 'isa_pkg' will be overwritten.
+# -- Compiling package isa_pkg
+# -- Compiling module decoder
+# ** Warning: ** while parsing file included at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/graphics_pipeline.sv(1)
+# ** at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv(1): (vlog-2275) Existing package 'isa_pkg' will be overwritten.
+# -- Compiling package isa_pkg
+# -- Compiling module graphics_pipeline
+# ** Warning: /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/graphics_pipeline.sv(10): (vlog-13314) Defaulting port 'issue_ctrl' kind to 'var' rather than 'wire' due to default compile option setting of -svinputport=relaxed.
+# -- Compiling module regfile_scalar
+# ** Warning: /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv(1): (vlog-2275) Existing package 'isa_pkg' will be overwritten.
+# -- Compiling package isa_pkg
+# -- Compiling module write_merge_buf
+# ** Warning: ** while parsing file included at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/gpipe_dispatcher.sv(1)
+# ** at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv(1): (vlog-2275) Existing package 'isa_pkg' will be overwritten.
+# -- Compiling package isa_pkg
+# -- Compiling module gpipe_dispatcher
+# ** Warning: /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/gpipe_dispatcher.sv(6): (vlog-13314) Defaulting port 'ctrl' kind to 'var' rather than 'wire' due to default compile option setting of -svinputport=relaxed.
+# -- Compiling module texture_cache
+# -- Compiling module rop_unit
+# -- Compiling module raster_unit
+# ** Warning: ** while parsing file included at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_scalar.sv(1)
+# ** at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv(1): (vlog-2275) Existing package 'isa_pkg' will be overwritten.
+# -- Compiling package isa_pkg
+# -- Compiling module alu_scalar
+# -- Compiling module lsu
+# -- Compiling module alu_vector
+# -- Compiling module agu
+# -- Compiling module fp_alu
+# -- Compiling module compute_unit_full_tb
+#
+# Top level modules:
+#       icache
+#       gpipe_dispatcher
+#       compute_unit_full_tb
+# End time: 20:10:28 on Jan 10,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 7
+# vsim -c -t 1ns work.compute_unit_full_tb
+# Start time: 20:10:28 on Jan 10,2026
+# Loading sv_std.std
+# Loading work.isa_pkg
+# Loading work.compute_unit_full_tb
+# Loading work.compute_unit_top
+# Loading work.graphics_pipeline
+# Loading work.raster_unit
+# Loading work.rop_unit
+# Loading work.fetch_unit
+# Loading work.decoder
+# Loading work.scoreboard
+# Loading work.regfile_scalar
+# Loading work.regfile_fp
+# Loading work.regfile_vector
+# Loading work.agu
+# Loading work.alu_scalar
+# Loading work.fp_alu
+# Loading work.alu_vector
+# Loading work.texture_cache
+# Loading work.local_mem_banked
+# Loading work.csr_file
+# Loading work.lsu
+# Loading work.write_merge_buf
+# 56 cyc=1 pc=00000000 if_valid=1 inst0=8000008b d0_valid=1 stall_sb0=0 issue0=1 accept0=1 stall_issue=0 rs1=0(rs1c=00000) rs2=1(rs2c=00) rd=0(rdc=00) u1=1 u2=0 urd=1
+# 66 cyc=2 pc=00000004 if_valid=1 inst0=8000008b d0_valid=1 stall_sb0=0 issue0=1 accept0=1 stall_issue=0 rs1=0(rs1c=00000) rs2=1(rs2c=00) rd=0(rdc=00) u1=1 u2=0 urd=1
+# 76 cyc=3 pc=00000008 if_valid=1 inst0=0050010b d0_valid=1 stall_sb0=0 issue0=1 accept0=1 stall_issue=0 rs1=0(rs1c=00101) rs2=2(rs2c=00) rd=0(rdc=00) u1=1 u2=0 urd=1
+# 86 cyc=4 pc=0000000c if_valid=1 inst0=0070018b d0_valid=1 stall_sb0=0 issue0=1 accept0=1 stall_issue=0 rs1=0(rs1c=00111) rs2=3(rs2c=00) rd=0(rdc=00) u1=1 u2=0 urd=1
+# 96 cyc=5 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 96   SB busy_s(2,3,4)=110 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 96   WB.S rd=1 data=fffff800
+# 106 cyc=6 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 106   SB busy_s(2,3,4)=110 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 106   WB.S rd=1 data=fffff800
+# 116 cyc=7 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 116   SB busy_s(2,3,4)=110 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 116   WB.S rd=2 data=00000005
+# 126 cyc=8 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 126   SB busy_s(2,3,4)=010 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 126   WB.S rd=3 data=00000007
+# 136 cyc=9 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 136   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 146 cyc=10 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 146   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 156 cyc=11 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 156   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 166 cyc=12 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 166   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 176 cyc=13 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 176   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 186 cyc=14 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 186   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 196 cyc=15 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 196   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 206 cyc=16 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 206   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 216 cyc=17 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 216   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 226 cyc=18 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 226   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 236 cyc=19 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 236   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 246 cyc=20 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 246   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 256 cyc=21 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 256   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 266 cyc=22 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 266   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 276 cyc=23 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 276   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 286 cyc=24 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 286   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 296 cyc=25 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 296   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 306 cyc=26 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 306   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 316 cyc=27 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 316   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 326 cyc=28 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 326   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 336 cyc=29 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 336   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 346 cyc=30 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 346   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 356 cyc=31 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 356   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 366 cyc=32 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 366   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 376 cyc=33 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 376   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 386 cyc=34 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 386   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 396 cyc=35 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 396   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 406 cyc=36 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 406   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 416 cyc=37 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 416   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 426 cyc=38 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 426   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 436 cyc=39 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=00011) rs2=4(rs2c=00) rd=0(rdc=00) u1=1 u2=1 urd=1
+# 436   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# DEBUG: no global memory requests observed
+# DEBUG: PC=00000010 accept0=0 accept1=0 stall_pipe=0
+# ** Fatal: Core did not appear to execute (no data_req transactions)
+#    Time: 60045 ns  Scope: compute_unit_full_tb File: /home/polar/ProtoTracer-FPGA-FrontEND/testbench/compute_unit_full_tb.sv Line: 413
+# ** Note: $finish    : /home/polar/ProtoTracer-FPGA-FrontEND/testbench/compute_unit_full_tb.sv(413)
+#    Time: 60045 ns  Iteration: 1  Instance: /compute_unit_full_tb
+# End time: 20:10:28 on Jan 10,2026, Elapsed time: 0:00:00
+# Errors: 1, Warnings: 0
+polar@polar-hpzbookultrag1a14inchmobileworkstationpc:~/ProtoTracer-FPGA-FrontEND$ vsim -c -do /home/polar/ProtoTracer-FPGA-FrontEND/testbench/compute_unit_full_tb.do
+Reading pref.tcl
+
+# 2020.1
+
+# do /home/polar/ProtoTracer-FPGA-FrontEND/testbench/compute_unit_full_tb.do
+# /home/polar/ProtoTracer-FPGA-FrontEND
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/csr_file.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/scoreboard.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fetch_unit.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/local_mem_banked.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_vector.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/compute_unit_top.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_fp.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/icache.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/decoder.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/graphics_pipeline.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_scalar.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/write_merge_buf.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/gpipe_dispatcher.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/texture_cache.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/rop_unit.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/raster_unit.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_scalar.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/lsu.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_vector.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/agu.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fp_alu.sv
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:11:03 on Jan 10,2026
+# vlog -sv -work work /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/csr_file.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/scoreboard.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fetch_unit.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/local_mem_banked.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_vector.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/compute_unit_top.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_fp.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/icache.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/decoder.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/graphics_pipeline.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_scalar.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/write_merge_buf.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/gpipe_dispatcher.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/texture_cache.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/rop_unit.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/raster_unit.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_scalar.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/lsu.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_vector.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/agu.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fp_alu.sv /home/polar/ProtoTracer-FPGA-FrontEND/testbench/compute_unit_full_tb.sv
+# -- Compiling module csr_file
+# -- Compiling module scoreboard
+# -- Compiling module fetch_unit
+# -- Compiling module local_mem_banked
+# -- Compiling module regfile_vector
+# -- Compiling package isa_pkg
+# -- Compiling module compute_unit_top
+# -- Importing package isa_pkg
+# -- Compiling module regfile_fp
+# -- Compiling module icache
+# ** Warning: ** while parsing file included at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/decoder.sv(1)
+# ** at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv(1): (vlog-2275) Existing package 'isa_pkg' will be overwritten.
+# -- Compiling package isa_pkg
+# -- Compiling module decoder
+# ** Warning: ** while parsing file included at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/graphics_pipeline.sv(1)
+# ** at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv(1): (vlog-2275) Existing package 'isa_pkg' will be overwritten.
+# -- Compiling package isa_pkg
+# -- Compiling module graphics_pipeline
+# ** Warning: /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/graphics_pipeline.sv(10): (vlog-13314) Defaulting port 'issue_ctrl' kind to 'var' rather than 'wire' due to default compile option setting of -svinputport=relaxed.
+# -- Compiling module regfile_scalar
+# ** Warning: /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv(1): (vlog-2275) Existing package 'isa_pkg' will be overwritten.
+# -- Compiling package isa_pkg
+# -- Compiling module write_merge_buf
+# ** Warning: ** while parsing file included at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/gpipe_dispatcher.sv(1)
+# ** at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv(1): (vlog-2275) Existing package 'isa_pkg' will be overwritten.
+# -- Compiling package isa_pkg
+# -- Compiling module gpipe_dispatcher
+# ** Warning: /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/gpipe_dispatcher.sv(6): (vlog-13314) Defaulting port 'ctrl' kind to 'var' rather than 'wire' due to default compile option setting of -svinputport=relaxed.
+# -- Compiling module texture_cache
+# -- Compiling module rop_unit
+# -- Compiling module raster_unit
+# ** Warning: ** while parsing file included at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_scalar.sv(1)
+# ** at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv(1): (vlog-2275) Existing package 'isa_pkg' will be overwritten.
+# -- Compiling package isa_pkg
+# -- Compiling module alu_scalar
+# -- Compiling module lsu
+# -- Compiling module alu_vector
+# -- Compiling module agu
+# -- Compiling module fp_alu
+# -- Compiling module compute_unit_full_tb
+#
+# Top level modules:
+#       icache
+#       gpipe_dispatcher
+#       compute_unit_full_tb
+# End time: 20:11:03 on Jan 10,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 7
+# vsim -c -t 1ns work.compute_unit_full_tb
+# Start time: 20:11:03 on Jan 10,2026
+# Loading sv_std.std
+# Loading work.isa_pkg
+# Loading work.compute_unit_full_tb
+# Loading work.compute_unit_top
+# Loading work.graphics_pipeline
+# Loading work.raster_unit
+# Loading work.rop_unit
+# Loading work.fetch_unit
+# Loading work.decoder
+# Loading work.scoreboard
+# Loading work.regfile_scalar
+# Loading work.regfile_fp
+# Loading work.regfile_vector
+# Loading work.agu
+# Loading work.alu_scalar
+# Loading work.fp_alu
+# Loading work.alu_vector
+# Loading work.texture_cache
+# Loading work.local_mem_banked
+# Loading work.csr_file
+# Loading work.lsu
+# Loading work.write_merge_buf
+# 56 cyc=1 pc=00000000 if_valid=1 inst0=8000008b d0_valid=1 stall_sb0=0 issue0=1 accept0=1 stall_issue=0 rs1=0(rs1c=0) rs2=0(rs2c=0) rd=1(rdc=0) u1=1 u2=0 urd=1
+# 66 cyc=2 pc=00000004 if_valid=1 inst0=8000008b d0_valid=1 stall_sb0=0 issue0=1 accept0=1 stall_issue=0 rs1=0(rs1c=0) rs2=0(rs2c=0) rd=1(rdc=0) u1=1 u2=0 urd=1
+# 76 cyc=3 pc=00000008 if_valid=1 inst0=0050010b d0_valid=1 stall_sb0=0 issue0=1 accept0=1 stall_issue=0 rs1=0(rs1c=0) rs2=5(rs2c=0) rd=2(rdc=0) u1=1 u2=0 urd=1
+# 86 cyc=4 pc=0000000c if_valid=1 inst0=0070018b d0_valid=1 stall_sb0=0 issue0=1 accept0=1 stall_issue=0 rs1=0(rs1c=0) rs2=7(rs2c=0) rd=3(rdc=0) u1=1 u2=0 urd=1
+# 96 cyc=5 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 96   SB busy_s(2,3,4)=110 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 96   WB.S rd=1 data=fffff800
+# 106 cyc=6 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 106   SB busy_s(2,3,4)=110 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 106   WB.S rd=1 data=fffff800
+# 116 cyc=7 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 116   SB busy_s(2,3,4)=110 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 116   WB.S rd=2 data=00000005
+# 126 cyc=8 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 126   SB busy_s(2,3,4)=010 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 126   WB.S rd=3 data=00000007
+# 136 cyc=9 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 136   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 146 cyc=10 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 146   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 156 cyc=11 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 156   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 166 cyc=12 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 166   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 176 cyc=13 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 176   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 186 cyc=14 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 186   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 196 cyc=15 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 196   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 206 cyc=16 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 206   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 216 cyc=17 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 216   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 226 cyc=18 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 226   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 236 cyc=19 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 236   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 246 cyc=20 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 246   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 256 cyc=21 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 256   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 266 cyc=22 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 266   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 276 cyc=23 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 276   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 286 cyc=24 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 286   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 296 cyc=25 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 296   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 306 cyc=26 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 306   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 316 cyc=27 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 316   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 326 cyc=28 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 326   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 336 cyc=29 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 336   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 346 cyc=30 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 346   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 356 cyc=31 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 356   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 366 cyc=32 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 366   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 376 cyc=33 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 376   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 386 cyc=34 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 386   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 396 cyc=35 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 396   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 406 cyc=36 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 406   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 416 cyc=37 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 416   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 426 cyc=38 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 426   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 436 cyc=39 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 436   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# DEBUG: no global memory requests observed
+# DEBUG: PC=00000010 accept0=0 accept1=0 stall_pipe=0
+# ** Fatal: Core did not appear to execute (no data_req transactions)
+#    Time: 60045 ns  Scope: compute_unit_full_tb File: /home/polar/ProtoTracer-FPGA-FrontEND/testbench/compute_unit_full_tb.sv Line: 414
+# ** Note: $finish    : /home/polar/ProtoTracer-FPGA-FrontEND/testbench/compute_unit_full_tb.sv(414)
+#    Time: 60045 ns  Iteration: 1  Instance: /compute_unit_full_tb
+# End time: 20:11:03 on Jan 10,2026, Elapsed time: 0:00:00
+# Errors: 1, Warnings: 0
+polar@polar-hpzbookultrag1a14inchmobileworkstationpc:~/ProtoTracer-FPGA-FrontEND$ vsim -c -do /home/polar/ProtoTracer-FPGA-FrontEND/testbench/compute_unit_full_tb.do
+Reading pref.tcl
+
+# 2020.1
+
+# do /home/polar/ProtoTracer-FPGA-FrontEND/testbench/compute_unit_full_tb.do
+# /home/polar/ProtoTracer-FPGA-FrontEND
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/csr_file.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/scoreboard.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fetch_unit.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/local_mem_banked.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_vector.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/compute_unit_top.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_fp.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/icache.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/decoder.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/graphics_pipeline.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_scalar.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/write_merge_buf.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/gpipe_dispatcher.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/texture_cache.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/rop_unit.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/raster_unit.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_scalar.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/lsu.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_vector.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/agu.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fp_alu.sv
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 20:13:38 on Jan 10,2026
+# vlog -sv -work work /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/csr_file.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/scoreboard.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fetch_unit.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/local_mem_banked.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_vector.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/compute_unit_top.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_fp.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/icache.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/decoder.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/graphics_pipeline.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_scalar.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/write_merge_buf.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/gpipe_dispatcher.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/texture_cache.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/rop_unit.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/raster_unit.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_scalar.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/lsu.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_vector.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/agu.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fp_alu.sv /home/polar/ProtoTracer-FPGA-FrontEND/testbench/compute_unit_full_tb.sv
+# -- Compiling module csr_file
+# -- Compiling module scoreboard
+# -- Compiling module fetch_unit
+# -- Compiling module local_mem_banked
+# -- Compiling module regfile_vector
+# -- Compiling package isa_pkg
+# -- Compiling module compute_unit_top
+# -- Importing package isa_pkg
+# -- Compiling module regfile_fp
+# -- Compiling module icache
+# ** Warning: ** while parsing file included at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/decoder.sv(1)
+# ** at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv(1): (vlog-2275) Existing package 'isa_pkg' will be overwritten.
+# -- Compiling package isa_pkg
+# -- Compiling module decoder
+# ** Warning: ** while parsing file included at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/graphics_pipeline.sv(1)
+# ** at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv(1): (vlog-2275) Existing package 'isa_pkg' will be overwritten.
+# -- Compiling package isa_pkg
+# -- Compiling module graphics_pipeline
+# ** Warning: /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/graphics_pipeline.sv(10): (vlog-13314) Defaulting port 'issue_ctrl' kind to 'var' rather than 'wire' due to default compile option setting of -svinputport=relaxed.
+# -- Compiling module regfile_scalar
+# ** Warning: /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv(1): (vlog-2275) Existing package 'isa_pkg' will be overwritten.
+# -- Compiling package isa_pkg
+# -- Compiling module write_merge_buf
+# ** Warning: ** while parsing file included at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/gpipe_dispatcher.sv(1)
+# ** at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv(1): (vlog-2275) Existing package 'isa_pkg' will be overwritten.
+# -- Compiling package isa_pkg
+# -- Compiling module gpipe_dispatcher
+# ** Warning: /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/gpipe_dispatcher.sv(6): (vlog-13314) Defaulting port 'ctrl' kind to 'var' rather than 'wire' due to default compile option setting of -svinputport=relaxed.
+# -- Compiling module texture_cache
+# -- Compiling module rop_unit
+# -- Compiling module raster_unit
+# ** Warning: ** while parsing file included at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_scalar.sv(1)
+# ** at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv(1): (vlog-2275) Existing package 'isa_pkg' will be overwritten.
+# -- Compiling package isa_pkg
+# -- Compiling module alu_scalar
+# -- Compiling module lsu
+# -- Compiling module alu_vector
+# -- Compiling module agu
+# -- Compiling module fp_alu
+# -- Compiling module compute_unit_full_tb
+#
+# Top level modules:
+#       icache
+#       gpipe_dispatcher
+#       compute_unit_full_tb
+# End time: 20:13:38 on Jan 10,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 7
+# vsim -c -t 1ns work.compute_unit_full_tb
+# Start time: 20:13:38 on Jan 10,2026
+# Loading sv_std.std
+# Loading work.isa_pkg
+# Loading work.compute_unit_full_tb
+# Loading work.compute_unit_top
+# Loading work.graphics_pipeline
+# Loading work.raster_unit
+# Loading work.rop_unit
+# Loading work.fetch_unit
+# Loading work.decoder
+# Loading work.scoreboard
+# Loading work.regfile_scalar
+# Loading work.regfile_fp
+# Loading work.regfile_vector
+# Loading work.agu
+# Loading work.alu_scalar
+# Loading work.fp_alu
+# Loading work.alu_vector
+# Loading work.texture_cache
+# Loading work.local_mem_banked
+# Loading work.csr_file
+# Loading work.lsu
+# Loading work.write_merge_buf
+# 56 cyc=1 pc=00000000 if_valid=1 inst0=8000008b d0_valid=1 stall_sb0=0 issue0=1 accept0=1 stall_issue=0 rs1=0(rs1c=0) rs2=0(rs2c=0) rd=1(rdc=0) u1=1 u2=0 urd=1
+# 56   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 66 cyc=2 pc=00000004 if_valid=1 inst0=8000008b d0_valid=1 stall_sb0=0 issue0=1 accept0=1 stall_issue=0 rs1=0(rs1c=0) rs2=0(rs2c=0) rd=1(rdc=0) u1=1 u2=0 urd=1
+# 66   manual_stall0=1 (rs1_busy=0 rs2_busy=0 rd_busy=1)
+# 76 cyc=3 pc=00000008 if_valid=1 inst0=0050010b d0_valid=1 stall_sb0=0 issue0=1 accept0=1 stall_issue=0 rs1=0(rs1c=0) rs2=5(rs2c=0) rd=2(rdc=0) u1=1 u2=0 urd=1
+# 76   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 86 cyc=4 pc=0000000c if_valid=1 inst0=0070018b d0_valid=1 stall_sb0=0 issue0=1 accept0=1 stall_issue=0 rs1=0(rs1c=0) rs2=7(rs2c=0) rd=3(rdc=0) u1=1 u2=0 urd=1
+# 86   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 96 cyc=5 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 96   manual_stall0=1 (rs1_busy=1 rs2_busy=1 rd_busy=0)
+# 96   SB busy_s(2,3,4)=110 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 96   WB.S rd=1 data=fffff800
+# 106 cyc=6 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 106   manual_stall0=1 (rs1_busy=1 rs2_busy=1 rd_busy=0)
+# 106   SB busy_s(2,3,4)=110 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 106   WB.S rd=1 data=fffff800
+# 116 cyc=7 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 116   manual_stall0=1 (rs1_busy=1 rs2_busy=1 rd_busy=0)
+# 116   SB busy_s(2,3,4)=110 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 116   WB.S rd=2 data=00000005
+# 126 cyc=8 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 126   manual_stall0=1 (rs1_busy=0 rs2_busy=1 rd_busy=0)
+# 126   SB busy_s(2,3,4)=010 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 126   WB.S rd=3 data=00000007
+# 136 cyc=9 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 136   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 136   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 146 cyc=10 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 146   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 146   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 156 cyc=11 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 156   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 156   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 166 cyc=12 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 166   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 166   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 176 cyc=13 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 176   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 176   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 186 cyc=14 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 186   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 186   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 196 cyc=15 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 196   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 196   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 206 cyc=16 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 206   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 206   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 216 cyc=17 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 216   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 216   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 226 cyc=18 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 226   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 226   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 236 cyc=19 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 236   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 236   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 246 cyc=20 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 246   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 246   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 256 cyc=21 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 256   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 256   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 266 cyc=22 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 266   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 266   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 276 cyc=23 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 276   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 276   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 286 cyc=24 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 286   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 286   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 296 cyc=25 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 296   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 296   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 306 cyc=26 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 306   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 306   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 316 cyc=27 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 316   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 316   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 326 cyc=28 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 326   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 326   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 336 cyc=29 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 336   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 336   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 346 cyc=30 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 346   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 346   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 356 cyc=31 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 356   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 356   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 366 cyc=32 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 366   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 366   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 376 cyc=33 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 376   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 376   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 386 cyc=34 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 386   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 386   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 396 cyc=35 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 396   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 396   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 406 cyc=36 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 406   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 406   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 416 cyc=37 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 416   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 416   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 426 cyc=38 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 426   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 426   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 436 cyc=39 pc=00000010 if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 436   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 436   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# DEBUG: no global memory requests observed
+# DEBUG: PC=00000010 accept0=0 accept1=0 stall_pipe=0
+# ** Fatal: Core did not appear to execute (no data_req transactions)
+#    Time: 60045 ns  Scope: compute_unit_full_tb File: /home/polar/ProtoTracer-FPGA-FrontEND/testbench/compute_unit_full_tb.sv Line: 440
+# ** Note: $finish    : /home/polar/ProtoTracer-FPGA-FrontEND/testbench/compute_unit_full_tb.sv(440)
+#    Time: 60045 ns  Iteration: 1  Instance: /compute_unit_full_tb
+# End time: 20:13:39 on Jan 10,2026, Elapsed time: 0:00:01
+# Errors: 1, Warnings: 0
+polar@polar-hpzbookultrag1a14inchmobileworkstationpc:~/ProtoTracer-FPGA-FrontEND$

@@ -1,0 +1,288 @@
+# /home/polar/ProtoTracer-FPGA-FrontEND
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/csr_file.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/scoreboard.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fetch_unit.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/local_mem_banked.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_vector.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/compute_unit_top.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_fp.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/icache.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/decoder.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/graphics_pipeline.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_scalar.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/write_merge_buf.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/gpipe_dispatcher.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/texture_cache.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/rop_unit.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/raster_unit.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_scalar.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/lsu.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_vector.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/agu.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fp_alu.sv
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 21:03:29 on Jan 10,2026
+# vlog -sv -work work /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/csr_file.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/scoreboard.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fetch_unit.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/local_mem_banked.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_vector.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/compute_unit_top.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_fp.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/icache.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/decoder.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/graphics_pipeline.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_scalar.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/write_merge_buf.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/gpipe_dispatcher.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/texture_cache.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/rop_unit.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/raster_unit.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_scalar.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/lsu.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_vector.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/agu.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fp_alu.sv /home/polar/ProtoTracer-FPGA-FrontEND/testbench/compute_unit_full_tb.sv 
+# -- Compiling module csr_file
+# -- Compiling module scoreboard
+# -- Compiling module fetch_unit
+# -- Compiling module local_mem_banked
+# -- Compiling module regfile_vector
+# -- Compiling package isa_pkg
+# -- Compiling module compute_unit_top
+# -- Importing package isa_pkg
+# -- Compiling module regfile_fp
+# -- Compiling module icache
+# ** Warning: ** while parsing file included at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/decoder.sv(1)
+# ** at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv(1): (vlog-2275) Existing package 'isa_pkg' will be overwritten.
+# -- Compiling package isa_pkg
+# -- Compiling module decoder
+# ** Warning: ** while parsing file included at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/graphics_pipeline.sv(1)
+# ** at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv(1): (vlog-2275) Existing package 'isa_pkg' will be overwritten.
+# -- Compiling package isa_pkg
+# -- Compiling module graphics_pipeline
+# ** Warning: /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/graphics_pipeline.sv(10): (vlog-13314) Defaulting port 'issue_ctrl' kind to 'var' rather than 'wire' due to default compile option setting of -svinputport=relaxed.
+# -- Compiling module regfile_scalar
+# ** Warning: /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv(1): (vlog-2275) Existing package 'isa_pkg' will be overwritten.
+# -- Compiling package isa_pkg
+# -- Compiling module write_merge_buf
+# ** Warning: ** while parsing file included at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/gpipe_dispatcher.sv(1)
+# ** at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv(1): (vlog-2275) Existing package 'isa_pkg' will be overwritten.
+# -- Compiling package isa_pkg
+# -- Compiling module gpipe_dispatcher
+# ** Warning: /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/gpipe_dispatcher.sv(6): (vlog-13314) Defaulting port 'ctrl' kind to 'var' rather than 'wire' due to default compile option setting of -svinputport=relaxed.
+# -- Compiling module texture_cache
+# -- Compiling module rop_unit
+# -- Compiling module raster_unit
+# ** Warning: ** while parsing file included at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_scalar.sv(1)
+# ** at /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv(1): (vlog-2275) Existing package 'isa_pkg' will be overwritten.
+# -- Compiling package isa_pkg
+# -- Compiling module alu_scalar
+# -- Compiling module lsu
+# -- Compiling module alu_vector
+# -- Compiling module agu
+# -- Compiling module fp_alu
+# -- Compiling module compute_unit_full_tb
+# 
+# Top level modules:
+# 	icache
+# 	gpipe_dispatcher
+# 	compute_unit_full_tb
+# End time: 21:03:29 on Jan 10,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 7
+# vsim -c -t 1ns work.compute_unit_full_tb 
+# Start time: 21:03:29 on Jan 10,2026
+# Loading sv_std.std
+# Loading work.isa_pkg
+# Loading work.compute_unit_full_tb
+# Loading work.compute_unit_top
+# Loading work.graphics_pipeline
+# Loading work.raster_unit
+# Loading work.rop_unit
+# Loading work.fetch_unit
+# Loading work.decoder
+# Loading work.scoreboard
+# Loading work.regfile_scalar
+# Loading work.regfile_fp
+# Loading work.regfile_vector
+# Loading work.agu
+# Loading work.alu_scalar
+# Loading work.fp_alu
+# Loading work.alu_vector
+# Loading work.texture_cache
+# Loading work.local_mem_banked
+# Loading work.csr_file
+# Loading work.lsu
+# Loading work.write_merge_buf
+# 56 cyc=1 pc=00000000 if_valid=1 inst0=8000008b d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=1 accept0=1 stall_issue=0 rs1=0(rs1c=0) rs2=0(rs2c=0) rd=1(rdc=0) u1=1 u2=0 urd=1
+# 56   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 66 cyc=2 pc=00000000 if_valid=1 inst0=8000008b d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=0(rs1c=0) rs2=0(rs2c=0) rd=1(rdc=0) u1=1 u2=0 urd=1
+# 66   manual_stall0=1 (rs1_busy=0 rs2_busy=0 rd_busy=1)
+# 66   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 76 cyc=3 pc=00000000 if_valid=1 inst0=8000008b d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=0(rs1c=0) rs2=0(rs2c=0) rd=1(rdc=0) u1=1 u2=0 urd=1
+# 76   manual_stall0=1 (rs1_busy=0 rs2_busy=0 rd_busy=1)
+# 76   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 86 cyc=4 pc=00000000 if_valid=1 inst0=8000008b d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=0(rs1c=0) rs2=0(rs2c=0) rd=1(rdc=0) u1=1 u2=0 urd=1
+# 86   manual_stall0=1 (rs1_busy=0 rs2_busy=0 rd_busy=1)
+# 86   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 96 cyc=5 pc=00000000 if_valid=1 inst0=8000008b d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=0(rs1c=0) rs2=0(rs2c=0) rd=1(rdc=0) u1=1 u2=0 urd=1
+# 96   manual_stall0=1 (rs1_busy=0 rs2_busy=0 rd_busy=1)
+# 96   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 96   WB.S rd=1 data=fffff800
+# 106 cyc=6 pc=00000000 if_valid=1 inst0=8000008b d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=1 accept0=1 stall_issue=0 rs1=0(rs1c=0) rs2=0(rs2c=0) rd=1(rdc=0) u1=1 u2=0 urd=1
+# 106   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 116 cyc=7 pc=00000004 if_valid=1 inst0=0050010b d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=1 accept0=1 stall_issue=0 rs1=0(rs1c=0) rs2=5(rs2c=0) rd=2(rdc=0) u1=1 u2=0 urd=1
+# 116   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 126 cyc=8 pc=00000008 if_valid=1 inst0=0070018b d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=1 accept0=1 stall_issue=0 rs1=0(rs1c=0) rs2=7(rs2c=0) rd=3(rdc=0) u1=1 u2=0 urd=1
+# 126   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 136 cyc=9 pc=0000000c if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 136   manual_stall0=1 (rs1_busy=1 rs2_busy=1 rd_busy=0)
+# 136   SB busy_s(2,3,4)=110 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 146 cyc=10 pc=0000000c if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 146   manual_stall0=1 (rs1_busy=1 rs2_busy=1 rd_busy=0)
+# 146   SB busy_s(2,3,4)=110 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 146   WB.S rd=1 data=fffff800
+# 156 cyc=11 pc=0000000c if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 156   manual_stall0=1 (rs1_busy=1 rs2_busy=1 rd_busy=0)
+# 156   SB busy_s(2,3,4)=110 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 156   WB.S rd=2 data=00000005
+# 166 cyc=12 pc=0000000c if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 166   manual_stall0=1 (rs1_busy=0 rs2_busy=1 rd_busy=0)
+# 166   SB busy_s(2,3,4)=010 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 166   WB.S rd=3 data=00000007
+# 176 cyc=13 pc=0000000c if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=1 accept0=1 stall_issue=0 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+# 176   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 186 cyc=14 pc=00000010 if_valid=1 inst0=0040a00d d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=1(rs1c=0) rs2=4(rs2c=0) rd=0(rdc=0) u1=1 u2=1 urd=0
+# 186   manual_stall0=1 (rs1_busy=0 rs2_busy=1 rd_busy=0)
+# 186   SB busy_s(2,3,4)=001 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 196 cyc=15 pc=00000010 if_valid=1 inst0=0040a00d d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=1(rs1c=0) rs2=4(rs2c=0) rd=0(rdc=0) u1=1 u2=1 urd=0
+# 196   manual_stall0=1 (rs1_busy=0 rs2_busy=1 rd_busy=0)
+# 196   SB busy_s(2,3,4)=001 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 206 cyc=16 pc=00000010 if_valid=1 inst0=0040a00d d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=1(rs1c=0) rs2=4(rs2c=0) rd=0(rdc=0) u1=1 u2=1 urd=0
+# 206   manual_stall0=1 (rs1_busy=0 rs2_busy=1 rd_busy=0)
+# 206   SB busy_s(2,3,4)=001 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 216 cyc=17 pc=00000010 if_valid=1 inst0=0040a00d d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=1(rs1c=0) rs2=4(rs2c=0) rd=0(rdc=0) u1=1 u2=1 urd=0
+# 216   manual_stall0=1 (rs1_busy=0 rs2_busy=1 rd_busy=0)
+# 216   SB busy_s(2,3,4)=001 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 216   WB.S rd=4 data=0000000c
+# 226 cyc=18 pc=00000010 if_valid=1 inst0=0040a00d d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=1 accept0=1 stall_issue=0 rs1=1(rs1c=0) rs2=4(rs2c=0) rd=0(rdc=0) u1=1 u2=1 urd=0
+# 226   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 236 cyc=19 pc=00000014 if_valid=1 inst0=0000000f d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=1 accept0=1 stall_issue=0 rs1=0(rs1c=0) rs2=0(rs2c=0) rd=0(rdc=0) u1=0 u2=0 urd=0
+# 236   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 246 cyc=20 pc=00000018 if_valid=1 inst0=0000a28c d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=1 accept0=1 stall_issue=0 rs1=1(rs1c=0) rs2=0(rs2c=0) rd=5(rdc=0) u1=1 u2=0 urd=1
+# 246   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 256 cyc=21 pc=0000001c if_valid=1 inst0=0050a40d d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=1(rs1c=0) rs2=5(rs2c=0) rd=8(rdc=0) u1=1 u2=1 urd=0
+# 256   manual_stall0=1 (rs1_busy=0 rs2_busy=1 rd_busy=0)
+# 256   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 266 cyc=22 pc=0000001c if_valid=1 inst0=0050a40d d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=0 accept0=0 stall_issue=1 rs1=1(rs1c=0) rs2=5(rs2c=0) rd=8(rdc=0) u1=1 u2=1 urd=0
+# 266   manual_stall0=0 (rs1_busy=0 rs2_busy=1 rd_busy=0)
+# 276 cyc=23 pc=0000001c if_valid=1 inst0=0050a40d d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=0 accept0=0 stall_issue=1 rs1=1(rs1c=0) rs2=5(rs2c=0) rd=8(rdc=0) u1=1 u2=1 urd=0
+# 276   manual_stall0=0 (rs1_busy=0 rs2_busy=1 rd_busy=0)
+# 285 MEM ST addr=fffff800 wdata=0000000c rd=0
+# 286 cyc=24 pc=0000001c if_valid=1 inst0=0050a40d d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=0 accept0=0 stall_issue=1 rs1=1(rs1c=0) rs2=5(rs2c=0) rd=8(rdc=0) u1=1 u2=1 urd=0
+# 286   manual_stall0=0 (rs1_busy=0 rs2_busy=1 rd_busy=0)
+# 296 cyc=25 pc=0000001c if_valid=1 inst0=0050a40d d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=1(rs1c=0) rs2=5(rs2c=0) rd=8(rdc=0) u1=1 u2=1 urd=0
+# 296   manual_stall0=1 (rs1_busy=0 rs2_busy=1 rd_busy=0)
+# 296   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 306 cyc=26 pc=0000001c if_valid=1 inst0=0050a40d d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=0 accept0=0 stall_issue=1 rs1=1(rs1c=0) rs2=5(rs2c=0) rd=8(rdc=0) u1=1 u2=1 urd=0
+# 306   manual_stall0=0 (rs1_busy=0 rs2_busy=1 rd_busy=0)
+# 315 MEM LD addr=fffff800 wdata=00000000 rd=5
+# 316 cyc=27 pc=0000001c if_valid=1 inst0=0050a40d d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=0 accept0=0 stall_issue=1 rs1=1(rs1c=0) rs2=5(rs2c=0) rd=8(rdc=0) u1=1 u2=1 urd=0
+# 316   manual_stall0=0 (rs1_busy=0 rs2_busy=1 rd_busy=0)
+# 326 cyc=28 pc=0000001c if_valid=1 inst0=0050a40d d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=0 accept0=0 stall_issue=1 rs1=1(rs1c=0) rs2=5(rs2c=0) rd=8(rdc=0) u1=1 u2=1 urd=0
+# 326   manual_stall0=0 (rs1_busy=0 rs2_busy=1 rd_busy=0)
+# 326   WB.S rd=5 data=0000000c
+# 336 cyc=29 pc=0000001c if_valid=1 inst0=0050a40d d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=1 accept0=1 stall_issue=0 rs1=1(rs1c=0) rs2=5(rs2c=0) rd=8(rdc=0) u1=1 u2=1 urd=0
+# 336   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 346 cyc=30 pc=00000020 if_valid=1 inst0=0070030b d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=1 accept0=1 stall_issue=0 rs1=0(rs1c=0) rs2=7(rs2c=0) rd=6(rdc=0) u1=1 u2=0 urd=1
+# 346   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 356 cyc=31 pc=00000024 if_valid=1 inst0=0003138f d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=6(rs1c=0) rs2=0(rs2c=0) rd=7(rdc=0) u1=1 u2=0 urd=1
+# 356   manual_stall0=1 (rs1_busy=1 rs2_busy=0 rd_busy=0)
+# 356   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 366 cyc=32 pc=00000024 if_valid=1 inst0=0003138f d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=6(rs1c=0) rs2=0(rs2c=0) rd=7(rdc=0) u1=1 u2=0 urd=1
+# 366   manual_stall0=1 (rs1_busy=1 rs2_busy=0 rd_busy=0)
+# 366   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 376 cyc=33 pc=00000024 if_valid=1 inst0=0003138f d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=6(rs1c=0) rs2=0(rs2c=0) rd=7(rdc=0) u1=1 u2=0 urd=1
+# 376   manual_stall0=1 (rs1_busy=1 rs2_busy=0 rd_busy=0)
+# 376   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 386 cyc=34 pc=00000024 if_valid=1 inst0=0003138f d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=6(rs1c=0) rs2=0(rs2c=0) rd=7(rdc=0) u1=1 u2=0 urd=1
+# 386   manual_stall0=1 (rs1_busy=1 rs2_busy=0 rd_busy=0)
+# 386   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 386   WB.S rd=6 data=00000007
+# 396 cyc=35 pc=00000024 if_valid=1 inst0=0003138f d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=1 accept0=1 stall_issue=0 rs1=6(rs1c=0) rs2=0(rs2c=0) rd=7(rdc=0) u1=1 u2=0 urd=1
+# 396   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 406 cyc=36 pc=00000028 if_valid=1 inst0=0000240f d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=1 accept0=1 stall_issue=0 rs1=0(rs1c=0) rs2=0(rs2c=0) rd=8(rdc=0) u1=1 u2=0 urd=1
+# 406   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 416 cyc=37 pc=0000002c if_valid=1 inst0=0000000f d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=1 accept0=1 stall_issue=0 rs1=0(rs1c=0) rs2=0(rs2c=0) rd=0(rdc=0) u1=0 u2=0 urd=0
+# 416   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 426 cyc=38 pc=00000030 if_valid=1 inst0=01008091 d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=1 accept0=1 stall_issue=0 rs1=1(rs1c=2) rs2=16(rs2c=2) rd=1(rdc=2) u1=1 u2=0 urd=1
+# 426   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+# 436 cyc=39 pc=00000034 if_valid=1 inst0=02008111 d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=1(rs1c=2) rs2=0(rs2c=2) rd=2(rdc=2) u1=1 u2=0 urd=1
+# 436   manual_stall0=1 (rs1_busy=1 rs2_busy=0 rd_busy=0)
+# 436   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+# 436   WB.S rd=7 data=00000000
+# 465 MEM ST addr=fffff808 wdata=0000000c rd=0
+# 495 MEM LD addr=fffff810 wdata=00000000 rd=1
+# 505 MEM LD addr=fffff814 wdata=00000000 rd=1
+# 515 MEM LD addr=fffff818 wdata=00000000 rd=1
+# 525 MEM LD addr=fffff81c wdata=00000000 rd=1
+# 585 MEM LD addr=fffff820 wdata=00000000 rd=2
+# 595 MEM LD addr=fffff824 wdata=00000000 rd=2
+# 605 MEM LD addr=fffff828 wdata=00000000 rd=2
+# 615 MEM LD addr=fffff82c wdata=00000000 rd=2
+# 715 MEM ST addr=fffff830 wdata=0000000b rd=16
+# 716 WB.S (x9) data=0000000f (valuv_valid=1 valuv_rd=9 valuv_is_scalar=1 valuv_data_lo=0000000f)
+# 725 MEM ST addr=fffff834 wdata=00000016 rd=16
+# 735 MEM ST addr=fffff838 wdata=00000021 rd=16
+# 745 MEM ST addr=fffff83c wdata=0000002c rd=16
+# 756 WMB ENQ addr=fffff840 wdata=0000000f wstrb=f
+# 776 WMB DEQ addr=fffff840 wdata=0000000f wstrb=f
+# 785 MEM ST addr=fffff840 wdata=0000000f rd=0
+# 806 ATOM in MEM: mem_addr=fffff830 is_vector=1 is_store=0 funct3(op)=000 rd=16
+# 815 MEM LD addr=fffff830 wdata=0000000a rd=16
+# 825 MEM LD addr=fffff834 wdata=00000000 rd=16
+# 835 MEM LD addr=fffff838 wdata=00000000 rd=16
+# 845 MEM LD addr=fffff83c wdata=00000000 rd=16
+# 855 MEM LD addr=fffff830 wdata=00000000 rd=16
+# 865 MEM LD addr=fffff834 wdata=00000000 rd=16
+# 875 MEM LD addr=fffff838 wdata=00000015 rd=16
+# 885 MEM LD addr=fffff83c wdata=00000015 rd=16
+# 895 MEM ST addr=fffff830 wdata=00000015 rd=16
+# 905 MEM ST addr=fffff834 wdata=0000002a rd=16
+# 915 MEM ST addr=fffff838 wdata=0000003f rd=16
+# 925 MEM ST addr=fffff83c wdata=00000054 rd=16
+# 935 MEM LD addr=fffff830 wdata=00000000 rd=6
+# 945 MEM LD addr=fffff834 wdata=00000000 rd=6
+# 955 MEM LD addr=fffff838 wdata=00000000 rd=6
+# 965 MEM LD addr=fffff83c wdata=00000000 rd=6
+# 1025 MEM ST addr=fffff850 wdata=00000015 rd=16
+# 1035 MEM ST addr=fffff854 wdata=0000002a rd=16
+# 1045 MEM ST addr=fffff858 wdata=0000003f rd=16
+# 1055 MEM ST addr=fffff85c wdata=00000054 rd=16
+# 4485 MEM ST addr=fffff830 wdata=0000000b rd=16
+# 4486 WB.S (x9) data=0000000f (valuv_valid=1 valuv_rd=9 valuv_is_scalar=1 valuv_data_lo=0000000f)
+# 4495 MEM ST addr=fffff834 wdata=00000016 rd=16
+# 4505 MEM ST addr=fffff838 wdata=00000021 rd=16
+# 4515 MEM ST addr=fffff83c wdata=0000002c rd=16
+# 4526 WMB ENQ addr=fffff840 wdata=0000000f wstrb=f
+# 4546 WMB DEQ addr=fffff840 wdata=0000000f wstrb=f
+# 4555 MEM ST addr=fffff840 wdata=0000000f rd=0
+# 4585 MEM LD addr=fffff830 wdata=0000000a rd=16
+# 4595 MEM LD addr=fffff834 wdata=00000000 rd=16
+# 4605 MEM LD addr=fffff838 wdata=00000000 rd=16
+# 4615 MEM LD addr=fffff83c wdata=00000000 rd=16
+# 4625 MEM LD addr=fffff830 wdata=00000000 rd=16
+# 4635 MEM LD addr=fffff834 wdata=00000000 rd=16
+# 4645 MEM LD addr=fffff838 wdata=00000015 rd=16
+# 4655 MEM LD addr=fffff83c wdata=00000015 rd=16
+# 4665 MEM ST addr=fffff830 wdata=00000015 rd=16
+# 4675 MEM ST addr=fffff834 wdata=0000002a rd=16
+# 4685 MEM ST addr=fffff838 wdata=0000003f rd=16
+# 4695 MEM ST addr=fffff83c wdata=00000054 rd=16
+# 4705 MEM LD addr=fffff830 wdata=0000000b rd=6
+# 4715 MEM LD addr=fffff834 wdata=00000015 rd=6
+# 4725 MEM LD addr=fffff838 wdata=00000015 rd=6
+# 4735 MEM LD addr=fffff83c wdata=00000015 rd=6
+# 4795 MEM ST addr=fffff850 wdata=00000015 rd=16
+# 4805 MEM ST addr=fffff854 wdata=0000002a rd=16
+# 4815 MEM ST addr=fffff858 wdata=0000003f rd=16
+# 4825 MEM ST addr=fffff85c wdata=00000054 rd=16
+# [OK] scalar store @0 = 12 (0x0000000c)
+# [OK] scalar store @8 = 12 (0x0000000c)
+# [OK] csr_status = 7 (0x00000007)
+# [OK] vcmp mask store = 15 (0x0000000f)
+# [OK] vadd/atom lane0 = 21 (0x00000015)
+# [OK] vadd/atom lane1 = 42 (0x0000002a)
+# [OK] vadd/atom lane2 = 63 (0x0000003f)
+# [OK] vadd/atom lane3 = 84 (0x00000054)
+# [OK] vatom lane0 = 21 (0x00000015)
+# [OK] vatom lane1 = 42 (0x0000002a)
+# [OK] vatom lane2 = 63 (0x0000003f)
+# [OK] vatom lane3 = 84 (0x00000054)
+# ** Fatal: tex lane0 mismatch: got 0 (0x00000000) expected 3735928559 (0xdeadbeef)
+#    Time: 60045 ns  Scope: compute_unit_full_tb.check_equal File: /home/polar/ProtoTracer-FPGA-FrontEND/testbench/compute_unit_full_tb.sv Line: 346
+# ** Note: $finish    : /home/polar/ProtoTracer-FPGA-FrontEND/testbench/compute_unit_full_tb.sv(346)
+#    Time: 60045 ns  Iteration: 1  Instance: /compute_unit_full_tb
+# End time: 21:03:30 on Jan 10,2026, Elapsed time: 0:00:01
+# Errors: 1, Warnings: 0

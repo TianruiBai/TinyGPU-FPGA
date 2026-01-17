@@ -1,0 +1,40 @@
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 19:39:27 on Jan 10,2026
+# vlog -sv -work work ../ip/compute unit/isa_pkg.sv ../ip/compute unit/raster_unit.sv ../ip/compute unit/rop_unit.sv ../ip/compute unit/graphics_pipeline.sv gfx_gdraw_tb.sv 
+# -- Compiling package isa_pkg
+# -- Compiling module raster_unit
+# -- Compiling module rop_unit
+# ** Warning: ** while parsing file included at ../ip/compute unit/graphics_pipeline.sv(1)
+# ** at ../ip/compute unit/isa_pkg.sv(1): (vlog-2275) Existing package 'isa_pkg' will be overwritten.
+# -- Compiling package isa_pkg
+# -- Compiling module graphics_pipeline
+# -- Importing package isa_pkg
+# ** Warning: ../ip/compute unit/graphics_pipeline.sv(10): (vlog-13314) Defaulting port 'issue_ctrl' kind to 'var' rather than 'wire' due to default compile option setting of -svinputport=relaxed.
+# -- Compiling module gfx_gdraw_tb
+# 
+# Top level modules:
+# 	gfx_gdraw_tb
+# End time: 19:39:27 on Jan 10,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 2
+# vsim -c -t 1ns work.gfx_gdraw_tb 
+# Start time: 19:39:27 on Jan 10,2026
+# Loading sv_std.std
+# Loading work.isa_pkg
+# Loading work.gfx_gdraw_tb
+# Loading work.graphics_pipeline
+# Loading work.raster_unit
+# Loading work.rop_unit
+# 1295 ST addr=00002024 data=55aa1234 strb=f
+# 1345 ST addr=00002038 data=55aa1234 strb=f
+# 1385 ST addr=00002048 data=55aa1234 strb=f
+# 1395 ST addr=0000204c data=55aa1234 strb=f
+# 1405 ST addr=00002068 data=55aa1234 strb=f
+# 1415 ST addr=0000206c data=55aa1234 strb=f
+# 1445 ST addr=00002088 data=55aa1234 strb=f
+# 1455 ST addr=0000208c data=55aa1234 strb=f
+# 1465 ST addr=000020a8 data=55aa1234 strb=f
+# PASS: saw 9 stores (GDRAW MATERIAL_COLOR)
+# ** Note: $finish    : gfx_gdraw_tb.sv(234)
+#    Time: 30175 ns  Iteration: 1  Instance: /gfx_gdraw_tb
+# End time: 19:39:27 on Jan 10,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0

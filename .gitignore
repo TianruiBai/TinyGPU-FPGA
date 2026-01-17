@@ -1,0 +1,29 @@
+# Verilator / build outputs
+obj_dir/
+obj_dir*/
+
+# Waveform files
+*.vcd
+*.vpd
+
+# Verilator build artifacts
+*.o
+*.a
+*.so
+*.d
+
+# C/C++ precompiled headers
+*.gch
+
+# Editor and OS files
+*.swp
+*~
+.DS_Store
+.vscode/
+
+# Large images used for tests (optional)
+*.ppm
+*.png
+
+# Ignore compiled python cache
+__pycache__/

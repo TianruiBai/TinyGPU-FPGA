@@ -1,0 +1,153 @@
+@startuml
+title Compute Unit Microarchitecture (As-built RTL)
+
+' "Material-ish" styling (pure PlantUML skinparams)
+left to right direction
+skinparam shadowing false
+skinparam linetype ortho
+skinparam roundcorner 14
+skinparam defaultFontName "Inter"
+skinparam defaultFontSize 12
+skinparam backgroundColor #FAFAFA
+skinparam packageStyle rectangle
+skinparam packageBorderColor #CFD8DC
+skinparam packageBackgroundColor #FFFFFF
+skinparam componentStyle rectangle
+skinparam componentBorderColor #546E7A
+skinparam componentBackgroundColor #FFFFFF
+skinparam ArrowColor #546E7A
+skinparam ArrowThickness 1.2
+skinparam noteBackgroundColor #FFFDE7
+skinparam noteBorderColor #FBC02D
+skinparam nodesep 38
+skinparam ranksep 28
+skinparam componentPadding 10
+skinparam packagePadding 10
+skinparam wrapWidth 220
+
+cloud "Instruction bus\n(inst_addr/inst_rdata[63:0])" as IFBUS
+cloud "Unified Global Memory\n32-bit req/resp" as GMEM
+
+package "compute_unit_top.sv" {
+
+  package "Front-End / Issue" {
+    [fetch_unit\n(64-bit bundle)] as FE
+    [branch_predictor_bht\n(ENTRIES=64)] as BHT
+    [decoder0\n(slot0)] as DEC0
+    [decoder1\n(slot1)] as DEC1
+    [scoreboard] as SB
+    [issue + classify\n(dual-issue rules)] as ISSUE
+  }
+
+  package "Regfiles" {
+    [regfile_scalar\n32x32] as RF_S
+    [regfile_fp\n32x16 (FP16)] as RF_F
+    [regfile_vector\n32x128] as RF_V
+  }
+
+  package "Scalar / FP Pipeline" {
+    [RR regs\n(op capture + bypass)] as RR
+    [EX stage] as EX
+    [alu_scalar] as ALU_S
+    [branch_unit\n(decide + target + link)] as BRU
+    [agu\n(addr = base + imm)] as AGU
+    [fp_alu\n(FP16 + FCVT)] as ALU_F
+    [csr_file] as CSR
+    [MEM/WB regs\n+ control-flow redirect] as MEMWB
+    [scalar_wb_arb_pending2\n(Pending > LSU > FP\n > VALU > ALU)] as WB_ARB
+  }
+
+  package "Vector Pipeline" {
+    [VQ skid\n(VQ_DEPTH=2)] as VQ
+    [alu_vector] as ALU_V
+    [vector WB mux + skid\n(pending_vector_*)] as VWB
+  }
+
+  package "LSU / Memory" {
+    [lsu\n(local/global/atomics)] as LSU
+    [write_merge_buf\n(8 entries)] as WMB
+    [local_mem_banked] as LM
+  }
+
+  package "Graphics / TEX" {
+    [graphics_pipeline\n(GQ_DEPTH=8)] as GP
+    [texture_cache\n(64 lines, 16B/line)] as TEXC
+    [raster_unit] as RAST
+    [rop_unit] as ROP
+  }
+}
+
+IFBUS --> FE
+BHT --> FE : pred target\n(applied only when slot0 accepted)
+FE --> DEC0 : inst0
+FE --> DEC1 : inst1
+DEC0 --> SB : issue0 intent
+DEC1 --> SB : issue1 intent
+SB --> ISSUE : accept/stall
+
+ISSUE --> RF_S : reads
+ISSUE --> RF_F : reads
+ISSUE --> RF_V : reads\n(shared ports)
+
+RF_S --> RR
+RF_F --> RR
+RF_V --> RR
+RR --> EX
+
+EX --> ALU_S
+EX --> BRU
+EX --> AGU
+EX --> ALU_F
+EX --> CSR
+
+BRU --> FE : redirect (mispredict)
+
+EX --> LSU : loads/stores/atomics
+LSU --> LM : local
+LSU --> WMB : merge stores
+LSU --> GMEM : global req/resp
+WMB --> GMEM : drained writes
+
+EX --> MEMWB
+MEMWB --> WB_ARB
+LSU --> WB_ARB : scalar WB
+ALU_F --> WB_ARB : scalar WB
+ALU_V --> WB_ARB : scalar WB (mask ops)
+ALU_S --> WB_ARB : scalar WB
+WB_ARB --> RF_S : s_we/s_waddr/s_wdata
+ALU_F --> RF_F : fp WB
+
+ISSUE --> VQ : vec-ALU enqueue\n(slot1 preferred)
+RF_V --> VQ : v_rdata_a/b\n(src_a/src_b)
+VQ --> ALU_V
+
+ALU_V --> VWB : valuv_wb_valid/rd/data
+GP --> VWB : gp_wb_valid/rd/data\n(TEX writeback)
+LSU --> VWB : lsu_wb_valid/rd/data\n(vector loads)
+VWB --> RF_V : v_we/v_waddr/v_wdata\n(Pending>LSU>TEX>VALU)
+
+ISSUE --> GP : gfx/tex enqueue\n(slot1 allowed)
+GP --> TEXC : tex req/resp
+TEXC --> LSU : miss refill\n(16B line)
+GP --> RAST : raster cmds/state
+RAST --> ROP : quad_valid/ready\n+ payload
+ROP --> GP : fragments
+GP --> LSU : gfx_st_* stores
+
+note right of ISSUE
+Slot1 restrictions (as-built):\n- slot1: vec-ALU or gfx/tex\n- disallow slot0 vec store/atomic + slot1 vec/gfx (shared VRF ports)
+end note
+
+note right of VQ
+As-built VRF read selection:\n- One 2R port set shared\n- Reads come from rr unless rr1 is a vec/gfx op\n  (vrf_use_rr1 selects rr1 addresses)
+end note
+
+note right of GP
+As-built: GFX/TEX queue is not flushed on scalar redirects\n("fire-and-forget" once issued)
+end note
+
+note right of RAST
+Raster->ROP is ready/valid.\nHold payload stable while quad_valid && !quad_ready.\nAdvance only when (quad_ready || !quad_valid).
+end note
+
+@enduml

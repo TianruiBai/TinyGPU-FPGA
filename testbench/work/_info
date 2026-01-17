@@ -1,0 +1,617 @@
+m255
+K4
+z2
+!s11f vlog 2020.1 2020.02, Feb 28 2020
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 d/home/polar/ProtoTracer-FPGA-FrontEND/testbench
+vagu
+Z1 DXx6 sv_std 3 std 0 22 VYECXdT12H8WgbUP_5Y6:3
+Z2 !s110 1768122423
+!i10b 1
+!s100 WDfKmlO0az=[VKBi[Lm2[3
+Z3 !s11b Dg1SIo80bB@j0V0VzS_@n1
+IFe]7eZl[VI5m5nX6>QKkz3
+Z4 VDg1SIo80bB@j0V0VzS_@n1
+S1
+R0
+w1767961620
+8/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/agu.sv
+F/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/agu.sv
+!i122 1
+L0 1 8
+Z5 OV;L;2020.1;71
+r1
+!s85 0
+31
+Z6 !s108 1768122423.000000
+!s107 /home/polar/ProtoTracer-FPGA-FrontEND/testbench/compute_unit_full_tb.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fp_alu.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/agu.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_vector.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/lsu.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_scalar.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/raster_unit.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/rop_unit.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/texture_cache.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/gpipe_dispatcher.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/write_merge_buf.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_scalar.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/graphics_pipeline.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/decoder.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/scalar_wb_arb_pending2.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/icache.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_fp.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/compute_unit_top.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_vector.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/local_mem_banked.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fetch_unit.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/scoreboard.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/csr_file.sv|
+Z7 !s90 -sv|-work|work|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/csr_file.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/scoreboard.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fetch_unit.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/local_mem_banked.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_vector.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/compute_unit_top.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_fp.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/icache.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/scalar_wb_arb_pending2.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/decoder.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/graphics_pipeline.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_scalar.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/write_merge_buf.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/gpipe_dispatcher.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/texture_cache.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/rop_unit.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/raster_unit.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_scalar.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/lsu.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_vector.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/agu.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fp_alu.sv|/home/polar/ProtoTracer-FPGA-FrontEND/testbench/compute_unit_full_tb.sv|
+!i113 1
+Z8 o-sv -work work
+Z9 tCvgOpt 0
+valu_scalar
+R1
+Z10 DXx4 work 7 isa_pkg 0 22 ScHhn^9=1]3Obz=:N@>h50
+R2
+!i10b 1
+!s100 9hB2?nkQY:8@PNSJ3LLg23
+R3
+I1hjQCL5Cl:;FZSbF>X:`80
+R4
+S1
+R0
+w1768111832
+8/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_scalar.sv
+F/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_scalar.sv
+!i122 1
+L0 1 54
+R5
+r1
+!s85 0
+31
+R6
+Z11 !s107 /home/polar/ProtoTracer-FPGA-FrontEND/testbench/compute_unit_full_tb.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fp_alu.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/agu.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_vector.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/lsu.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_scalar.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/raster_unit.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/rop_unit.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/texture_cache.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/gpipe_dispatcher.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/write_merge_buf.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_scalar.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/graphics_pipeline.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/decoder.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/scalar_wb_arb_pending2.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/icache.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_fp.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/compute_unit_top.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_vector.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/local_mem_banked.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fetch_unit.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/scoreboard.sv|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/csr_file.sv|
+R7
+!i113 1
+R8
+R9
+valu_vector
+R1
+R2
+!i10b 1
+!s100 ;68XfGX0W22OXBBJ;3SSS2
+R3
+IL[eCJeZeoZL]TI:@I5gTn2
+R4
+S1
+R0
+w1768120083
+8/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_vector.sv
+F/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_vector.sv
+!i122 1
+L0 1 537
+R5
+r1
+!s85 0
+31
+R6
+R11
+R7
+!i113 1
+R8
+R9
+vcompute_unit_full_tb
+R1
+R10
+R2
+!i10b 1
+!s100 iEa7`gP24UOzd;n[ZoF:`3
+R3
+ILj8VM<UGXO[n?6IY>71z>2
+R4
+S1
+R0
+w1768122420
+8/home/polar/ProtoTracer-FPGA-FrontEND/testbench/compute_unit_full_tb.sv
+F/home/polar/ProtoTracer-FPGA-FrontEND/testbench/compute_unit_full_tb.sv
+!i122 1
+L0 4 1324
+R5
+r1
+!s85 0
+31
+R6
+R11
+R7
+!i113 1
+R8
+R9
+vcompute_unit_top
+R1
+R10
+R2
+!i10b 1
+!s100 =D7<MbZ98EjZL_llRa>5`1
+R3
+IfR8i@R2kLR[VSRkIE4ZPb2
+R4
+S1
+R0
+w1768118309
+8/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/compute_unit_top.sv
+F/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/compute_unit_top.sv
+!i122 1
+L0 1 943
+R5
+r1
+!s85 0
+31
+R6
+R11
+R7
+!i113 1
+R8
+R9
+vcsr_file
+R1
+R2
+!i10b 1
+!s100 VDHzzfj<3kfF?Nafo0`1W3
+R3
+IkT>MLUiT8IP]cmdJcnN?@0
+R4
+S1
+R0
+w1768084511
+8/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/csr_file.sv
+F/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/csr_file.sv
+!i122 1
+L0 1 99
+R5
+r1
+!s85 0
+31
+R6
+R11
+R7
+!i113 1
+R8
+R9
+vdecoder
+R1
+R10
+R2
+!i10b 1
+!s100 zHQP=8o6B6MEh4Sf0e]a]0
+R3
+IS:O^@_Z_OTbdJN>ln>MiR3
+R4
+S1
+R0
+w1768112199
+8/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/decoder.sv
+F/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/decoder.sv
+!i122 1
+L0 1 150
+R5
+r1
+!s85 0
+31
+R6
+R11
+R7
+!i113 1
+R8
+R9
+vfetch_unit
+R1
+R2
+!i10b 1
+!s100 ?d<FNSMfiVXR=858Q0KDP2
+R3
+IzNLoAe=8edJFRmzfYcX3a2
+R4
+S1
+R0
+w1768110541
+8/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fetch_unit.sv
+F/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fetch_unit.sv
+!i122 1
+L0 1 60
+R5
+r1
+!s85 0
+31
+R6
+R11
+R7
+!i113 1
+R8
+R9
+vfp_alu
+R1
+R2
+!i10b 1
+!s100 8GTCik^mZb;dQVZcnnaXI2
+R3
+IH]QF=?TCLmo[Y][`d5HAY0
+R4
+S1
+R0
+w1768010047
+8/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fp_alu.sv
+F/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fp_alu.sv
+!i122 1
+L0 1 381
+R5
+r1
+!s85 0
+31
+R6
+R11
+R7
+!i113 1
+R8
+R9
+vgpipe_dispatcher
+R1
+R10
+R2
+!i10b 1
+!s100 MLTaN5h0nW_ZR;PzaoM1O0
+R3
+IHZT=0CYoVn72R@;`agR<g0
+R4
+S1
+R0
+Z12 w1768107730
+8/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/gpipe_dispatcher.sv
+F/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/gpipe_dispatcher.sv
+!i122 1
+L0 1 44
+R5
+r1
+!s85 0
+31
+R6
+R11
+R7
+!i113 1
+R8
+R9
+vgraphics_pipeline
+R1
+R10
+R2
+!i10b 1
+!s100 HANlKhkJ_>9[jRE39PPSa0
+R3
+IcbCfmgXAOlk1fhU8R?U0`1
+R4
+S1
+R0
+R12
+8/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/graphics_pipeline.sv
+F/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/graphics_pipeline.sv
+!i122 1
+L0 1 1337
+R5
+r1
+!s85 0
+31
+R6
+R11
+R7
+!i113 1
+R8
+R9
+vicache
+R1
+R2
+!i10b 1
+!s100 ljUlgI1j^2iW:CJIEoom]3
+R3
+IC>5ccjlKoI7N;;iXzQ5Sj0
+R4
+S1
+R0
+w1767961099
+8/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/icache.sv
+F/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/icache.sv
+!i122 1
+L0 1 75
+R5
+r1
+!s85 0
+31
+R6
+R11
+R7
+!i113 1
+R8
+R9
+Xisa_pkg
+R1
+R2
+!i10b 1
+!s100 fQW5QYhn2Wc9YQ>2F@DJP3
+R3
+IScHhn^9=1]3Obz=:N@>h50
+VScHhn^9=1]3Obz=:N@>h50
+S1
+R0
+w1768087101
+8/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv
+F/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv
+!i122 0
+L0 1 0
+R5
+r1
+!s85 0
+31
+R6
+!s107 /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv|
+!s90 -sv|-work|work|/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv|
+!i113 1
+R8
+R9
+vlocal_mem_banked
+R1
+R2
+!i10b 1
+!s100 HH1FIW`=UTJXJA1eP_@lY0
+R3
+I7h?jIF]Qf]6TP2zmgfo0X3
+R4
+S1
+R0
+w1767962032
+8/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/local_mem_banked.sv
+F/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/local_mem_banked.sv
+!i122 1
+L0 1 55
+R5
+r1
+!s85 0
+31
+R6
+R11
+R7
+!i113 1
+R8
+R9
+vlsu
+R1
+R2
+!i10b 1
+!s100 L2chLdR5VbbZ8[HTX=IzW0
+R3
+IDb:<@A;<g8kJPEeVoPz7m1
+R4
+S1
+R0
+w1768105587
+8/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/lsu.sv
+F/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/lsu.sv
+!i122 1
+L0 1 684
+R5
+r1
+!s85 0
+31
+R6
+R11
+R7
+!i113 1
+R8
+R9
+vraster_unit
+R1
+R2
+!i10b 1
+!s100 JRP<zk0XPV=YibEYXEd9>1
+R3
+IO9ACl1`j[;m4V9>84Hgni2
+R4
+S1
+R0
+w1768093306
+8/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/raster_unit.sv
+F/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/raster_unit.sv
+!i122 1
+L0 1 201
+R5
+r1
+!s85 0
+31
+R6
+R11
+R7
+!i113 1
+R8
+R9
+vregfile_fp
+R1
+R2
+!i10b 1
+!s100 m]k?ail8kmJ8Rf^cIa`8l3
+R3
+IV]3kRl_O5n_BOYXZ]Y9Re2
+R4
+S1
+R0
+w1768119637
+8/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_fp.sv
+F/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_fp.sv
+!i122 1
+L0 1 28
+R5
+r1
+!s85 0
+31
+R6
+R11
+R7
+!i113 1
+R8
+R9
+vregfile_scalar
+R1
+R2
+!i10b 1
+!s100 >Yd7R?ei_3Z;:ZMh@;k0z0
+R3
+IAJmAR6SCfTIjT4:V2LQ0?3
+R4
+S1
+R0
+w1768090234
+8/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_scalar.sv
+F/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_scalar.sv
+!i122 1
+L0 1 30
+R5
+r1
+!s85 0
+31
+R6
+R11
+R7
+!i113 1
+R8
+R9
+vregfile_vector
+R1
+R2
+!i10b 1
+!s100 Q80?Xm7^>naQ@IeiLm_dE0
+R3
+Id1;]oa`H1DYkEm8H]b9kQ2
+R4
+S1
+R0
+w1768119068
+8/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_vector.sv
+F/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_vector.sv
+!i122 1
+L0 1 29
+R5
+r1
+!s85 0
+31
+R6
+R11
+R7
+!i113 1
+R8
+R9
+vrop_unit
+R1
+R2
+!i10b 1
+!s100 mjiLQbGm2LXji?=k5XhT@3
+R3
+InA:F7mbjEEJ6:4J<iYAiW0
+R4
+S1
+R0
+w1768094665
+8/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/rop_unit.sv
+F/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/rop_unit.sv
+!i122 1
+L0 1 307
+R5
+r1
+!s85 0
+31
+R6
+R11
+R7
+!i113 1
+R8
+R9
+vscalar_wb_arb_pending2
+R1
+R2
+!i10b 1
+!s100 :HP=Z;hnClECF`ZM;Xo@V3
+R3
+I4HiZl>F[8Zhk<lITTZjPR0
+R4
+S1
+R0
+w1768118312
+8/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/scalar_wb_arb_pending2.sv
+F/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/scalar_wb_arb_pending2.sv
+!i122 1
+L0 1 149
+R5
+r1
+!s85 0
+31
+R6
+R11
+R7
+!i113 1
+R8
+R9
+vscoreboard
+R1
+R2
+!i10b 1
+!s100 iB<LYf[PZ8;I1:V7XA`Nz0
+R3
+Ie@_z?iS:62hd:zT6ePUh<0
+R4
+S1
+R0
+w1768119626
+8/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/scoreboard.sv
+F/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/scoreboard.sv
+!i122 1
+L0 1 159
+R5
+r1
+!s85 0
+31
+R6
+R11
+R7
+!i113 1
+R8
+R9
+vtexture_cache
+R1
+R2
+!i10b 1
+!s100 4>21`iP:N<0M9^05Jm_253
+R3
+IP=bzVG6m7S2eElagbT[:I0
+R4
+S1
+R0
+w1768105297
+8/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/texture_cache.sv
+F/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/texture_cache.sv
+!i122 1
+L0 1 171
+R5
+r1
+!s85 0
+31
+R6
+R11
+R7
+!i113 1
+R8
+R9
+vwrite_merge_buf
+R1
+R2
+!i10b 1
+!s100 5D=kUgFJ5R19`Of@Yf5Mg2
+R3
+I=?8?iQ_T97=S@W02kG`EC3
+R4
+S1
+R0
+w1768096221
+8/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/write_merge_buf.sv
+F/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/write_merge_buf.sv
+!i122 1
+L0 1 219
+R5
+r1
+!s85 0
+31
+R6
+R11
+R7
+!i113 1
+R8
+R9

@@ -1,0 +1,37 @@
+@startuml
+' Raster -> ROP ready/valid handshake (as-built)
+skinparam shadowing false
+
+participant "raster_unit" as R
+participant "rop_unit" as P
+participant "lsu" as L
+participant "write_merge_buf" as W
+
+== Normal case ==
+R -> P : quad_valid=1\nquad_payload (x,y,mask,bary,area)
+P -> R : quad_ready=1
+P -> P : latch payload (IDLE->HOLD)
+P -> L : gfx_st_valid (per enabled quad_mask bit)
+L -> W : enqueue/merge store
+
+== Backpressure case ==
+R -> P : quad_valid=1\nquad_payload A
+P -> R : quad_ready=0
+R -> P : quad_valid=1\nquad_payload A (stable)
+... payload held stable ...
+P -> R : quad_ready=1
+R -> P : (may advance next pixel on next cycle)
+
+note over R
+Normative rule:
+- Hold payload stable while quad_valid && !quad_ready
+- Advance only when (quad_ready || !quad_valid)
+end note
+
+note over P
+As-built behavior:
+- quad_ready asserted only when accepting into IDLE
+- ROP emits stores only for enabled quad_mask bits
+end note
+
+@enduml

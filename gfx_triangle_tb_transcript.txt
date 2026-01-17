@@ -1,0 +1,16 @@
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 19:05:59 on Jan 10,2026
+# vlog -sv -work work ../ip/compute unit/isa_pkg.sv ../ip/compute unit/raster_unit.sv ../ip/compute unit/rop_unit.sv ../ip/compute unit/graphics_pipeline.sv gfx_triangle_tb.sv 
+# ** Error: (vlog-7) Failed to open design unit file "../ip/compute unit/isa_pkg.sv" in read mode.
+# No such file or directory. (errno = ENOENT)
+# End time: 19:05:59 on Jan 10,2026, Elapsed time: 0:00:00
+# Errors: 1, Warnings: 0
+# ** Error: /home/polar/intelFPGA/20.1/modelsim_ase/linuxaloem/vlog failed.
+# Error in macro ./testbench/gfx_triangle_tb.do line 15
+# /home/polar/intelFPGA/20.1/modelsim_ase/linuxaloem/vlog failed.
+#     while executing
+# "vlog -sv -work work \
+#     {../ip/compute unit/isa_pkg.sv} \
+#     {../ip/compute unit/raster_unit.sv} \
+#     {../ip/compute unit/rop_unit.sv} \
+#     {../i..."

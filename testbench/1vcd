@@ -1,0 +1,18 @@
+$date
+	Fri Jan  9 20:53:59 2026
+$end
+$version
+	ModelSim Version 2020.1
+$end
+$timescale
+	1ps
+$end
+$scope module compute_unit_tb $end
+$scope module dut $end
+$var wire 1 ! lsu_vector_wb $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+#0
+0!
+0!

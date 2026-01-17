@@ -1,0 +1,103 @@
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 19:38:31 on Jan 10,2026
+# vlog -sv -work work ../ip/compute unit/isa_pkg.sv ../ip/compute unit/raster_unit.sv ../ip/compute unit/rop_unit.sv ../ip/compute unit/graphics_pipeline.sv gfx_textured_triangle_tb.sv 
+# -- Compiling package isa_pkg
+# -- Compiling module raster_unit
+# -- Compiling module rop_unit
+# ** Warning: ** while parsing file included at ../ip/compute unit/graphics_pipeline.sv(1)
+# ** at ../ip/compute unit/isa_pkg.sv(1): (vlog-2275) Existing package 'isa_pkg' will be overwritten.
+# -- Compiling package isa_pkg
+# -- Compiling module graphics_pipeline
+# -- Importing package isa_pkg
+# ** Warning: ../ip/compute unit/graphics_pipeline.sv(10): (vlog-13314) Defaulting port 'issue_ctrl' kind to 'var' rather than 'wire' due to default compile option setting of -svinputport=relaxed.
+# -- Compiling module gfx_textured_triangle_tb
+# 
+# Top level modules:
+# 	gfx_textured_triangle_tb
+# End time: 19:38:31 on Jan 10,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 2
+# vsim -c -t 1ns work.gfx_textured_triangle_tb 
+# Start time: 19:38:31 on Jan 10,2026
+# Loading sv_std.std
+# Loading work.isa_pkg
+# Loading work.gfx_textured_triangle_tb
+# Loading work.graphics_pipeline
+# Loading work.raster_unit
+# Loading work.rop_unit
+# 125 LD addr=00001000
+# 155 LD addr=00001004
+# 185 LD addr=00001008
+# 215 LD addr=0000100c
+# 245 LD addr=00001020
+# 275 LD addr=00001024
+# 305 LD addr=00001028
+# 335 LD addr=0000102c
+# 365 LD addr=00001030
+# 395 LD addr=00001300
+# 425 LD addr=00001304
+# 455 LD addr=00001308
+# 485 LD addr=0000130c
+# 515 LD addr=00001310
+# 565 LD addr=00001100
+# 595 LD addr=00001104
+# 625 LD addr=00001110
+# 655 LD addr=00001114
+# 685 LD addr=00001120
+# 715 LD addr=00001124
+# 745 LD addr=00001130
+# 775 LD addr=00001134
+# 805 LD addr=00001140
+# 835 LD addr=00001144
+# 865 LD addr=00001150
+# 895 LD addr=00001154
+# 1005 QUAD x=0 y=0 mask=1111
+# DEBUG UV v0=(1,2) v1=(1,2) v2=(1,2)
+# DEBUG bary=(36,0,0) tri_area=36
+# DEBUG tex en=1 base=00003000 stride=16 w=4 h=4 fmt=0
+# 1015 LD addr=00003024
+# 1045 ST addr=00002000 data=cafebabe strb=f
+# 1055 ST addr=00002004 data=cafebabe strb=f
+# 1065 ST addr=00002020 data=cafebabe strb=f
+# 1075 ST addr=00002024 data=cafebabe strb=f
+# 1095 QUAD x=6 y=0 mask=0001
+# 1105 LD addr=00003024
+# 1135 ST addr=00002018 data=cafebabe strb=f
+# 1185 QUAD x=2 y=2 mask=1111
+# 1195 LD addr=00003024
+# 1225 ST addr=00002048 data=cafebabe strb=f
+# 1235 ST addr=0000204c data=cafebabe strb=f
+# 1245 ST addr=00002068 data=cafebabe strb=f
+# 1255 ST addr=0000206c data=cafebabe strb=f
+# 1275 QUAD x=2 y=4 mask=0001
+# 1285 LD addr=00003024
+# 1315 ST addr=00002088 data=cafebabe strb=f
+# 1395 LD addr=00001200
+# 1425 LD addr=00001204
+# 1455 LD addr=00001208
+# 1485 LD addr=0000120c
+# 1515 LD addr=00001210
+# 1605 QUAD x=0 y=0 mask=1111
+# 1615 ST addr=00002000 data=aabbccdd strb=f
+# 1625 ST addr=00002004 data=aabbccdd strb=f
+# 1635 ST addr=00002020 data=aabbccdd strb=f
+# 1645 ST addr=00002024 data=aabbccdd strb=f
+# 1665 QUAD x=0 y=2 mask=1111
+# 1675 ST addr=00002040 data=aabbccdd strb=f
+# 1685 ST addr=00002044 data=aabbccdd strb=f
+# 1695 ST addr=00002060 data=aabbccdd strb=f
+# 1705 ST addr=00002064 data=aabbccdd strb=f
+# 1835 QUAD x=2 y=0 mask=1000
+# 1875 ST addr=0000202c data=aabbccdd strb=f
+# 1895 QUAD x=2 y=2 mask=1111
+# 1905 ST addr=00002048 data=aabbccdd strb=f
+# 1915 ST addr=0000204c data=aabbccdd strb=f
+# 1925 ST addr=00002068 data=aabbccdd strb=f
+# 1935 ST addr=0000206c data=aabbccdd strb=f
+# 1965 ST addr=00002080 data=aabbccdd strb=f
+# 1975 ST addr=00002084 data=aabbccdd strb=f
+# 2025 ST addr=00002090 data=aabbccdd strb=f
+# PASS: saw 26 stores; textured stores observed
+# ** Note: $finish    : gfx_textured_triangle_tb.sv(253)
+#    Time: 25175 ns  Iteration: 1  Instance: /gfx_textured_triangle_tb
+# End time: 19:38:31 on Jan 10,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0

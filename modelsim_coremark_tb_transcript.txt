@@ -1,0 +1,121 @@
+# /home/polar/ProtoTracer-FPGA-FrontEND
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 06:53:33 on Jan 11,2026
+# vlog -sv -work work /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv 
+# -- Compiling package isa_pkg
+# 
+# Top level modules:
+# 	--none--
+# End time: 06:53:33 on Jan 11,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/csr_file.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/scoreboard.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fetch_unit.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/local_mem_banked.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_vector.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/compute_unit_top.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_fp.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/icache.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/scalar_wb_arb_pending2.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/decoder.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/graphics_pipeline.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_scalar.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/isa_pkg.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/write_merge_buf.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/gpipe_dispatcher.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/texture_cache.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/rop_unit.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/raster_unit.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_scalar.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/lsu.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_vector.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/agu.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fp_alu.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/csr_file.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/scoreboard.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fetch_unit.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/local_mem_banked.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_vector.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/compute_unit_top.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_fp.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/icache.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/scalar_wb_arb_pending2.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/decoder.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/graphics_pipeline.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_scalar.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/write_merge_buf.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/gpipe_dispatcher.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/texture_cache.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/rop_unit.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/raster_unit.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_scalar.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/lsu.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_vector.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/agu.sv
+# /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fp_alu.sv
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 06:53:33 on Jan 11,2026
+# vlog -sv -work work /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/csr_file.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/scoreboard.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fetch_unit.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/local_mem_banked.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_vector.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/compute_unit_top.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_fp.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/icache.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/scalar_wb_arb_pending2.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/decoder.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/graphics_pipeline.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/regfile_scalar.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/write_merge_buf.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/gpipe_dispatcher.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/texture_cache.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/rop_unit.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/raster_unit.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_scalar.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/lsu.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/alu_vector.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/agu.sv /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fp_alu.sv /home/polar/ProtoTracer-FPGA-FrontEND/testbench/coremark_tb.sv 
+# -- Compiling module csr_file
+# -- Compiling module scoreboard
+# -- Compiling module fetch_unit
+# -- Compiling module local_mem_banked
+# -- Compiling module regfile_vector
+# -- Compiling module compute_unit_top
+# -- Importing package isa_pkg
+# -- Compiling module regfile_fp
+# -- Compiling module icache
+# -- Compiling module scalar_wb_arb_pending2
+# -- Compiling module decoder
+# -- Compiling module graphics_pipeline
+# ** Warning: /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/graphics_pipeline.sv(8): (vlog-13314) Defaulting port 'issue_ctrl' kind to 'var' rather than 'wire' due to default compile option setting of -svinputport=relaxed.
+# -- Compiling module regfile_scalar
+# -- Compiling module write_merge_buf
+# -- Compiling module gpipe_dispatcher
+# ** Warning: /home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/gpipe_dispatcher.sv(5): (vlog-13314) Defaulting port 'ctrl' kind to 'var' rather than 'wire' due to default compile option setting of -svinputport=relaxed.
+# -- Compiling module texture_cache
+# -- Compiling module rop_unit
+# -- Compiling module raster_unit
+# -- Compiling module alu_scalar
+# -- Compiling module lsu
+# -- Compiling module alu_vector
+# -- Compiling module agu
+# -- Compiling module fp_alu
+# -- Compiling module coremark_tb
+# 
+# Top level modules:
+# 	icache
+# 	gpipe_dispatcher
+# 	coremark_tb
+# End time: 06:53:33 on Jan 11,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 2
+# +rom=coremark/coremark_tinygpu.memh +mem_init=coremark/coremark_mem_init.memh +base=80000000 +max_cycles=50000000
+# vsim -c -t 1ns work.coremark_tb "+rom=coremark/coremark_tinygpu.memh" "+mem_init=coremark/coremark_mem_init.memh" "+base=80000000" "+max_cycles=50000000" 
+# Start time: 06:53:33 on Jan 11,2026
+# Loading sv_std.std
+# Loading work.isa_pkg
+# Loading work.coremark_tb
+# Loading work.compute_unit_top
+# Loading work.graphics_pipeline
+# Loading work.raster_unit
+# Loading work.rop_unit
+# Loading work.fetch_unit
+# Loading work.decoder
+# Loading work.scoreboard
+# Loading work.regfile_scalar
+# Loading work.regfile_fp
+# Loading work.regfile_vector
+# Loading work.agu
+# Loading work.alu_scalar
+# Loading work.fp_alu
+# Loading work.alu_vector
+# Loading work.texture_cache
+# Loading work.local_mem_banked
+# Loading work.csr_file
+# Loading work.lsu
+# Loading work.write_merge_buf
+# Loading work.scalar_wb_arb_pending2
+# COREMARK_TB: loading ROM from coremark/coremark_tinygpu.memh
+# COREMARK_TB: loading MEM from coremark/coremark_mem_init.memh
+# COREMARK_TB: base=80000000 done_off=000001f0 max_cycles=50000000

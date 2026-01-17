@@ -1,0 +1,22 @@
+{/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/agu.sv} {1 {vlog -work work -sv -stats=none {/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/agu.sv}
+Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+-- Compiling module agu
+
+Top level modules:
+	agu
+
+} {} {}} {/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/icache.sv} {1 {vlog -work work -sv -stats=none {/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/icache.sv}
+Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+-- Compiling module icache
+
+Top level modules:
+	icache
+
+} {} {}} {/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fp_alu.sv} {1 {vlog -work work -sv -stats=none {/home/polar/ProtoTracer-FPGA-FrontEND/ip/compute unit/fp_alu.sv}
+Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+-- Compiling module fp_alu
+
+Top level modules:
+	fp_alu
+
+} {} {}}

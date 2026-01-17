@@ -1,0 +1,65 @@
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 19:38:25 on Jan 10,2026
+# vlog -sv -work work ../ip/compute unit/isa_pkg.sv ../ip/compute unit/raster_unit.sv ../ip/compute unit/rop_unit.sv ../ip/compute unit/graphics_pipeline.sv gfx_triangle_tb.sv 
+# -- Compiling package isa_pkg
+# -- Compiling module raster_unit
+# -- Compiling module rop_unit
+# ** Warning: ** while parsing file included at ../ip/compute unit/graphics_pipeline.sv(1)
+# ** at ../ip/compute unit/isa_pkg.sv(1): (vlog-2275) Existing package 'isa_pkg' will be overwritten.
+# -- Compiling package isa_pkg
+# -- Compiling module graphics_pipeline
+# -- Importing package isa_pkg
+# ** Warning: ../ip/compute unit/graphics_pipeline.sv(10): (vlog-13314) Defaulting port 'issue_ctrl' kind to 'var' rather than 'wire' due to default compile option setting of -svinputport=relaxed.
+# -- Compiling module gfx_triangle_tb
+# 
+# Top level modules:
+# 	gfx_triangle_tb
+# End time: 19:38:25 on Jan 10,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 2
+# vsim -c -t 1ns work.gfx_triangle_tb 
+# Start time: 19:38:25 on Jan 10,2026
+# Loading sv_std.std
+# Loading work.isa_pkg
+# Loading work.gfx_triangle_tb
+# Loading work.graphics_pipeline
+# Loading work.raster_unit
+# Loading work.rop_unit
+# 855 QUAD x=0 y=0 mask=1111
+# 865 ST addr=00002000 data=11223344 strb=f
+# 875 ST addr=00002004 data=11223344 strb=f
+# 885 ST addr=00002020 data=11223344 strb=f
+# 895 ST addr=00002024 data=11223344 strb=f
+# 915 QUAD x=6 y=0 mask=0001
+# 925 ST addr=00002018 data=11223344 strb=f
+# 975 QUAD x=2 y=2 mask=1111
+# 985 ST addr=00002048 data=11223344 strb=f
+# 995 ST addr=0000204c data=11223344 strb=f
+# 1005 ST addr=00002068 data=11223344 strb=f
+# 1015 ST addr=0000206c data=11223344 strb=f
+# 1035 QUAD x=2 y=4 mask=0001
+# 1045 ST addr=00002088 data=11223344 strb=f
+# 1365 QUAD x=0 y=0 mask=1111
+# 1375 ST addr=00002000 data=aabbccdd strb=f
+# 1385 ST addr=00002004 data=aabbccdd strb=f
+# 1395 ST addr=00002020 data=aabbccdd strb=f
+# 1405 ST addr=00002024 data=aabbccdd strb=f
+# 1425 QUAD x=0 y=2 mask=1111
+# 1435 ST addr=00002040 data=aabbccdd strb=f
+# 1445 ST addr=00002044 data=aabbccdd strb=f
+# 1455 ST addr=00002060 data=aabbccdd strb=f
+# 1465 ST addr=00002064 data=aabbccdd strb=f
+# 1595 QUAD x=2 y=0 mask=1000
+# 1635 ST addr=0000202c data=aabbccdd strb=f
+# 1655 QUAD x=2 y=2 mask=1111
+# 1665 ST addr=00002048 data=aabbccdd strb=f
+# 1675 ST addr=0000204c data=aabbccdd strb=f
+# 1685 ST addr=00002068 data=aabbccdd strb=f
+# 1695 ST addr=0000206c data=aabbccdd strb=f
+# 1725 ST addr=00002080 data=aabbccdd strb=f
+# 1735 ST addr=00002084 data=aabbccdd strb=f
+# 1785 ST addr=00002090 data=aabbccdd strb=f
+# PASS: saw 26 stores (triangle+rect)
+# ** Note: $finish    : gfx_triangle_tb.sv(240)
+#    Time: 20175 ns  Iteration: 1  Instance: /gfx_triangle_tb
+# End time: 19:38:25 on Jan 10,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0

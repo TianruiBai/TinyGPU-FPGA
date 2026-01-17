@@ -1,0 +1,397 @@
+46000 cyc=1 pc=00000000 if_valid=1 inst0=8000008b d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=1 accept0=1 stall_issue=0 rs1=0(rs1c=0) rs2=0(rs2c=0) rd=1(rdc=0) u1=1 u2=0 urd=1
+46000   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+56000 cyc=2 pc=00000000 if_valid=1 inst0=8000008b d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=0(rs1c=0) rs2=0(rs2c=0) rd=1(rdc=0) u1=1 u2=0 urd=1
+56000   manual_stall0=1 (rs1_busy=0 rs2_busy=0 rd_busy=1)
+56000   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+66000 cyc=3 pc=00000000 if_valid=1 inst0=8000008b d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=0(rs1c=0) rs2=0(rs2c=0) rd=1(rdc=0) u1=1 u2=0 urd=1
+66000   manual_stall0=1 (rs1_busy=0 rs2_busy=0 rd_busy=1)
+66000   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+76000 cyc=4 pc=00000000 if_valid=1 inst0=8000008b d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=0(rs1c=0) rs2=0(rs2c=0) rd=1(rdc=0) u1=1 u2=0 urd=1
+76000   manual_stall0=1 (rs1_busy=0 rs2_busy=0 rd_busy=1)
+76000   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+86000 cyc=5 pc=00000000 if_valid=1 inst0=8000008b d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=0(rs1c=0) rs2=0(rs2c=0) rd=1(rdc=0) u1=1 u2=0 urd=1
+86000   manual_stall0=1 (rs1_busy=0 rs2_busy=0 rd_busy=1)
+86000   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+86000   WB.S rd=1 data=fffff800
+96000 cyc=6 pc=00000000 if_valid=1 inst0=8000008b d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=1 accept0=1 stall_issue=0 rs1=0(rs1c=0) rs2=0(rs2c=0) rd=1(rdc=0) u1=1 u2=0 urd=1
+96000   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+106000 cyc=7 pc=00000004 if_valid=1 inst0=0050010b d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=1 accept0=1 stall_issue=0 rs1=0(rs1c=0) rs2=5(rs2c=0) rd=2(rdc=0) u1=1 u2=0 urd=1
+106000   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+116000 cyc=8 pc=00000008 if_valid=1 inst0=0070018b d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=1 accept0=1 stall_issue=0 rs1=0(rs1c=0) rs2=7(rs2c=0) rd=3(rdc=0) u1=1 u2=0 urd=1
+116000   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+126000 cyc=9 pc=0000000c if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+126000   manual_stall0=1 (rs1_busy=1 rs2_busy=1 rd_busy=0)
+126000   SB busy_s(2,3,4)=110 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+136000 cyc=10 pc=0000000c if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+136000   manual_stall0=1 (rs1_busy=1 rs2_busy=1 rd_busy=0)
+136000   SB busy_s(2,3,4)=110 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+136000   WB.S rd=1 data=fffff800
+146000 cyc=11 pc=0000000c if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+146000   manual_stall0=1 (rs1_busy=1 rs2_busy=1 rd_busy=0)
+146000   SB busy_s(2,3,4)=110 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+146000   WB.S rd=2 data=00000005
+156000 cyc=12 pc=0000000c if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+156000   manual_stall0=1 (rs1_busy=0 rs2_busy=1 rd_busy=0)
+156000   SB busy_s(2,3,4)=010 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+156000   WB.S rd=3 data=00000007
+166000 cyc=13 pc=0000000c if_valid=1 inst0=0031020b d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=1 accept0=1 stall_issue=0 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=1
+166000   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+176000 cyc=14 pc=00000010 if_valid=1 inst0=0040a00d d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=1(rs1c=0) rs2=4(rs2c=0) rd=0(rdc=0) u1=1 u2=1 urd=0
+176000   manual_stall0=1 (rs1_busy=0 rs2_busy=1 rd_busy=0)
+176000   SB busy_s(2,3,4)=001 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+186000 cyc=15 pc=00000010 if_valid=1 inst0=0040a00d d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=1(rs1c=0) rs2=4(rs2c=0) rd=0(rdc=0) u1=1 u2=1 urd=0
+186000   manual_stall0=1 (rs1_busy=0 rs2_busy=1 rd_busy=0)
+186000   SB busy_s(2,3,4)=001 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+196000 cyc=16 pc=00000010 if_valid=1 inst0=0040a00d d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=1(rs1c=0) rs2=4(rs2c=0) rd=0(rdc=0) u1=1 u2=1 urd=0
+196000   manual_stall0=1 (rs1_busy=0 rs2_busy=1 rd_busy=0)
+196000   SB busy_s(2,3,4)=001 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+206000 cyc=17 pc=00000010 if_valid=1 inst0=0040a00d d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=1(rs1c=0) rs2=4(rs2c=0) rd=0(rdc=0) u1=1 u2=1 urd=0
+206000   manual_stall0=1 (rs1_busy=0 rs2_busy=1 rd_busy=0)
+206000   SB busy_s(2,3,4)=001 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+206000   WB.S rd=4 data=0000000c
+216000 cyc=18 pc=00000010 if_valid=1 inst0=0040a00d d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=1 accept0=1 stall_issue=0 rs1=1(rs1c=0) rs2=4(rs2c=0) rd=0(rdc=0) u1=1 u2=1 urd=0
+216000   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+226000 cyc=19 pc=00000014 if_valid=1 inst0=4021880b d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=1 accept0=1 stall_issue=0 rs1=3(rs1c=0) rs2=2(rs2c=0) rd=16(rdc=0) u1=1 u2=1 urd=1
+226000   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+236000 cyc=20 pc=00000018 if_valid=1 inst0=3100a00d d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=1(rs1c=0) rs2=16(rs2c=0) rd=0(rdc=0) u1=1 u2=1 urd=0
+236000   manual_stall0=1 (rs1_busy=0 rs2_busy=1 rd_busy=0)
+236000   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+246000 cyc=21 pc=00000018 if_valid=1 inst0=3100a00d d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=1(rs1c=0) rs2=16(rs2c=0) rd=0(rdc=0) u1=1 u2=1 urd=0
+246000   manual_stall0=1 (rs1_busy=0 rs2_busy=1 rd_busy=0)
+246000   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+256000 cyc=22 pc=00000018 if_valid=1 inst0=3100a00d d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=1(rs1c=0) rs2=16(rs2c=0) rd=0(rdc=0) u1=1 u2=1 urd=0
+256000   manual_stall0=1 (rs1_busy=0 rs2_busy=1 rd_busy=0)
+256000   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+266000 cyc=23 pc=00000018 if_valid=1 inst0=3100a00d d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=1(rs1c=0) rs2=16(rs2c=0) rd=0(rdc=0) u1=1 u2=1 urd=0
+266000   manual_stall0=1 (rs1_busy=0 rs2_busy=1 rd_busy=0)
+266000   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+266000   WB.S rd=16 data=00000002
+276000 cyc=24 pc=00000018 if_valid=1 inst0=3100a00d d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=1 accept0=1 stall_issue=0 rs1=1(rs1c=0) rs2=16(rs2c=0) rd=0(rdc=0) u1=1 u2=1 urd=0
+276000   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+286000 cyc=25 pc=0000001c if_valid=1 inst0=0031188b d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=1 accept0=1 stall_issue=0 rs1=2(rs1c=0) rs2=3(rs2c=0) rd=17(rdc=0) u1=1 u2=1 urd=1
+286000   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+296000 cyc=26 pc=00000020 if_valid=1 inst0=3110a20d d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=1(rs1c=0) rs2=17(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=0
+296000   manual_stall0=1 (rs1_busy=0 rs2_busy=1 rd_busy=0)
+296000   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+306000 cyc=27 pc=00000020 if_valid=1 inst0=3110a20d d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=1(rs1c=0) rs2=17(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=0
+306000   manual_stall0=1 (rs1_busy=0 rs2_busy=1 rd_busy=0)
+306000   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+316000 cyc=28 pc=00000020 if_valid=1 inst0=3110a20d d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=1(rs1c=0) rs2=17(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=0
+316000   manual_stall0=1 (rs1_busy=0 rs2_busy=1 rd_busy=0)
+316000   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+326000 cyc=29 pc=00000020 if_valid=1 inst0=3110a20d d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=1(rs1c=0) rs2=17(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=0
+326000   manual_stall0=1 (rs1_busy=0 rs2_busy=1 rd_busy=0)
+326000   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+326000   WB.S rd=17 data=00000280
+336000 cyc=30 pc=00000020 if_valid=1 inst0=3110a20d d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=1 accept0=1 stall_issue=0 rs1=1(rs1c=0) rs2=17(rs2c=0) rd=4(rdc=0) u1=1 u2=1 urd=0
+336000   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+346000 cyc=31 pc=00000024 if_valid=1 inst0=ff00090b d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=1 accept0=1 stall_issue=0 rs1=0(rs1c=0) rs2=16(rs2c=0) rd=18(rdc=0) u1=1 u2=0 urd=1
+346000   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+356000 cyc=32 pc=00000028 if_valid=1 inst0=0020098b d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=1 accept0=1 stall_issue=0 rs1=0(rs1c=0) rs2=2(rs2c=0) rd=19(rdc=0) u1=1 u2=0 urd=1
+356000   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+366000 cyc=33 pc=0000002c if_valid=1 inst0=41395a0b d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=18(rs1c=0) rs2=19(rs2c=0) rd=20(rdc=0) u1=1 u2=1 urd=1
+366000   manual_stall0=1 (rs1_busy=1 rs2_busy=1 rd_busy=0)
+366000   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+376000 cyc=34 pc=0000002c if_valid=1 inst0=41395a0b d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=18(rs1c=0) rs2=19(rs2c=0) rd=20(rdc=0) u1=1 u2=1 urd=1
+376000   manual_stall0=1 (rs1_busy=1 rs2_busy=1 rd_busy=0)
+376000   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+386000 cyc=35 pc=0000002c if_valid=1 inst0=41395a0b d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=18(rs1c=0) rs2=19(rs2c=0) rd=20(rdc=0) u1=1 u2=1 urd=1
+386000   manual_stall0=1 (rs1_busy=1 rs2_busy=1 rd_busy=0)
+386000   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+386000   WB.S rd=18 data=fffffff0
+396000 cyc=36 pc=0000002c if_valid=1 inst0=41395a0b d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=18(rs1c=0) rs2=19(rs2c=0) rd=20(rdc=0) u1=1 u2=1 urd=1
+396000   manual_stall0=1 (rs1_busy=0 rs2_busy=1 rd_busy=0)
+396000   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+396000   WB.S rd=19 data=00000002
+406000 cyc=37 pc=0000002c if_valid=1 inst0=41395a0b d0_valid=1 stall_sb0=0 sb.stall0=0 issue0=1 accept0=1 stall_issue=0 rs1=18(rs1c=0) rs2=19(rs2c=0) rd=20(rdc=0) u1=1 u2=1 urd=1
+406000   manual_stall0=0 (rs1_busy=0 rs2_busy=0 rd_busy=0)
+416000 cyc=38 pc=00000030 if_valid=1 inst0=3140a40d d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=1(rs1c=0) rs2=20(rs2c=0) rd=8(rdc=0) u1=1 u2=1 urd=0
+416000   manual_stall0=1 (rs1_busy=0 rs2_busy=1 rd_busy=0)
+416000   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+426000 cyc=39 pc=00000030 if_valid=1 inst0=3140a40d d0_valid=1 stall_sb0=1 sb.stall0=1 issue0=1 accept0=0 stall_issue=1 rs1=1(rs1c=0) rs2=20(rs2c=0) rd=8(rdc=0) u1=1 u2=1 urd=0
+426000   manual_stall0=1 (rs1_busy=0 rs2_busy=1 rd_busy=0)
+426000   SB busy_s(2,3,4)=000 busy_f(2,3,4)=000 busy_v(2,3,4)=000
+DEBUG: EX SRA: funct7=0100000 is_sub=1 uses_rs2=1 op_a=fffffff0 op_b=00000002 res=fffffffc
+935000 MEM ST addr=fffff800 wdata=0000000c rd=0
+965000 MEM ST addr=fffffb00 wdata=00000002 rd=0
+975000 MEM ST addr=fffffb04 wdata=00000280 rd=0
+985000 MEM ST addr=fffffb08 wdata=fffffffc rd=0
+995000 MEM ST addr=fffffb0c wdata=3ffffffc rd=0
+1025000 MEM ST addr=fffffb10 wdata=00000001 rd=0
+1035000 MEM ST addr=fffffb14 wdata=00000000 rd=0
+1045000 MEM ST addr=fffffb18 wdata=00000002 rd=0
+1055000 MEM ST addr=fffffb1c wdata=00000007 rd=0
+1085000 MEM ST addr=fffffb20 wdata=00000005 rd=0
+1115000 MEM LD addr=fffff800 wdata=00000000 rd=5
+1395000 SREG_WB rd=30 data=00000800 src(pend/lsu/fp/valu/alu)=00100 fp_wb(valid/rd/data)=1/30/00000800 wb(valid/rd/res)=1/7/00000005
+1395000 FP->S WB rd=30 data=00000800
+1395000 SREG_WB rd=30 data=00000800 src=00000004 wb_valid=00000001 wb_is_scalar_fp=00000001 wb_f3=00000005 wb_f7=00000008 fp_scalar_valid=00000001
+1445000 SREG_WB rd=31 data=fffff800 src(pend/lsu/fp/valu/alu)=00100 fp_wb(valid/rd/data)=1/31/fffff800 wb(valid/rd/res)=1/4/00000001
+1445000 FP->S WB rd=31 data=fffff800
+1445000 SREG_WB rd=31 data=fffff800 src=00000004 wb_valid=00000001 wb_is_scalar_fp=00000000 wb_f3=00000002 wb_f7=00000004 fp_scalar_valid=00000001
+1625000 MEM ST addr=fffff808 wdata=0000000c rd=0
+1655000 MEM ST addr=fffff884 wdata=00000800 rd=0
+1665000 MEM ST addr=fffff888 wdata=fffff800 rd=0
+1695000 MEM LD addr=fffff810 wdata=00000000 rd=1
+1705000 MEM LD addr=fffff814 wdata=00000000 rd=1
+1715000 MEM LD addr=fffff818 wdata=00000000 rd=1
+1725000 MEM LD addr=fffff81c wdata=00000000 rd=1
+1785000 MEM LD addr=fffff820 wdata=00000000 rd=2
+1795000 MEM LD addr=fffff824 wdata=00000000 rd=2
+DEBUG: busy_v31 became 1 at t=1900000 pc=000000e0 inst0=07f08012 if_valid=1
+DEBUG: inst0 fields: opcode=12 rd=0 rs1=1 rs2=31 funct3=0 funct7=03
+1915000 MEM ST addr=fffff830 wdata=0000000b rd=16
+1925000 MEM ST addr=fffff834 wdata=00000016 rd=16
+1935000 MEM ST addr=fffff838 wdata=00000021 rd=16
+1945000 MEM ST addr=fffff83c wdata=0000002c rd=16
+2535000 DEBUG FP16 VADD ISSUE src_a=c4004400b8003800c0004000bc003c00 src_b=3c004400380038004000c00040003c00 lane6(a,b)=4400,4400 lane7(a,b)=c400,3c00
+2545000 DEBUG FP16 VADD WB wb_data=c200480000003c00000000003c004000 lane6(r)=4800 lane7(r)=c200 (prev lane7 a,b=c400,3c00)
+3296000 WB.S (x9) data=0000000f (valuv_valid=1 valuv_rd=9 valuv_is_scalar=1 valuv_data_lo=0000000f)
+3336000 WMB ENQ addr=fffff840 wdata=0000000f wstrb=f
+3356000 WMB DEQ addr=fffff840 wdata=0000000f wstrb=f
+3365000 MEM ST addr=fffff840 wdata=0000000f rd=0
+3386000 ATOM in MEM: mem_addr=fffff830 is_vector=1 is_store=0 funct3(op)=000 rd=16
+3395000 MEM LD addr=fffff830 wdata=0000000a rd=16
+3405000 MEM LD addr=fffff834 wdata=00000000 rd=16
+3415000 MEM LD addr=fffff838 wdata=00000000 rd=16
+3425000 MEM LD addr=fffff83c wdata=00000000 rd=16
+3435000 MEM LD addr=fffff830 wdata=00000000 rd=16
+3445000 MEM LD addr=fffff834 wdata=00000000 rd=16
+3455000 MEM LD addr=fffff838 wdata=00000015 rd=16
+3465000 MEM LD addr=fffff83c wdata=00000015 rd=16
+3475000 MEM ST addr=fffff830 wdata=00000015 rd=16
+3485000 MEM ST addr=fffff834 wdata=0000002a rd=16
+3495000 MEM ST addr=fffff838 wdata=0000003f rd=16
+3505000 MEM ST addr=fffff83c wdata=00000054 rd=16
+3515000 MEM LD addr=fffff830 wdata=3c004000 rd=6
+3525000 MEM LD addr=fffff834 wdata=00000000 rd=6
+3535000 MEM LD addr=fffff838 wdata=00000000 rd=6
+3545000 MEM LD addr=fffff83c wdata=00000000 rd=6
+3605000 MEM ST addr=fffff850 wdata=00000015 rd=16
+3615000 MEM ST addr=fffff854 wdata=0000002a rd=16
+3625000 MEM ST addr=fffff858 wdata=0000003f rd=16
+3635000 MEM ST addr=fffff85c wdata=00000054 rd=16
+3735000 GP_ISSUE is_gfx=0 funct3=000 op_a=0000000c op_b=fffff940
+4415000 GP_ISSUE is_gfx=1 funct3=000 op_a=fffffd00 op_b=00000000
+4425000 GP_ISSUE is_gfx=1 funct3=100 op_a=fffffd40 op_b=00000000
+4435000 GP_ISSUE is_gfx=1 funct3=101 op_a=fffffd80 op_b=00000000
+4445000 MEM LD addr=fffffd00 wdata=00000000 rd=0
+4445000 TB_MEM_RD addr=fffffd00 idx=320 mem=fffffc00 rd=0
+4455000 GP_ISSUE is_gfx=1 funct3=110 op_a=fffffdc0 op_b=00000000
+4455000 MEM LD addr=fffffd04 wdata=00000000 rd=0
+4455000 TB_MEM_RD addr=fffffd04 idx=321 mem=00000020 rd=0
+4465000 MEM LD addr=fffffd08 wdata=00000000 rd=0
+4465000 TB_MEM_RD addr=fffffd08 idx=322 mem=00000000 rd=0
+4475000 MEM LD addr=fffffd0c wdata=00000000 rd=0
+4475000 TB_MEM_RD addr=fffffd0c idx=323 mem=00080008 rd=0
+4495000 TEXCACHE resp addr=fffffd00 rel=500 hit=0 miss=1 data=fffffc00 tag=3fffff idx=10 off=0
+4515000 TEXCACHE resp addr=fffffd04 rel=504 hit=1 miss=0 data=00000020 tag=3fffff idx=10 off=4
+4535000 TEXCACHE resp addr=fffffd08 rel=508 hit=1 miss=0 data=00000000 tag=3fffff idx=10 off=8
+4555000 TEXCACHE resp addr=fffffd0c rel=50c hit=1 miss=0 data=00080008 tag=3fffff idx=10 off=c
+4575000 MEM LD addr=fffffd20 wdata=00000000 rd=0
+4575000 TB_MEM_RD addr=fffffd20 idx=328 mem=00000000 rd=0
+4585000 MEM LD addr=fffffd24 wdata=00000001 rd=0
+4585000 TB_MEM_RD addr=fffffd24 idx=329 mem=00000000 rd=0
+4595000 MEM LD addr=fffffd28 wdata=00000001 rd=0
+4595000 TB_MEM_RD addr=fffffd28 idx=330 mem=00000000 rd=0
+4605000 MEM LD addr=fffffd2c wdata=00000001 rd=0
+4605000 TB_MEM_RD addr=fffffd2c idx=331 mem=00000000 rd=0
+4625000 TEXCACHE resp addr=fffffd20 rel=520 hit=0 miss=1 data=00000000 tag=3fffff idx=12 off=0
+4645000 TEXCACHE resp addr=fffffd24 rel=524 hit=1 miss=0 data=00000000 tag=3fffff idx=12 off=4
+4665000 TEXCACHE resp addr=fffffd28 rel=528 hit=1 miss=0 data=00000000 tag=3fffff idx=12 off=8
+4685000 TEXCACHE resp addr=fffffd2c rel=52c hit=1 miss=0 data=00000000 tag=3fffff idx=12 off=c
+4705000 MEM LD addr=fffffd30 wdata=00000000 rd=0
+4705000 TB_MEM_RD addr=fffffd30 idx=332 mem=00000000 rd=0
+4715000 MEM LD addr=fffffd34 wdata=00000000 rd=0
+4715000 TB_MEM_RD addr=fffffd34 idx=333 mem=00000000 rd=0
+4725000 MEM LD addr=fffffd38 wdata=00000000 rd=0
+4725000 TB_MEM_RD addr=fffffd38 idx=334 mem=00000000 rd=0
+4735000 MEM LD addr=fffffd3c wdata=00000000 rd=0
+4735000 TB_MEM_RD addr=fffffd3c idx=335 mem=00000000 rd=0
+4755000 TEXCACHE resp addr=fffffd30 rel=530 hit=0 miss=1 data=00000000 tag=3fffff idx=13 off=0
+4795000 MEM LD addr=fffffd40 wdata=00000000 rd=0
+4795000 TB_MEM_RD addr=fffffd40 idx=336 mem=fffffe00 rd=0
+4805000 MEM LD addr=fffffd44 wdata=00000000 rd=0
+4805000 TB_MEM_RD addr=fffffd44 idx=337 mem=00000020 rd=0
+4815000 MEM LD addr=fffffd48 wdata=00000000 rd=0
+4815000 TB_MEM_RD addr=fffffd48 idx=338 mem=00000000 rd=0
+4825000 MEM LD addr=fffffd4c wdata=00000000 rd=0
+4825000 TB_MEM_RD addr=fffffd4c idx=339 mem=00000000 rd=0
+4845000 GFX_DESC GSTATE.vbo_base ptr=fffffd40 data=fffffe00
+4845000 TEXCACHE resp addr=fffffd40 rel=540 hit=0 miss=1 data=fffffe00 tag=3fffff idx=14 off=0
+4865000 GFX_DESC GSTATE.vbo_stride ptr=fffffd40 data=00000020
+4865000 TEXCACHE resp addr=fffffd44 rel=544 hit=1 miss=0 data=00000020 tag=3fffff idx=14 off=4
+4885000 TEXCACHE resp addr=fffffd48 rel=548 hit=1 miss=0 data=00000000 tag=3fffff idx=14 off=8
+4905000 TEXCACHE resp addr=fffffd4c rel=54c hit=1 miss=0 data=00000000 tag=3fffff idx=14 off=c
+4925000 MEM LD addr=fffffd50 wdata=00000000 rd=0
+4925000 TB_MEM_RD addr=fffffd50 idx=340 mem=00000000 rd=0
+4935000 MEM LD addr=fffffd54 wdata=00000000 rd=0
+4935000 TB_MEM_RD addr=fffffd54 idx=341 mem=00000000 rd=0
+4945000 MEM LD addr=fffffd58 wdata=00000000 rd=0
+4945000 TB_MEM_RD addr=fffffd58 idx=342 mem=00000000 rd=0
+4955000 MEM LD addr=fffffd5c wdata=00000000 rd=0
+4955000 TB_MEM_RD addr=fffffd5c idx=343 mem=00000000 rd=0
+4975000 TEXCACHE resp addr=fffffd58 rel=558 hit=0 miss=1 data=00000000 tag=3fffff idx=15 off=8
+5015000 MEM LD addr=fffffd80 wdata=00000000 rd=0
+5015000 TB_MEM_RD addr=fffffd80 idx=352 mem=00000000 rd=0
+5025000 MEM LD addr=fffffd84 wdata=00000000 rd=0
+5025000 TB_MEM_RD addr=fffffd84 idx=353 mem=00000000 rd=0
+5035000 MEM LD addr=fffffd88 wdata=00000000 rd=0
+5035000 TB_MEM_RD addr=fffffd88 idx=354 mem=55aa1234 rd=0
+5045000 MEM LD addr=fffffd8c wdata=00000000 rd=0
+5045000 TB_MEM_RD addr=fffffd8c idx=355 mem=00000000 rd=0
+5065000 TEXCACHE resp addr=fffffd80 rel=580 hit=0 miss=1 data=00000000 tag=3fffff idx=18 off=0
+5085000 GFX_DESC GPARAM.mat_color ptr=fffffd80 data=55aa1234
+5085000 TEXCACHE resp addr=fffffd88 rel=588 hit=1 miss=0 data=55aa1234 tag=3fffff idx=18 off=8
+5125000 MEM LD addr=fffffdc0 wdata=00000000 rd=0
+5125000 TB_MEM_RD addr=fffffdc0 idx=368 mem=00000000 rd=0
+5135000 MEM LD addr=fffffdc4 wdata=00000000 rd=0
+5135000 TB_MEM_RD addr=fffffdc4 idx=369 mem=00000003 rd=0
+5145000 MEM LD addr=fffffdc8 wdata=00000000 rd=0
+5145000 TB_MEM_RD addr=fffffdc8 idx=370 mem=00000000 rd=0
+5155000 MEM LD addr=fffffdcc wdata=00000000 rd=0
+5155000 TB_MEM_RD addr=fffffdcc idx=371 mem=00000000 rd=0
+5175000 TEXCACHE resp addr=fffffdc0 rel=5c0 hit=0 miss=1 data=00000000 tag=3fffff idx=1c off=0
+5195000 TEXCACHE resp addr=fffffdc4 rel=5c4 hit=1 miss=0 data=00000003 tag=3fffff idx=1c off=4
+5215000 TEXCACHE resp addr=fffffdc8 rel=5c8 hit=1 miss=0 data=00000000 tag=3fffff idx=1c off=8
+5235000 TEXCACHE resp addr=fffffdcc rel=5cc hit=1 miss=0 data=00000000 tag=3fffff idx=1c off=c
+5255000 MEM LD addr=fffffdd0 wdata=00000000 rd=0
+5255000 TB_MEM_RD addr=fffffdd0 idx=372 mem=00000000 rd=0
+5265000 MEM LD addr=fffffdd4 wdata=00000000 rd=0
+5265000 TB_MEM_RD addr=fffffdd4 idx=373 mem=00000000 rd=0
+5275000 MEM LD addr=fffffdd8 wdata=00000000 rd=0
+5275000 TB_MEM_RD addr=fffffdd8 idx=374 mem=00000000 rd=0
+5285000 MEM LD addr=fffffddc wdata=00000000 rd=0
+5285000 TB_MEM_RD addr=fffffddc idx=375 mem=00000000 rd=0
+5305000 TEXCACHE resp addr=fffffdd0 rel=5d0 hit=0 miss=1 data=00000000 tag=3fffff idx=1d off=0
+5315000 GDRAW_BEGIN ptr=fffffdc0 first=0 count=3 topo=00000000 flags=00000000 vbo_base=fffffe00 vbo_stride=00000020 base_vtx=0
+5325000 GDRAW_TRI_SETUP remaining=3 cur_first=0
+6215000 GDRAW_TRI_SETUP remaining=0 cur_first=3
+6215000 GDRAW_TRI_SETUP bail: remaining=0
+6585000 MEM ST addr=fffffc24 wdata=55aa1234 rd=0
+6855000 MEM ST addr=fffffc38 wdata=55aa1234 rd=0
+6895000 MEM ST addr=fffffc48 wdata=55aa1234 rd=0
+6905000 MEM ST addr=fffffc4c wdata=55aa1234 rd=0
+6935000 MEM ST addr=fffffc68 wdata=55aa1234 rd=0
+6945000 MEM ST addr=fffffc6c wdata=55aa1234 rd=0
+6975000 MEM ST addr=fffffc88 wdata=55aa1234 rd=0
+6985000 MEM ST addr=fffffc8c wdata=55aa1234 rd=0
+7015000 MEM ST addr=fffffca8 wdata=55aa1234 rd=0
+[OK] scalar store @0 = 12 (0x0000000c)
+[OK] scalar sub @0x300 = 2 (0x00000002)
+[OK] scalar sll @0x304 = 640 (0x00000280)
+[OK] scalar sra @0x308 = 4294967292 (0xfffffffc)
+[OK] scalar srl @0x30C = 1073741820 (0x3ffffffc)
+[OK] scalar slt @0x310 = 1 (0x00000001)
+[OK] scalar sltu @0x314 = 0 (0x00000000)
+[OK] scalar xor @0x318 = 2 (0x00000002)
+[OK] scalar or @0x31C = 7 (0x00000007)
+[OK] scalar and @0x320 = 5 (0x00000005)
+[OK] scalar store @8 = 12 (0x0000000c)
+[OK] csr_status = 15 (0x0000000f)
+[OK] fp16 f1 (cvt x0) = 15360 (0x00003c00)
+[OK] fp16 f2 (cvt -1) = 48128 (0x0000bc00)
+[OK] fp16 f3 (1+1) = 16384 (0x00004000)
+[OK] fp16 f4 (2-1) = 15360 (0x00003c00)
+[OK] fp16 f5 (2*2) = 17408 (0x00004400)
+[OK] fp16 f6 min(-1,1) = 48128 (0x0000bc00)
+[OK] fp16 f7 max(-1,1) = 15360 (0x00003c00)
+[OK] fp16 fma f21 = 16384 (0x00004000)
+[OK] x30 (fp16 f2i f1) = 2048 (0x00000800)
+[OK] x31 (fp16 f2i f2) = 4294965248 (0xfffff800)
+[OK] vcmp mask store = 15 (0x0000000f)
+DEBUG fp32 A @0x180: 3f800000 bf800000 40800000 7f800000
+DEBUG fp32 B @0x190: 40000000 3f000000 40800000 3f800000
+DEBUG fp32 ADD @0x1A0: 40400000 bf000000 41000000 7f800000
+DEBUG v8 = 00000000000000000000000000000000
+DEBUG v9 = 00000000000000000000000000000000
+DEBUG v10= 00000000000000000000000000000000
+[OK] fp32 add lane0 = 1077936128 (0x40400000)
+[OK] fp32 add lane1 = 3204448256 (0xbf000000)
+[OK] fp32 add lane2 = 1090519040 (0x41000000)
+[OK] fp32 add lane3 = 2139095040 (0x7f800000)
+[OK] fp32 sub lane0 = 3212836864 (0xbf800000)
+[OK] fp32 sub lane1 = 3217031168 (0xbfc00000)
+[OK] fp32 sub lane2 = 0 (0x00000000)
+[OK] fp32 sub lane3 = 2139095040 (0x7f800000)
+[OK] fp32 min lane0 = 1065353216 (0x3f800000)
+[OK] fp32 min lane1 = 3212836864 (0xbf800000)
+[OK] fp32 min lane2 = 1082130432 (0x40800000)
+[OK] fp32 min lane3 = 1065353216 (0x3f800000)
+[OK] fp32 max lane0 = 1073741824 (0x40000000)
+[OK] fp32 max lane1 = 1056964608 (0x3f000000)
+[OK] fp32 max lane2 = 1082130432 (0x40800000)
+[OK] fp32 max lane3 = 2139095040 (0x7f800000)
+[OK] vsub lane0 = 9 (0x00000009)
+[OK] vsub lane1 = 18 (0x00000012)
+[OK] vsub lane2 = 27 (0x0000001b)
+[OK] vsub lane3 = 36 (0x00000024)
+[OK] vdot lane0 = 300 (0x0000012c)
+[OK] vdot lane1 = 0 (0x00000000)
+[OK] vdot lane2 = 0 (0x00000000)
+[OK] vdot lane3 = 0 (0x00000000)
+[OK] fp16 vadd w0 = 1006649344 (0x3c004000)
+[OK] fp16 vadd w1 = 0 (0x00000000)
+[OK] fp16 vadd w2 = 15360 (0x00003c00)
+[OK] fp16 vadd w3 = 3254798336 (0xc2004800)
+[OK] fp16 vsub w0 = 3254779904 (0xc2000000)
+[OK] fp16 vsub w1 = 3288351744 (0xc4004400)
+[OK] fp16 vsub w2 = 3154116608 (0xbc000000)
+[OK] fp16 vsub w3 = 3305111552 (0xc5000000)
+[OK] fp16 vmin w0 = 3154131968 (0xbc003c00)
+[OK] fp16 vmin w1 = 3221274624 (0xc000c000)
+[OK] fp16 vmin w2 = 3087022080 (0xb8003800)
+[OK] fp16 vmin w3 = 3288351744 (0xc4004400)
+[OK] fp16 vmax w0 = 1073757184 (0x40003c00)
+[OK] fp16 vmax w1 = 1073758208 (0x40004000)
+[OK] fp16 vmax w2 = 939538432 (0x38003800)
+[OK] fp16 vmax w3 = 1006650368 (0x3c004400)
+[OK] fp8 vadd w0 = 269488144 (0x10101010)
+[OK] fp8 vadd w1 = 269488144 (0x10101010)
+[OK] fp8 vadd w2 = 269488144 (0x10101010)
+[OK] fp8 vadd w3 = 269488144 (0x10101010)
+[OK] fp8 vsub w0 = 0 (0x00000000)
+[OK] fp8 vsub w1 = 0 (0x00000000)
+[OK] fp8 vsub w2 = 0 (0x00000000)
+[OK] fp8 vsub w3 = 0 (0x00000000)
+[OK] fp8 vmin w0 = 143132808 (0x08880888)
+[OK] fp8 vmin w1 = 143132808 (0x08880888)
+[OK] fp8 vmin w2 = 143132808 (0x08880888)
+[OK] fp8 vmin w3 = 143132808 (0x08880888)
+[OK] fp8 vmax w0 = 134744072 (0x08080808)
+[OK] fp8 vmax w1 = 134744072 (0x08080808)
+[OK] fp8 vmax w2 = 134744072 (0x08080808)
+[OK] fp8 vmax w3 = 134744072 (0x08080808)
+[OK] vadd/atom lane0 = 21 (0x00000015)
+[OK] vadd/atom lane1 = 42 (0x0000002a)
+[OK] vadd/atom lane2 = 63 (0x0000003f)
+[OK] vadd/atom lane3 = 84 (0x00000054)
+[OK] vatom lane0 = 21 (0x00000015)
+[OK] vatom lane1 = 42 (0x0000002a)
+[OK] vatom lane2 = 63 (0x0000003f)
+[OK] vatom lane3 = 84 (0x00000054)
+[OK] tex lane0 = 3735928559 (0xdeadbeef)
+[OK] tex lane1 = 0 (0x00000000)
+[OK] tex lane2 = 0 (0x00000000)
+[OK] tex lane3 = 0 (0x00000000)
+[OK] deadbeef count = 2 (0x00000002)
+GFX state dump: r_fb_base=00000000 r_fb_stride=00000000 r_fb_w=0 r_fb_h=0 rstate_flags0=00000000
+GFX state dump: g_vbo_base=00000000 g_vbo_stride=00000000 g_material_color=00000000
+GFX mem dump: GSTATE.vbo_base(mem)=fffffe00 vbo_stride(mem)=00000020
+GFX mem dump: GPARAM.mat_color(mem)=55aa1234
+GFX state dump: gd_first=0 gd_count=0 gd_topology=0 gd_flags=00000000
+[OK] gfx fb +0x24 = 1437209140 (0x55aa1234)
+[OK] gfx fb +0x38 = 1437209140 (0x55aa1234)
+[OK] gfx fb +0x48 = 1437209140 (0x55aa1234)
+[OK] gfx fb +0x4C = 1437209140 (0x55aa1234)
+[OK] gfx fb +0x68 = 1437209140 (0x55aa1234)
+[OK] gfx fb +0x6C = 1437209140 (0x55aa1234)
+[OK] gfx fb +0x88 = 1437209140 (0x55aa1234)
+[OK] gfx fb +0x8C = 1437209140 (0x55aa1234)
+[OK] gfx fb +0xA8 = 1437209140 (0x55aa1234)
+
+Full testbench checks passed.
+- testbench/compute_unit_full_tb.sv:1239: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 7us; walltime 0.004 s; speed 1.963 ms/s
+- Verilator: cpu 0.004 s on 1 threads; alloced 249 MB

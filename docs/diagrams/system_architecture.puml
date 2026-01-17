@@ -1,0 +1,83 @@
+@startuml
+title System Architecture (from docs/architecture.md ASCII sketch)
+
+' "Material-ish" styling
+left to right direction
+skinparam shadowing false
+skinparam linetype ortho
+skinparam roundcorner 14
+skinparam defaultFontName "Inter"
+skinparam defaultFontSize 12
+skinparam backgroundColor #FAFAFA
+skinparam packageStyle rectangle
+skinparam packageBorderColor #CFD8DC
+skinparam packageBackgroundColor #FFFFFF
+skinparam componentStyle rectangle
+skinparam componentBorderColor #455A64
+skinparam componentBackgroundColor #FFFFFF
+skinparam ArrowColor #455A64
+skinparam ArrowThickness 1.2
+skinparam noteBackgroundColor #E3F2FD
+skinparam noteBorderColor #64B5F6
+skinparam nodesep 40
+skinparam ranksep 30
+skinparam componentPadding 10
+skinparam packagePadding 10
+skinparam wrapWidth 220
+
+package "Host / Ingress" {
+  [Host QSPI/OSPI\n(ESP32-S3)] as HOST
+  [Ingress FIFO\n+ Parser] as INGRESS
+  [Command Processor\n(MCU / soft-core)] as CP
+  [Scheduler] as SCHED
+  [Descriptors\n(state + queues)] as DESC
+  [Dispatch Arbiter\n(round-robin\n/ queued)] as ARB
+}
+
+package "Compute Cluster" {
+  together {
+    [CU0\ncompute_unit_top] as CU0
+    [CU1\ncompute_unit_top] as CU1
+    [CU2\ncompute_unit_top] as CU2
+    [CU3\ncompute_unit_top] as CU3
+  }
+}
+
+package "Memory / Display" {
+  [VRAM Controller\n(OSPI-V master)] as VRAMC
+  database "VRAM\n(SRAM/PSRAM)" as VRAM
+  [Tile/Line Buffer] as TLBUF
+  [Scanout\n(HUB75 / HDMI)] as SCAN
+}
+
+HOST --> INGRESS : packet stream
+INGRESS --> CP : cmd packets\n(mailbox)
+CP --> SCHED : submit work
+SCHED --> DESC : build descriptors
+DESC --> ARB : enqueue kernels/tiles
+
+ARB --> CU0
+ARB --> CU1
+ARB --> CU2
+ARB --> CU3
+
+CU0 --> VRAMC : loads/stores\n+ TEX refills
+CU1 --> VRAMC
+CU2 --> VRAMC
+CU3 --> VRAMC
+VRAMC --> VRAM
+
+VRAM --> TLBUF : framebuffer fetch
+TLBUF --> SCAN : scanout
+
+SCAN -[#D32F2F,thickness=2]-> VRAMC : display QoS\n(highest priority)
+
+note right of CP
+As-built note:\nThis workspace currently contains\ncompute-unit RTL + simulation stubs.\nSystem integration blocks may be planned.
+end note
+
+note right of SCAN
+Tree note:\nip/interface/hub75/ exists but is empty\nin this workspace snapshot.
+end note
+
+@enduml

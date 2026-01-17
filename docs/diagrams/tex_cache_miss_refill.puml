@@ -1,0 +1,38 @@
+@startuml
+' TEX request -> texture_cache miss -> LSU refill -> response (as-built wiring)
+skinparam shadowing false
+
+participant "graphics_pipeline" as GP
+participant "texture_cache" as TC
+participant "lsu" as LSU
+participant "global bus / memory" as MEM
+
+== Cache hit ==
+GP -> TC : tex_req_valid\n(tex_req_addr, tex_req_rd)
+TC --> GP : tex_req_ready
+TC --> GP : tex_resp_valid\n(tex_resp_data, tex_resp_rd)
+
+== Cache miss (stall-on-miss) ==
+GP -> TC : tex_req_valid\n(tex_req_addr, tex_req_rd)
+TC --> GP : tex_req_ready
+TC -> LSU : miss_req_valid\n(miss_req_addr)
+LSU --> TC : miss_req_ready
+LSU -> MEM : global_req_valid\n(loads to fill 16B line)
+MEM --> LSU : global_resp_valid\n(32-bit beats)
+LSU -> TC : miss_resp_valid\n(miss_resp_data[127:0])
+TC --> GP : tex_resp_valid\n(tex_resp_data, tex_resp_rd)
+
+note over TC
+As-built behavior (texture_cache.sv):
+- Latches request on accept
+- Stall-on-miss: holds request stable until refill arrives
+- Compares tags/valid with 4-state-safe checks
+end note
+
+note over LSU
+As-built wiring (compute_unit_top.sv):
+- texture_cache miss interface is connected to lsu
+- lsu uses unified 32-bit global interface, assembling a 16B line
+end note
+
+@enduml

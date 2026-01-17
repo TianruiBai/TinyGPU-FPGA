@@ -1,0 +1,521 @@
+make: Entering directory '/home/polar/ProtoTracer-FPGA-FrontEND/obj_dir'
+g++ -Os  -I.  -MMD -I/usr/share/verilator/include -I/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o verilated.o /usr/share/verilator/include/verilated.cpp
+g++ -Os  -I.  -MMD -I/usr/share/verilator/include -I/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o verilated_timing.o /usr/share/verilator/include/verilated_timing.cpp
+g++ -Os  -I.  -MMD -I/usr/share/verilator/include -I/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o verilated_threads.o /usr/share/verilator/include/verilated_threads.cpp
+g++ -Os  -I.  -MMD -I/usr/share/verilator/include -I/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -x c++-header Vgfx_console_tb__pch.h -o Vgfx_console_tb__pch.h.fast.gch
+g++   -I.  -MMD -I/usr/share/verilator/include -I/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -x c++-header Vgfx_console_tb__pch.h -o Vgfx_console_tb__pch.h.slow.gch
+g++   -I.  -MMD -I/usr/share/verilator/include -I/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.slow -c -o Vgfx_console_tb___024root__Slow.o Vgfx_console_tb___024root__Slow.cpp
+g++   -I.  -MMD -I/usr/share/verilator/include -I/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.slow -c -o Vgfx_console_tb___024root__DepSet_h30e62e1a__0__Slow.o Vgfx_console_tb___024root__DepSet_h30e62e1a__0__Slow.cpp
+g++   -I.  -MMD -I/usr/share/verilator/include -I/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.slow -c -o Vgfx_console_tb___024root__DepSet_hb7ead58b__0__Slow.o Vgfx_console_tb___024root__DepSet_hb7ead58b__0__Slow.cpp
+g++   -I.  -MMD -I/usr/share/verilator/include -I/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.slow -c -o Vgfx_console_tb__Syms.o Vgfx_console_tb__Syms.cpp
+g++ -Os  -I.  -MMD -I/usr/share/verilator/include -I/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.fast -c -o Vgfx_console_tb.o Vgfx_console_tb.cpp
+g++ -Os  -I.  -MMD -I/usr/share/verilator/include -I/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.fast -c -o Vgfx_console_tb___024root__DepSet_h30e62e1a__0.o Vgfx_console_tb___024root__DepSet_h30e62e1a__0.cpp
+g++ -Os  -I.  -MMD -I/usr/share/verilator/include -I/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.fast -c -o Vgfx_console_tb___024root__DepSet_hb7ead58b__0.o Vgfx_console_tb___024root__DepSet_hb7ead58b__0.cpp
+g++ -Os  -I.  -MMD -I/usr/share/verilator/include -I/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.fast -c -o Vgfx_console_tb___024root__DepSet_hb7ead58b__1.o Vgfx_console_tb___024root__DepSet_hb7ead58b__1.cpp
+g++ -Os  -I.  -MMD -I/usr/share/verilator/include -I/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.fast -c -o Vgfx_console_tb___024root__DepSet_hb7ead58b__2.o Vgfx_console_tb___024root__DepSet_hb7ead58b__2.cpp
+g++ -Os  -I.  -MMD -I/usr/share/verilator/include -I/usr/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.fast -c -o Vgfx_console_tb__main.o Vgfx_console_tb__main.cpp
+echo "" > Vgfx_console_tb__ALL.verilator_deplist.tmp
+g++    verilated.o verilated_timing.o verilated_threads.o Vgfx_console_tb__ALL.a    -pthread -lpthread -latomic   -o Vgfx_console_tb
+rm Vgfx_console_tb__ALL.verilator_deplist.tmp
+make: Leaving directory '/home/polar/ProtoTracer-FPGA-FrontEND/obj_dir'
+- V e r i l a t i o n   R e p o r t: Verilator 5.032 2025-01-01 rev (Debian 5.032-1)
+- Verilator: Built from 3.895 MB sources in 28 modules, into 3.587 MB in 10 C++ files needing 0.005 MB
+- Verilator: Walltime 4.237 s (elab=0.017, cvt=0.216, bld=3.956); cpu 0.335 s on 32 threads; alloced 79.477 MB
+-Info: testbench/gfx_console_tb.sv:126: $dumpvar ignored, as Verilated without --trace
+gfx_console_tb: ROM program loaded (196 bytes)
+gfx_console_tb: labels loop_frame=00000030 loop_tri=0000004c blt_tri=00000068 wait_fb0=00000090 wait_fb0_done_br=00000094 blt_frame=000000b0
+gfx_console_tb: ROM[0x84]=000a0014 ROM[0x88]=00000017 ROM[0x8C]=0009b014 ROM[0x90]=0007a70c ROM[0x94]=0157080e ROM[0x98]=00000017 ROM[0x9C]=fe000a8e ROM[0xA0]=00000017
+DBG: WB rd=0 data=00000000 inst_addr=00000000
+DBG: WB rd=0 data=00000000 inst_addr=00000000
+DBG: WB rd=0 data=00000000 inst_addr=00000000
+DBG: WB rd=0 data=00000000 inst_addr=00000000
+DBG: WB rd=0 data=00000000 inst_addr=00000000
+DBG: WB rd=0 data=00000000 inst_addr=00000000
+DBG: WB rd=0 data=00000000 inst_addr=00000000
+DBG: WB rd=0 data=00000000 inst_addr=00000000
+DBG: WB rd=0 data=00000000 inst_addr=00000000
+DBG: gfx_issue funct3=0 op_a=80000500 op_b=00000000 pc_if=00000028
+DBG: REQ v=1 is_load=1 addr=80000500 wdata=00000000 rd=0
+DBG: gfx_issue funct3=0 op_a=80000500 op_b=00000000 pc_if=00000038
+DBG: WB x6(frame)=0 inst_addr=00000038
+DBG: REQ v=1 is_load=1 addr=80000504 wdata=00000000 rd=0
+DBG: gfx_issue funct3=3 op_a=80000680 op_b=00000000 pc_if=00000038
+DBG: REQ v=1 is_load=1 addr=80000508 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=1 addr=8000050c wdata=00000000 rd=0
+DBG: REQ v=1 is_load=1 addr=80000520 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=1 addr=80000524 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=1 addr=80000528 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=1 addr=8000052c wdata=00000000 rd=0
+DBG: WB x8(tri_idx)=0 inst_addr=00000050
+DBG: REQ v=1 is_load=1 addr=80000530 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=1 addr=80000534 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=1 addr=80000538 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=1 addr=8000053c wdata=00000000 rd=0
+DBG: gfx_issue funct3=1 op_a=80000700 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=2 op_a=00000000 op_b=00000000 pc_if=00000068
+DBG: WB x8(tri_idx)=1 inst_addr=00000068
+DBG: REQ v=1 is_load=1 addr=80000680 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=1 addr=80000684 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=1 addr=80000688 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=1 addr=8000068c wdata=00000020 rd=0
+DBG: gfx_issue funct3=1 op_a=80000760 op_b=00000000 pc_if=00000060
+DBG: REQ v=1 is_load=1 addr=80000690 wdata=00000000 rd=0
+DBG: gfx_issue funct3=2 op_a=00000000 op_b=00000000 pc_if=00000068
+DBG: REQ v=1 is_load=1 addr=80000694 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=1 addr=80000698 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=1 addr=8000069c wdata=00000000 rd=0
+DBG: WB x8(tri_idx)=2 inst_addr=00000068
+DBG: gfx_issue funct3=1 op_a=800007c0 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=2 op_a=00000000 op_b=00000000 pc_if=00000068
+DBG: WB x8(tri_idx)=3 inst_addr=00000068
+DBG: REQ v=1 is_load=0 addr=80009000 wdata=00000000 rd=0
+DBG: store FB0 addr=80009000 wdata=00000000
+DBG: REQ v=1 is_load=0 addr=80009004 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=80009180 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=80009184 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=80009018 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=8000901c wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=80009198 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=8000919c wdata=00000000 rd=0
+DBG: gfx_issue funct3=1 op_a=80000820 op_b=00000000 pc_if=00000060
+DBG: WB x8(tri_idx)=4 inst_addr=00000068
+DBG: REQ v=1 is_load=0 addr=80009028 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=8000902c wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=800091a8 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=800091ac wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=80009038 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=8000903c wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=800091b8 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=800091bc wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=80009048 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=8000904c wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=800091c8 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=800091cc wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=80009058 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=8000905c wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=800091d8 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=800091dc wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=80009068 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=8000906c wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=800091e8 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=800091ec wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=80009078 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=8000907c wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=800091f8 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=800091fc wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=80009088 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=8000908c wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=80009208 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=8000920c wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=80009098 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=8000909c wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=80009218 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=8000921c wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=800090a8 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=800090ac wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=80009228 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=8000922c wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=800090b8 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=800090bc wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=80009238 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=8000923c wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=800090c8 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=800090cc wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=80009248 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=8000924c wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=800090d8 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=800090dc wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=80009258 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=8000925c wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=800090e8 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=800090ec wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=80009268 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=8000926c wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=800090f8 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=800090fc wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=80009278 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=8000927c wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=80009108 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=8000910c wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=80009288 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=8000928c wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=80009118 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=8000911c wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=80009298 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=8000929c wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=80009128 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=8000912c wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=800092a8 wdata=00000000 rd=0
+DBG: REQ v=1 is_load=0 addr=800092ac wdata=00000000 rd=0
+DBG: gfx_issue funct3=1 op_a=80000880 op_b=00000000 pc_if=00000060
+DBG: WB x8(tri_idx)=5 inst_addr=00000068
+DBG: gfx_issue funct3=1 op_a=800008e0 op_b=00000000 pc_if=00000060
+DBG: WB x8(tri_idx)=6 inst_addr=00000068
+DBG: gfx_issue funct3=1 op_a=80000940 op_b=00000000 pc_if=00000060
+DBG: WB x8(tri_idx)=7 inst_addr=00000068
+DBG: gfx_issue funct3=1 op_a=800009a0 op_b=00000000 pc_if=00000060
+DBG: WB x8(tri_idx)=8 inst_addr=00000068
+DBG: gfx_issue funct3=1 op_a=80000a00 op_b=00000000 pc_if=00000060
+DBG: WB x8(tri_idx)=9 inst_addr=00000068
+DBG: gfx_issue funct3=1 op_a=80000a60 op_b=00000000 pc_if=00000060
+DBG: WB x8(tri_idx)=10 inst_addr=00000068
+DBG: gfx_issue funct3=1 op_a=80000ac0 op_b=00000000 pc_if=00000060
+DBG: WB x8(tri_idx)=11 inst_addr=00000068
+DBG: gfx_issue funct3=1 op_a=80000b20 op_b=00000000 pc_if=00000060
+DBG: WB x8(tri_idx)=12 inst_addr=00000068
+DBG: gfx_issue funct3=0 op_a=80000540 op_b=00000000 pc_if=00000088
+DBG: gfx_issue funct3=3 op_a=80008000 op_b=00000000 pc_if=00000098
+DBG: load SYNC0 addr=8000f000 rd=14 data=00000000 pc=00000090 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: load SYNC0 addr=8000f000 rd=14 data=00000000 pc=00000098 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: load SYNC0 addr=8000f000 rd=14 data=00000000 pc=00000090 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: load SYNC0 addr=8000f000 rd=14 data=00000000 pc=00000098 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: load SYNC0 addr=8000f000 rd=14 data=00000000 pc=00000090 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: load SYNC0 addr=8000f000 rd=14 data=00000000 pc=00000098 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: load SYNC0 addr=8000f000 rd=14 data=00000000 pc=00000090 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: load SYNC0 addr=8000f000 rd=14 data=00000000 pc=00000098 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: load SYNC0 addr=8000f000 rd=14 data=00000000 pc=00000090 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: load SYNC0 addr=8000f000 rd=14 data=00000000 pc=00000098 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: load SYNC0 addr=8000f000 rd=14 data=00000000 pc=00000090 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: load SYNC0 addr=8000f000 rd=14 data=00000000 pc=00000098 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: load SYNC0 addr=8000f000 rd=14 data=00000000 pc=00000090 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: load SYNC0 addr=8000f000 rd=14 data=00000000 pc=00000098 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: load SYNC0 addr=8000f000 rd=14 data=00000000 pc=00000090 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: load SYNC0 addr=8000f000 rd=14 data=00000000 pc=00000098 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: load SYNC0 addr=8000f000 rd=14 data=00000000 pc=00000090 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: load SYNC0 addr=8000f000 rd=14 data=00000000 pc=00000098 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: load SYNC0 addr=8000f000 rd=14 data=00000000 pc=00000090 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: load SYNC0 addr=8000f000 rd=14 data=00000000 pc=00000098 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: load SYNC0 addr=8000f000 rd=14 data=00000000 pc=00000090 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: load SYNC0 addr=8000f000 rd=14 data=00000000 pc=00000098 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: load SYNC0 addr=8000f000 rd=14 data=00000000 pc=00000090 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: load SYNC0 addr=8000f000 rd=14 data=00000000 pc=00000098 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: load SYNC0 addr=8000f000 rd=14 data=00000000 pc=00000090 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: load SYNC0 addr=8000f000 rd=14 data=00000000 pc=00000098 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: load SYNC0 addr=8000f000 rd=14 data=00000000 pc=00000090 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: load SYNC0 addr=8000f000 rd=14 data=00000000 pc=00000098 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: load SYNC0 addr=8000f000 rd=14 data=00000000 pc=00000090 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: load SYNC0 addr=8000f000 rd=14 data=00000000 pc=00000098 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: load SYNC0 addr=8000f000 rd=14 data=00000000 pc=00000090 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: load SYNC0 addr=8000f000 rd=14 data=00000000 pc=00000098 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: load sent desc addr=80008000 rd=0 data=00000000
+DBG: load sent desc addr=80008004 rd=0 data=00000000
+DBG: load sent desc addr=80008008 rd=0 data=00000010
+DBG: load sent desc addr=8000800c rd=0 data=00000010
+DBG: load sent desc addr=80008010 rd=0 data=ff000001
+DBG: load sent desc addr=80008014 rd=0 data=00000000
+DBG: load sent desc addr=80008018 rd=0 data=00000000
+DBG: load sent desc addr=8000801c rd=0 data=00000000
+DBG: store SYNC addr=8000f000 wdata=ff000001 pc=00000098 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f004 wdata=ff000001 pc=00000098 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f040 wdata=ff000001 pc=00000090 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f044 wdata=ff000001 pc=00000090 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f018 wdata=ff000001 pc=00000098 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f01c wdata=ff000001 pc=00000098 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f058 wdata=ff000001 pc=00000098 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f05c wdata=ff000001 pc=000000a0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f028 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f02c wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f068 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f06c wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f038 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f03c wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f078 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f07c wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f080 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f084 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f0c0 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f0c4 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f090 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f094 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f0d0 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f0d4 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f0a0 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f0a4 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f0e0 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f0e4 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f0b0 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f0b4 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f0f0 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f0f4 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f108 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f10c wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f148 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f14c wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f118 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f11c wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f158 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f15c wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f128 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f12c wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f168 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f16c wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f188 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f18c wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f1c8 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f1cc wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f198 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f19c wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f1d8 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f1dc wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f1a8 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+TB: wrote frame_0.ppm
+DBG: store SYNC addr=8000f208 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f20c wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f248 wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f24c wdata=ff000001 pc=000000b0 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: WB x6(frame)=1 inst_addr=000000b0
+DBG: gfx_issue funct3=0 op_a=80000500 op_b=00000000 pc_if=00000030
+DBG: gfx_issue funct3=0 op_a=80000500 op_b=00000000 pc_if=00000038
+DBG: gfx_issue funct3=3 op_a=80000680 op_b=00000000 pc_if=00000038
+DBG: WB x8(tri_idx)=0 inst_addr=00000050
+DBG: store SYNC addr=8000f340 wdata=ff000001 pc=00000058 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f344 wdata=ff000001 pc=00000058 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: gfx_issue funct3=1 op_a=80000b80 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=2 op_a=00000000 op_b=00000000 pc_if=00000068
+DBG: WB x8(tri_idx)=1 inst_addr=00000068
+DBG: store SYNC addr=8000f380 wdata=ff000001 pc=00000058 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f384 wdata=ff000001 pc=00000060 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: gfx_issue funct3=1 op_a=80000be0 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=2 op_a=00000000 op_b=00000000 pc_if=00000068
+DBG: store SYNC addr=8000f218 wdata=ff000001 pc=00000068 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: store SYNC addr=8000f21c wdata=ff000001 pc=00000068 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: WB x8(tri_idx)=2 inst_addr=00000068
+DBG: store SYNC addr=8000f258 wdata=ff000001 pc=00000048 x4(rect)=80000680 x18(sent_base)=80008000 x19(sent_ptr)=80008000 x20(rstate2)=80000540 x21(exp)=ff000001
+DBG: gfx_issue funct3=1 op_a=80000c40 op_b=00000000 pc_if=00000060
+DBG: WB x8(tri_idx)=3 inst_addr=00000068
+DBG: gfx_issue funct3=1 op_a=80000ca0 op_b=00000000 pc_if=00000060
+DBG: WB x8(tri_idx)=4 inst_addr=00000068
+DBG: gfx_issue funct3=1 op_a=80000d00 op_b=00000000 pc_if=00000060
+DBG: WB x8(tri_idx)=5 inst_addr=00000068
+DBG: store FB0 addr=80009000 wdata=00000000
+DBG: gfx_issue funct3=1 op_a=80000d60 op_b=00000000 pc_if=00000060
+DBG: WB x8(tri_idx)=6 inst_addr=00000068
+DBG: gfx_issue funct3=1 op_a=80000dc0 op_b=00000000 pc_if=00000060
+DBG: WB x8(tri_idx)=7 inst_addr=00000068
+DBG: gfx_issue funct3=1 op_a=80000e20 op_b=00000000 pc_if=00000060
+DBG: WB x8(tri_idx)=8 inst_addr=00000068
+DBG: gfx_issue funct3=1 op_a=80000e80 op_b=00000000 pc_if=00000060
+DBG: WB x8(tri_idx)=9 inst_addr=00000068
+DBG: gfx_issue funct3=1 op_a=80000ee0 op_b=00000000 pc_if=00000060
+DBG: WB x8(tri_idx)=10 inst_addr=00000068
+DBG: gfx_issue funct3=1 op_a=80000f40 op_b=00000000 pc_if=00000060
+DBG: WB x8(tri_idx)=11 inst_addr=00000068
+DBG: gfx_issue funct3=1 op_a=80000fa0 op_b=00000000 pc_if=00000060
+DBG: WB x8(tri_idx)=12 inst_addr=00000068
+DBG: gfx_issue funct3=0 op_a=80000540 op_b=00000000 pc_if=00000088
+DBG: gfx_issue funct3=3 op_a=80008020 op_b=00000000 pc_if=00000098
+DBG: load sent desc addr=80008020 rd=0 data=00000000
+DBG: load sent desc addr=80008024 rd=0 data=00000000
+DBG: load sent desc addr=80008028 rd=0 data=00000010
+DBG: load sent desc addr=8000802c rd=0 data=00000010
+DBG: load sent desc addr=80008030 rd=0 data=ff000002
+DBG: load sent desc addr=80008034 rd=0 data=00000000
+DBG: load sent desc addr=80008038 rd=0 data=00000000
+DBG: load sent desc addr=8000803c rd=0 data=00000000
+TB: wrote frame_1.ppm
+DBG: WB x6(frame)=2 inst_addr=000000b0
+DBG: gfx_issue funct3=0 op_a=80000500 op_b=00000000 pc_if=00000030
+DBG: gfx_issue funct3=0 op_a=80000500 op_b=00000000 pc_if=00000038
+DBG: gfx_issue funct3=3 op_a=80000680 op_b=00000000 pc_if=00000038
+DBG: WB x8(tri_idx)=0 inst_addr=00000050
+DBG: gfx_issue funct3=1 op_a=80001000 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=2 op_a=00000000 op_b=00000000 pc_if=00000068
+DBG: WB x8(tri_idx)=1 inst_addr=00000068
+DBG: gfx_issue funct3=1 op_a=80001060 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=2 op_a=00000000 op_b=00000000 pc_if=00000068
+DBG: WB x8(tri_idx)=2 inst_addr=00000068
+DBG: gfx_issue funct3=1 op_a=800010c0 op_b=00000000 pc_if=00000060
+DBG: WB x8(tri_idx)=3 inst_addr=00000068
+DBG: gfx_issue funct3=1 op_a=80001120 op_b=00000000 pc_if=00000060
+DBG: WB x8(tri_idx)=4 inst_addr=00000068
+DBG: gfx_issue funct3=1 op_a=80001180 op_b=00000000 pc_if=00000060
+DBG: WB x8(tri_idx)=5 inst_addr=00000068
+DBG: store FB0 addr=80009000 wdata=00000000
+DBG: gfx_issue funct3=1 op_a=800011e0 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=80001240 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=800012a0 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=80001300 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=80001360 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=800013c0 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=80001420 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=0 op_a=80000540 op_b=00000000 pc_if=00000088
+DBG: gfx_issue funct3=3 op_a=80008040 op_b=00000000 pc_if=00000098
+DBG: load sent desc addr=80008040 rd=0 data=00000000
+DBG: load sent desc addr=80008044 rd=0 data=00000000
+DBG: load sent desc addr=80008048 rd=0 data=00000010
+DBG: load sent desc addr=8000804c rd=0 data=00000010
+DBG: load sent desc addr=80008050 rd=0 data=ff000003
+DBG: load sent desc addr=80008054 rd=0 data=00000000
+DBG: load sent desc addr=80008058 rd=0 data=00000000
+DBG: load sent desc addr=8000805c rd=0 data=00000000
+TB: wrote frame_2.ppm
+DBG: WB x6(frame)=3 inst_addr=000000b0
+DBG: gfx_issue funct3=0 op_a=80000500 op_b=00000000 pc_if=00000030
+DBG: gfx_issue funct3=0 op_a=80000500 op_b=00000000 pc_if=00000038
+DBG: gfx_issue funct3=3 op_a=80000680 op_b=00000000 pc_if=00000038
+DBG: gfx_issue funct3=1 op_a=80001480 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=2 op_a=00000000 op_b=00000000 pc_if=00000068
+DBG: gfx_issue funct3=1 op_a=800014e0 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=2 op_a=00000000 op_b=00000000 pc_if=00000068
+DBG: gfx_issue funct3=1 op_a=80001540 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=800015a0 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=80001600 op_b=00000000 pc_if=00000060
+DBG: store FB0 addr=80009000 wdata=00000000
+DBG: gfx_issue funct3=1 op_a=80001660 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=800016c0 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=80001720 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=80001780 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=800017e0 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=80001840 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=800018a0 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=0 op_a=80000540 op_b=00000000 pc_if=00000088
+DBG: gfx_issue funct3=3 op_a=80008060 op_b=00000000 pc_if=00000098
+DBG: load sent desc addr=80008060 rd=0 data=00000000
+DBG: load sent desc addr=80008064 rd=0 data=00000000
+DBG: load sent desc addr=80008068 rd=0 data=00000010
+DBG: load sent desc addr=8000806c rd=0 data=00000010
+DBG: load sent desc addr=80008070 rd=0 data=ff000004
+DBG: load sent desc addr=80008074 rd=0 data=00000000
+DBG: load sent desc addr=80008078 rd=0 data=00000000
+DBG: load sent desc addr=8000807c rd=0 data=00000000
+TB: wrote frame_3.ppm
+DBG: WB x6(frame)=4 inst_addr=000000b0
+DBG: gfx_issue funct3=0 op_a=80000500 op_b=00000000 pc_if=00000030
+DBG: gfx_issue funct3=0 op_a=80000500 op_b=00000000 pc_if=00000038
+DBG: gfx_issue funct3=3 op_a=80000680 op_b=00000000 pc_if=00000038
+DBG: gfx_issue funct3=1 op_a=80001900 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=2 op_a=00000000 op_b=00000000 pc_if=00000068
+DBG: gfx_issue funct3=1 op_a=80001960 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=2 op_a=00000000 op_b=00000000 pc_if=00000068
+DBG: gfx_issue funct3=1 op_a=800019c0 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=80001a20 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=80001a80 op_b=00000000 pc_if=00000060
+DBG: store FB0 addr=80009000 wdata=00000000
+DBG: gfx_issue funct3=1 op_a=80001ae0 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=80001b40 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=80001ba0 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=80001c00 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=80001c60 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=80001cc0 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=80001d20 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=0 op_a=80000540 op_b=00000000 pc_if=00000088
+DBG: gfx_issue funct3=3 op_a=80008080 op_b=00000000 pc_if=00000098
+DBG: load sent desc addr=80008080 rd=0 data=00000000
+DBG: load sent desc addr=80008084 rd=0 data=00000000
+DBG: load sent desc addr=80008088 rd=0 data=00000010
+DBG: load sent desc addr=8000808c rd=0 data=00000010
+DBG: load sent desc addr=80008090 rd=0 data=ff000005
+DBG: load sent desc addr=80008094 rd=0 data=00000000
+DBG: load sent desc addr=80008098 rd=0 data=00000000
+DBG: load sent desc addr=8000809c rd=0 data=00000000
+TB: wrote frame_4.ppm
+DBG: WB x6(frame)=5 inst_addr=000000b0
+DBG: gfx_issue funct3=0 op_a=80000500 op_b=00000000 pc_if=00000030
+DBG: gfx_issue funct3=0 op_a=80000500 op_b=00000000 pc_if=00000038
+DBG: gfx_issue funct3=3 op_a=80000680 op_b=00000000 pc_if=00000038
+DBG: gfx_issue funct3=1 op_a=80001d80 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=2 op_a=00000000 op_b=00000000 pc_if=00000068
+DBG: gfx_issue funct3=1 op_a=80001de0 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=2 op_a=00000000 op_b=00000000 pc_if=00000068
+DBG: gfx_issue funct3=1 op_a=80001e40 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=80001ea0 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=80001f00 op_b=00000000 pc_if=00000060
+DBG: store FB0 addr=80009000 wdata=00000000
+DBG: gfx_issue funct3=1 op_a=80001f60 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=80001fc0 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=80002020 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=80002080 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=800020e0 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=80002140 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=800021a0 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=0 op_a=80000540 op_b=00000000 pc_if=00000088
+DBG: gfx_issue funct3=3 op_a=800080a0 op_b=00000000 pc_if=00000098
+DBG: load sent desc addr=800080a0 rd=0 data=00000000
+DBG: load sent desc addr=800080a4 rd=0 data=00000000
+DBG: load sent desc addr=800080a8 rd=0 data=00000010
+DBG: load sent desc addr=800080ac rd=0 data=00000010
+DBG: load sent desc addr=800080b0 rd=0 data=ff000006
+DBG: load sent desc addr=800080b4 rd=0 data=00000000
+DBG: load sent desc addr=800080b8 rd=0 data=00000000
+DBG: load sent desc addr=800080bc rd=0 data=00000000
+TB: wrote frame_5.ppm
+DBG: WB x6(frame)=6 inst_addr=000000b0
+DBG: gfx_issue funct3=0 op_a=80000500 op_b=00000000 pc_if=00000030
+DBG: gfx_issue funct3=0 op_a=80000500 op_b=00000000 pc_if=00000038
+DBG: gfx_issue funct3=3 op_a=80000680 op_b=00000000 pc_if=00000038
+DBG: gfx_issue funct3=1 op_a=80002200 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=2 op_a=00000000 op_b=00000000 pc_if=00000068
+DBG: gfx_issue funct3=1 op_a=80002260 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=2 op_a=00000000 op_b=00000000 pc_if=00000068
+DBG: gfx_issue funct3=1 op_a=800022c0 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=80002320 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=80002380 op_b=00000000 pc_if=00000060
+DBG: store FB0 addr=80009000 wdata=00000000
+DBG: gfx_issue funct3=1 op_a=800023e0 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=80002440 op_b=00000000 pc_if=00000060
+DBG: gfx_issue funct3=1 op_a=800024a0 op_b=00000000 pc_if=00000060
+DBG: load sent desc addr=800080c0 rd=0 data=00000000
+DBG: load sent desc addr=800080c4 rd=0 data=00000000
+DBG: load sent desc addr=800080c8 rd=0 data=00000010
+DBG: load sent desc addr=800080cc rd=0 data=00000010
+DBG: load sent desc addr=800080d0 rd=0 data=ff000007
+DBG: load sent desc addr=800080d4 rd=0 data=00000000
+DBG: load sent desc addr=800080d8 rd=0 data=00000000
+DBG: load sent desc addr=800080dc rd=0 data=00000000
+TB: wrote frame_6.ppm
+DBG: WB x6(frame)=7 inst_addr=000000b0
+DBG: store FB0 addr=80009000 wdata=00000000
+DBG: load sent desc addr=800080e0 rd=0 data=00000000
+DBG: load sent desc addr=800080e4 rd=0 data=00000000
+DBG: load sent desc addr=800080e8 rd=0 data=00000010
+DBG: load sent desc addr=800080ec rd=0 data=00000010
+DBG: load sent desc addr=800080f0 rd=0 data=ff000008
+DBG: load sent desc addr=800080f4 rd=0 data=00000000
+DBG: load sent desc addr=800080f8 rd=0 data=00000000
+DBG: load sent desc addr=800080fc rd=0 data=00000000
+TB: wrote frame_7.ppm
+DBG: WB x6(frame)=8 inst_addr=000000b0
+DBG: store FB0 addr=80009000 wdata=00000000
+TB: wrote frame_8.ppm
+DBG: WB x6(frame)=9 inst_addr=000000b0
+DBG: store FB0 addr=80009000 wdata=00000000
+TB: wrote frame_9.ppm
+DBG: WB x6(frame)=10 inst_addr=000000b0
+DBG: store FB0 addr=80009000 wdata=00000000
+TB: wrote frame_10.ppm
+DBG: WB x6(frame)=11 inst_addr=000000b0
+DBG: store FB0 addr=80009000 wdata=00000000
+TB: wrote frame_11.ppm
+DBG: WB x6(frame)=12 inst_addr=000000b0
+DBG: store FB0 addr=80009000 wdata=00000000
+TB: wrote frame_12.ppm
+DBG: WB x6(frame)=13 inst_addr=000000b0
+DBG: store FB0 addr=80009000 wdata=00000000
+TB: wrote frame_13.ppm
+DBG: WB x6(frame)=14 inst_addr=000000b0
+DBG: store FB0 addr=80009000 wdata=00000000
+TB: wrote frame_14.ppm
+DBG: WB x6(frame)=15 inst_addr=000000b0
+DBG: store FB0 addr=80009000 wdata=00000000
+TB: wrote frame_15.ppm
+DBG: store FB0 addr=80009000 wdata=00000000
+TB: wrote frame_16.ppm
+DBG: store FB0 addr=80009000 wdata=00000000
+TB: wrote frame_17.ppm
+DBG: store FB0 addr=80009000 wdata=00000000
+TB: wrote frame_18.ppm
+DBG: store FB0 addr=80009000 wdata=00000000
+TB: wrote frame_19.ppm
+DBG: store FB0 addr=80009000 wdata=00000000
+TB: wrote frame_20.ppm
+DBG: store FB0 addr=80009000 wdata=00000000
+TB: wrote frame_21.ppm
+DBG: store FB0 addr=80009000 wdata=00000000
+TB: wrote frame_22.ppm
+DBG: store FB0 addr=80009000 wdata=00000000
+TB: wrote frame_23.ppm
+gfx_console_tb: finished 24 frames
+- testbench/gfx_console_tb.sv:872: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.032 2025-01-01
+- Verilator: $finish at 535us; walltime 0.215 s; speed 2.490 ms/s
+- Verilator: cpu 0.215 s on 1 threads; alloced 249 MB

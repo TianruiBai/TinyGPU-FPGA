@@ -1,0 +1,33 @@
+' Planned graphics pipeline (roadmap)
+' Render with PlantUML (see docs/diagrams/README.md)
+
+@startuml
+skinparam monochrome true
+skinparam shadowing false
+
+rectangle "Scalar Core\n(RSTATE/RSETUP/GDRAW...)\n(enqueue-only)" as CPU
+rectangle "VRAM Ring Buffer\n(prod/cons pointers)" as RING
+rectangle "gfx_cmd_streamer\n(DMA + shadow-state prefetch)" as STREAM
+
+rectangle "Setup\n(edges + bbox + inv_area)" as SETUP
+rectangle "Raster\n(2x2 quads)" as RAST
+rectangle "Interpolator\n(bary norm + UV)" as INTP
+rectangle "Texture Unit\n(L1 tiled cache)" as TEX
+rectangle "ROP\n(tile buffer + burst flush)" as ROP
+
+rectangle "MIU Arbiter\nScalar/Vector | ROP | Tex/Cmd" as MIU
+
+CPU --> RING : write packets
+RING --> STREAM : read packets
+STREAM --> SETUP
+SETUP --> RAST
+RAST --> INTP
+INTP --> TEX
+TEX --> ROP
+
+CPU --> MIU
+STREAM --> MIU
+TEX --> MIU
+ROP --> MIU
+
+@enduml
