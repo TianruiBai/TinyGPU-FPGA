@@ -27,3 +27,4 @@ obj_dir*/
 
 # Ignore compiled python cache
 __pycache__/
+verilator_l1_tb.log

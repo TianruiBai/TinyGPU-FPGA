@@ -1,0 +1,67 @@
+@startuml
+title Mailbox Center — Switch & Endpoint Plan (RTL-based)
+
+' High-level component view + TX/RX sequence sketches
+left to right direction
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+
+component "Mailbox Switch / Center" as CENTER
+
+package "Endpoints" {
+  [Compute Unit Mailbox Endpoint\n(`mailbox_endpoint`)] as CUEP
+  [Control Processor Mailbox Endpoint] as CPEP
+  [DMA / Debug Agent Endpoint] as DBGEP
+}
+
+CENTER --> CUEP : AXI-Lite (AW/W/AR/R)
+CENTER --> CPEP : AXI-Lite (AW/W/AR/R)
+CENTER --> DBGEP : AXI-Lite (AW/W/AR/R)
+
+note right of CENTER
+Central mailbox arbiter and routing fabric.
+- Routes AXI-Lite reads/writes between endpoints
+- Supports priority / EOP semantics and tag routing
+- Designed for small MMIO-like message exchange
+end note
+
+note left of CUEP
+As implemented in RTL (CU/LSU):
+- Optional instantiation via `MAILBOX_ENABLE`
+- Internal signals: `lsu_mailbox_tx_*`, `lsu_mailbox_rd_*`, `mailbox_rd_resp_*`
+- Endpoint maps internal FIFO semantics to AXI-Lite transactions
+end note
+
+@enduml
+
+' --- Brief TX/RX sequences (separate diagram) ----------------------------
+
+@startuml
+title Mailbox Center — TX/RX Sequences (RTL-based)
+
+' TX sequence (Compute Unit -> Host)
+actor "Compute Unit (LSU)" as CU
+participant "Mailbox Endpoint" as EP
+participant "Mailbox Switch" as SWITCH
+participant "Host / CP" as HOST
+
+CU -> EP : mailbox_tx_valid + dest + data
+EP -> SWITCH : AXI-Lite AW/W (addr = dest)\nWDATA = data
+SWITCH -> HOST : deliver write to destination
+HOST -> SWITCH : write ack (BVALID/BRESP)
+SWITCH -> EP : BVALID/BRESP
+EP -> CU : mailbox_tx_ready
+
+
+' RX sequence (Host -> Compute Unit)
+participant "Host / CP" as HOST2
+participant "Mailbox Switch" as SWITCH2
+participant "Mailbox Endpoint" as EP2
+participant "Compute Unit (LSU)" as CU2
+
+HOST2 -> SWITCH2 : write to endpoint (ingress FIFO)
+SWITCH2 -> EP2 : AXI-Lite write (rd dest + data)
+EP2 -> CU2 : mailbox_rd_valid + dest + data
+CU2 -> EP2 : mailbox_rd_resp_ready
+
+@enduml

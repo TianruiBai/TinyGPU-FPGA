@@ -1,3 +1,8 @@
+// Texture cache used for LSU_TEX path (separate from the per-CU L1 cache).
+// Texture cache semantics, line sizes and refill behavior are tuned for
+// texture sampling patterns and may be accessed concurrently with L1
+// scalar/vector traffic. Integration point: the global MIU/arbiter should
+// route LSU_TEX requests to this cache when appropriate.
 module texture_cache #(
     parameter LINE_BYTES = 64,
     parameter LINES      = 64

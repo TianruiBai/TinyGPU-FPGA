@@ -27,6 +27,7 @@ skinparam wrapWidth 220
 
 cloud "Instruction bus\n(inst_addr/inst_rdata[63:0])" as IFBUS
 cloud "Unified Global Memory\n32-bit req/resp" as GMEM
+cloud "Mailbox switch\nAXI-Lite / MMIO" as MBOX_SW
 
 package "compute_unit_top.sv" {
 
@@ -67,6 +68,7 @@ package "compute_unit_top.sv" {
     [lsu\n(local/global/atomics)] as LSU
     [write_merge_buf\n(8 entries)] as WMB
     [local_mem_banked] as LM
+    [mailbox_endpoint\n(optional, MAILBOX_ENABLE)] as MBEP
   }
 
   package "Graphics / TEX" {
@@ -100,6 +102,12 @@ EX --> AGU
 EX --> ALU_F
 EX --> CSR
 
+note right of CSR
+CSR includes cmd_* outputs (cmd_ring_base/size/enable),
+intended for command streamer / command ring consumer.
+(Some signals present but unused in current as-built RTL.)
+end note
+
 BRU --> FE : redirect (mispredict)
 
 EX --> LSU : loads/stores/atomics
@@ -107,6 +115,10 @@ LSU --> LM : local
 LSU --> WMB : merge stores
 LSU --> GMEM : global req/resp
 WMB --> GMEM : drained writes
+LSU --> MBEP : mailbox_tx/read (lsu_mailbox_*)
+MBEP --> MBOX_SW : AXI-Lite (m_aw/m_w/m_ar/m_r)
+note right of MBEP
+Connects LSU mailbox signals to external\nMailbox Switch. Endpoint is optional at\ncompile-time (MAILBOX_ENABLE parameter).See `docs/diagrams/mailbox_center.puml` for a detailed Mailbox Center / Switch / Endpoint plan.end note
 
 EX --> MEMWB
 MEMWB --> WB_ARB

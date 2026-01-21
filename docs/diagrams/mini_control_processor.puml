@@ -1,0 +1,31 @@
+@startuml
+title Mini Control Processor — Component Diagram
+
+left to right direction
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+
+package "Mini Control Processor (MCU)" {
+  [RISC-V Core (5-stage)] as CPU
+  [I/D Memory (IMEM/DMEM)] as MEM
+  [MMIO / CSR] as MMIO
+  [Interrupt Controller] as IRQ
+  [Watchdog / Timers] as WDG
+}
+
+cloud "System MMIO / Mailbox" as MMIO_BUS
+
+CPU --> MEM : fetch / data
+CPU --> MMIO : CSR reads/writes
+MMIO --> MMIO_BUS : mailbox base / status
+IRQ --> CPU : IRQ lines (mailbox, faults)
+WDG --> CPU : watchdog IRQ
+
+note right of MMIO
+MCU firmware responsibilities:
+- Service ingress mailboxes
+- Configure compute-unit CSRs (cmd ring)
+- Service faults & watchdog
+end note
+
+@enduml
