@@ -63,7 +63,7 @@ This document converts your 7‑point proposal into a structured roadmap with ra
 ---
 
 ## 5) Cluster design & sizing (1/2/4/6/8) 🧩
-**Topology:** mailbox interconnect as control plane + dedicated low‑latency fabric (AXI‑Stream / ring / crossbar) for fast data exchange.
+**Topology:** MailboxFabric as control plane + dedicated low‑latency fabric (AXI‑Stream / ring / crossbar) for fast data exchange.
 
 **Options:** start with non‑coherent cluster (software-managed fences) and later add a directory-based coherence for L2.
 
@@ -80,7 +80,7 @@ This document converts your 7‑point proposal into a structured roadmap with ra
 
 ---
 
-## 7) Mailbox interconnect enhancement & mailbox instructions ⚡
+## 7) MailboxFabric enhancement & mailbox instructions ⚡
 **Goal:** make intra‑cluster messaging low latency and expressive for coordination (doorbells, small DMA descriptors, fast notify).
 
 **Design options:**

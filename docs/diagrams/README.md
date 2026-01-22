@@ -13,6 +13,6 @@ If you have PlantUML installed locally, you can render with:
 (Exact command depends on how PlantUML is installed on your machine.)
 Included diagrams:
 - `compute_unit_microarch.puml` — Compute Unit microarchitecture (as-built RTL) ✅
-- `mailbox_interconnect.puml` — Mailbox interconnect / AXI-Lite switch (UML component) 📬
+- `mailbox_interconnect.puml` — MailboxFabric / AXI-Lite switch (UML component) 📬
 - `mailbox_center.puml` — Mailbox Center / Switch / Endpoint plan (RTL-based) 📬
 - `mini_control_processor.puml` — Mini Control Processor (component/ports) 🧭

@@ -8,3 +8,4 @@ Color: RGB565
 Bus Interface: AXI-4
 Perform Read operation directly from framebuffer memory location.
 Draw everything render to framebuffer
+double framebuffer, the ouput triggered automaticaly when flip the framebuffer.

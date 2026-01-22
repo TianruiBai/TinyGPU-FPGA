@@ -6,7 +6,7 @@
 
 ## 1. Goals & Scope 🎯
 - Provide a compact, high-throughput Matrix Computing Core (MCC) optimized for block (tile) matrix operations (matmul, conv-like kernels). 
-- Integrate with the existing L1 cache (write-back) and the mailbox interconnect for control and signalling.
+- Integrate with the existing L1 cache (write-back) and the MailboxFabric for control and signalling.
 - Support both direct memory streaming (via cache / AXI) and low-latency control via AXI4-Lite mailbox.
 
 ---

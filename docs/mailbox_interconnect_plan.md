@@ -1,6 +1,6 @@
-# Mailbox Interconnect Implementation Plan
+# MailboxFabric Implementation Plan
 
-This plan outlines the RTL deliverables and integration steps for the full mailbox network: Center, Switch, and Leaf (Endpoint). Goals: low-latency sync, deterministic flow control, and simple timing closure on FPGA.
+This plan outlines the RTL deliverables and integration steps for the full MailboxFabric network: Center, Switch, and Leaf (Endpoint). Goals: low-latency sync, deterministic flow control, and simple timing closure on FPGA.
 
 ## 1. Mailbox Center
 
@@ -10,7 +10,7 @@ This plan outlines the RTL deliverables and integration steps for the full mailb
 - 4× Downlinks: Center → Switch (full-duplex mailbox **AXI4-Lite read+write** channels, baseline profile).
 - 1× Uplink per downlink (full-duplex AXI4-Lite read+write).
 
-> **Note:** The mailbox interconnect is the *control/status* plane and now uses **AXI4-Lite full-duplex (reads + writes)** for familiarity with the rest of the SoC. The **main system memory bus** (VRAM/data path) remains **AXI4** (see `docs/memory_map.md`). Mailbox addresses are strongly-ordered/non-cacheable; LSU should decode the mailbox region and avoid caching/reordering for those accesses. Both stores and loads to the mailbox address window are redirected into the mailbox network.
+> **Note:** The MailboxFabric is the *control/status* plane and now uses **AXI4-Lite full-duplex (reads + writes)** for familiarity with the rest of the SoC. The **main system memory bus** (VRAM/data path) remains **AXI4** (see `docs/memory_map.md`). Mailbox addresses are strongly-ordered/non-cacheable; LSU should decode the mailbox region and avoid caching/reordering for those accesses. Both stores and loads to the mailbox address window are redirected into the MailboxFabric network.
 - 1× HP port: direct endpoint (e.g., MCU or interrupt concentrator) with highest priority arbitration.
 
 **Functionality:**

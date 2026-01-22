@@ -1,8 +1,8 @@
-# **Mailbox Interconnect Specification**
+# **MailboxFabric Specification**
 
 ## **1\. Concept Overview**
 
-The **Mailbox Interconnect** is a dedicated, low-latency "Network-on-Chip" (NoC) designed for high-speed synchronization and small data transfers between Processing Elements (PEs) and the Control MCU.
+The **MailboxFabric** is a dedicated, low-latency "Network-on-Chip" (NoC) designed for high-speed synchronization and small data transfers between Processing Elements (PEs) and the Control MCU.
 
 Architecture: Hierarchical Tree Topology
 
