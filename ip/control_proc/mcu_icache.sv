@@ -1,6 +1,7 @@
-module icache #(
-    parameter LINE_BYTES = 32,
-    parameter LINES      = 64
+// L1 Instruction Cache wrapper for MCU (control processor)
+module mcu_icache #(
+    parameter int LINE_BYTES = 32,
+    parameter int LINES      = 64
 ) (
     input  logic        clk,
     input  logic        rst_n,
