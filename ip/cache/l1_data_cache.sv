@@ -359,6 +359,13 @@ module l1_data_cache #(
             lsu1_resp_valid_r <= 1'b0;
             tex_miss_resp_valid <= 1'b0;
 
+            if (cfg_invalidate) begin
+                for (i = 0; i < NUM_LINES; i = i + 1) begin
+                    tag_ram[i].valid <= 1'b0;
+                    tag_ram[i].dirty <= 1'b0;
+                end
+            end
+
             // write-back buffer push/pop defaults
             wb_push <= 1'b0;
             wb_push_addr <= 32'b0;
@@ -593,6 +600,7 @@ module l1_data_cache #(
                     logic [OFFSET_BITS-1:0] off;
                     integer base_word;
                     logic [REFILL_BITS-1:0] refill_buf_next;
+                    logic [REFILL_BITS-1:0] refill_line;
                     logic refill_last;
                     idx = addr_idx(pending_addr);
                     tag = addr_tag(pending_addr);
@@ -600,14 +608,16 @@ module l1_data_cache #(
                     base_word = int'(off[OFFSET_BITS-1:2]);
 
                     if (LINE_BEATS == 1) begin
+                        refill_line = mem_resp_line;
                         data_ram[idx] <= mem_resp_line;
                         refill_last = 1'b1;
                     end else begin
                         refill_buf_next = refill_buf;
                         refill_buf_next[refill_cnt*AXI_DATA_BITS +: AXI_DATA_BITS] = mem_resp_data;
+                        refill_line = refill_buf_next;
                         refill_last = (refill_cnt == REFILL_CNT_BITS'(LINE_BEATS_M1));
                         if (refill_last) begin
-                            data_ram[idx] <= refill_buf_next;
+                            data_ram[idx] <= refill_line;
                             refill_cnt <= '0;
                             $display("L1 refill line addr=%08h last=1 @%0t", {tag, idx, {OFFSET_BITS{1'b0}}}, $time);
                         end else begin
@@ -627,7 +637,7 @@ module l1_data_cache #(
                     if (refill_last && pending_is_store) begin
                         integer lane;
                         logic [LINE_BYTES*8-1:0] line_new2;
-                        line_new2 = data_ram[idx];
+                        line_new2 = refill_line;
                         if (!pending_is_vector) begin
                             line_new2[base_word*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH]
                                 = pending_wdata[0 +: MAX_RDATA_WIDTH];
@@ -663,11 +673,11 @@ module l1_data_cache #(
                             if (pending_is_vector) begin
                                 for (lane = 0; lane < VEC_WORDS; lane = lane + 1) begin
                                     lsu0_resp_data_r[lane*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH]
-                                        <= data_ram[idx][(base_word+lane)*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH];
+                                        <= refill_line[(base_word+lane)*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH];
                                 end
                             end else begin
                                 lsu0_resp_data_r[0 +: MAX_RDATA_WIDTH]
-                                    <= data_ram[idx][base_word*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH];
+                                    <= refill_line[base_word*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH];
                             end
                             lsu0_resp_valid_r <= 1'b1;
                         end else begin
@@ -676,11 +686,11 @@ module l1_data_cache #(
                             if (pending_is_vector) begin
                                 for (lane = 0; lane < VEC_WORDS; lane = lane + 1) begin
                                     lsu1_resp_data_r[lane*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH]
-                                        <= data_ram[idx][(base_word+lane)*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH];
+                                        <= refill_line[(base_word+lane)*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH];
                                 end
                             end else begin
                                 lsu1_resp_data_r[0 +: MAX_RDATA_WIDTH]
-                                    <= data_ram[idx][base_word*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH];
+                                    <= refill_line[base_word*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH];
                             end
                             lsu1_resp_valid_r <= 1'b1;
                         end
