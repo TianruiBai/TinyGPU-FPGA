@@ -61,59 +61,101 @@ module compute_unit_top #(
     logic        if_inst0_valid;
     logic        if_inst1_valid;
 
-            assign mailbox_tx_ready_int = ep_tx_ready;
-            assign mailbox_rd_ready_int = !rd_pending;
+    logic [3:0]  pc_advance_bytes;
 
-                mailbox_endpoint_stream #(
-                    .SRC_ID({8'h00, MAILBOX_SRC_ID})
-                ) u_mailbox_ep (
-                    .clk(clk),
-                    .rst_n(rst_n),
+    // Decode (combinational)
+    decode_ctrl_t d0_ctrl;
+    decode_ctrl_t d1_ctrl;
 
-                    .tx_valid(lsu_mailbox_tx_valid),
-                    .tx_ready(ep_tx_ready),
-                    .tx_data(lsu_mailbox_tx_data),
-                    .tx_dest_id(lsu_mailbox_tx_dest),
-                    .tx_opcode(lsu_mailbox_tx_opcode),
-                    .tx_prio({1'b0, lsu_mailbox_tx_prio}),
-                    .tx_eop(lsu_mailbox_tx_eop),
-                    .tx_debug(1'b0),
+    // RR stage
+    decode_ctrl_t rr_ctrl;
+    logic         rr_valid;
+    logic [31:0]  rr_pc;
 
-                    .rx_valid(ep_rx_valid),
-                    .rx_ready(ep_rx_ready_int),
-                    .rx_data(ep_rx_data),
-                    .rx_hdr(ep_rx_hdr),
-                    .rx_irq(ep_rx_irq),
-                    .rx_error(ep_rx_err),
-                    .rx_dest_id(ep_rx_dest_id),
+    // RR lane 1 (dual issue: vector-ALU or gfx only)
+    decode_ctrl_t rr1_ctrl;
+    logic         rr1_valid;
 
-                    .link_tx_valid(mailbox_tx_valid),
-                    .link_tx_ready(mailbox_tx_ready),
-                    .link_tx_data(mailbox_tx_data),
-                    .link_tx_dest_id(mailbox_tx_dest_id),
+    logic [4:0]   rr1_scalar_raddr;
 
-                    .link_rx_valid(mailbox_rx_valid),
-                    .link_rx_ready(mailbox_rx_ready),
-                    .link_rx_data(mailbox_rx_data),
-                    .link_rx_dest_id(mailbox_rx_dest_id)
-                );
+    logic rr_is_vec_alu;
+    logic rr_is_gfx;
+    logic rr1_is_vec_alu;
+    logic rr1_is_gfx;
+
+    // Vector issue queue (decoupled from scalar/fp/lsu pipe)
+    typedef struct packed {
+        decode_ctrl_t ctrl;
+        logic [127:0] src_a;
+        logic [127:0] src_b;
+        logic [31:0]  scalar_mask;
+    } vector_issue_t;
+
+    localparam int VQ_DEPTH = 2;
+    vector_issue_t vq [VQ_DEPTH];
+    logic [VQ_DEPTH-1:0] vq_valid;
+    logic [$clog2(VQ_DEPTH)-1:0] vq_head;
+    logic [$clog2(VQ_DEPTH)-1:0] vq_tail;
+    logic [$clog2(VQ_DEPTH+1)-1:0] vq_count;
+
+    // Graphics pipeline instance
+    logic        gfx_queue_full;
+    logic        gfx_queue_afull;
+    logic [3:0]  gfx_queue_count;
+    logic        gfx_busy;
+
+    // Texture interface wiring to cache
+    logic        tex_gp_req_valid;
+    logic [31:0] tex_gp_req_addr;
+    logic [4:0]  tex_gp_req_rd;
+    logic        tex_gp_req_ready;
+    logic        tex_gp_resp_valid;
+    logic [31:0] tex_gp_resp_data;
+    logic [4:0]  tex_gp_resp_rd;
+
+    // GFX descriptor cache interface wiring
+    logic        gfxd_gp_req_valid;
+    logic [31:0] gfxd_gp_req_addr;
+    logic [4:0]  gfxd_gp_req_rd;
+    logic        gfxd_gp_req_ready;
+    logic        gfxd_gp_resp_valid;
+    logic [31:0] gfxd_gp_resp_data;
+    logic [4:0]  gfxd_gp_resp_rd;
+
+    // Texture pipeline signals (shared between graphics_pipeline and texture_cache)
+    logic        tex_req_valid;
+    logic [31:0] tex_req_addr;
+    logic [4:0]  tex_req_rd;
+    logic        tex_req_ready;
+    logic        tex_resp_valid;
+    logic [31:0] tex_resp_data;
     logic [4:0]  tex_resp_rd;
 
-                assign mailbox_rd_ready_int = 1'b1;
-                assign lsu_mailbox_rd_resp_valid = 1'b0;
-                assign lsu_mailbox_rd_resp_data  = 32'h0;
-                assign lsu_mailbox_rd_resp_tag   = '0;
+    // GFX descriptor cache signals (shared between graphics_pipeline and gfx_desc_cache)
+    logic        gfxd_req_valid;
+    logic [31:0] gfxd_req_addr;
+    logic [4:0]  gfxd_req_rd;
     logic        gfxd_req_ready;
-                assign mailbox_tx_valid  = 1'b0;
-                assign mailbox_tx_data   = '0;
-                assign mailbox_tx_dest_id = '0;
-                assign mailbox_rx_ready  = 1'b1;
+    logic        gfxd_resp_valid;
+    logic [31:0] gfxd_resp_data;
+    logic [4:0]  gfxd_resp_rd;
+
+    // Redirect on control-flow mispredict (flush + refetch)
+    logic        ex_redirect_valid;
+    logic [31:0] ex_redirect_target;
+
+    // Predicted redirect (from slot0 when accepted)
+    logic        if_pred_taken;
+    logic [31:0] if_pred_target;
+
+    // Pred info carried down the scalar pipe
+    logic        rr_pred_taken;
+    logic [31:0] rr_pred_target;
+    logic        ex_pred_taken;
     logic [31:0] ex_pred_target;
 
-                assign ep_rx_hdr        = '0;
-                assign ep_rx_dest_id    = '0;
+    // Resolved control-flow in EX
     logic        ex_cf_taken;
-                assign ep_rx_err        = 1'b0;
     logic [31:0] ex_cf_target;
 
     // Graphics Pipeline Writeback wiring
@@ -1370,6 +1412,7 @@ module compute_unit_top #(
         generate
             if (MAILBOX_ENABLE) begin : g_mailbox_ep
                 assign mailbox_tx_ready_int = ep_tx_ready;
+                assign mailbox_rd_ready_int = !rd_pending;
 
                 mailbox_endpoint_stream #(
                     .SRC_ID({8'h00, MAILBOX_SRC_ID})
@@ -1407,9 +1450,6 @@ module compute_unit_top #(
             end else begin : g_mailbox_tieoff
                 assign mailbox_tx_ready_int = 1'b1;
                 assign mailbox_rd_ready_int = 1'b1;
-                assign lsu_mailbox_rd_resp_valid = 1'b0;
-                assign lsu_mailbox_rd_resp_data  = 32'h0;
-                assign lsu_mailbox_rd_resp_tag   = '0;
                 assign ep_tx_ready = 1'b1;
                 assign mailbox_tx_valid  = 1'b0;
                 assign mailbox_tx_data   = '0;
