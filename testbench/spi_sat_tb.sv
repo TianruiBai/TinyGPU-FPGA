@@ -12,6 +12,8 @@ module spi_sat_tb;
   logic trmt;
   logic rx_rdy;
   logic clr_rdy;
+  logic [7:0] tx_bits;
+  logic [7:0] rx_bits;
 
   logic SPI_SCLK;
   logic SPI_MOSI;
@@ -29,6 +31,7 @@ module spi_sat_tb;
     .SCLK_DIV(2)
   ) dut (
     .clk(clk), .rst_n(rst_n),
+    .tx_bits(tx_bits), .rx_bits(rx_bits),
     .cmd(cmd), .resp(resp), .trmt(trmt), .rx_rdy(rx_rdy), .clr_rdy(clr_rdy),
     .SPI_SCLK(SPI_SCLK), .SPI_MOSI(SPI_MOSI), .SPI_MISO(SPI_MISO), .SPI_CS(SPI_CS)
   );
@@ -43,6 +46,8 @@ module spi_sat_tb;
     cmd = '0;
     trmt = 0;
     clr_rdy = 0;
+    tx_bits = 8'd16;
+    rx_bits = 8'd16;
 
     #50;
     rst_n = 1;

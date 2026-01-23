@@ -46,6 +46,10 @@ package "compute_unit_top.sv" {
     [regfile_vector\n32x128] as RF_V
   }
 
+note right of RF_V
+As-built VRF uses combinational reads (combinational mem read). Synthesis may infer BRAM and change read latency; the design includes forwarding and scoreboard logic to handle timing differences.
+end note
+
   package "Scalar / FP Pipeline" {
     [RR regs\n(op capture + bypass)] as RR
     [EX stage] as EX
@@ -159,7 +163,7 @@ As-built: GFX/TEX queue is not flushed on scalar redirects\n("fire-and-forget" o
 end note
 
 note right of RAST
-Raster->ROP is ready/valid.\nHold payload stable while quad_valid && !quad_ready.\nAdvance only when (quad_ready || !quad_valid).
+Raster->ROP is ready/valid. The pipeline emits 2×2 quads (scanline step +2) and a 4-bit `quad_mask` that can indicate arbitrary coverage within the quad (not fixed to a single bit).\nSampling is at pixel center using a 2× subpixel grid; barycentrics are provided as unnormalized edge-function values.\nHold payload stable while `quad_valid && !quad_ready`.\nAdvance only when `(quad_ready || !quad_valid)`.
 end note
 
 @enduml

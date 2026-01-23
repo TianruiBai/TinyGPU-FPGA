@@ -15,6 +15,10 @@ module spi_sat #(
   input  logic clk,
   input  logic rst_n,
 
+  // Variable-length control (bits). If 0, use TX_LEN/RX_LEN defaults.
+  input  logic [7:0] tx_bits,
+  input  logic [7:0] rx_bits,
+
   // Direct interface
   input  logic [TX_LEN*8-1:0] cmd,
   output logic [RX_LEN*8-1:0] resp,
@@ -42,6 +46,18 @@ module spi_sat #(
   logic [63:0] rx_shift_next;
   logic busy;
   logic sclk_reg;
+  logic [7:0] tx_bits_lat;
+  logic [7:0] rx_bits_lat;
+  logic [7:0] total_bits_lat;
+  logic [7:0] tx_bits_eff;
+  logic [7:0] rx_bits_eff;
+  logic [7:0] total_bits_eff;
+
+  always_comb begin
+    tx_bits_eff = (tx_bits == 0) ? TX_BITS[7:0] : (tx_bits > TX_BITS[7:0] ? TX_BITS[7:0] : tx_bits);
+    rx_bits_eff = (rx_bits == 0) ? RX_BITS[7:0] : (rx_bits > RX_BITS[7:0] ? RX_BITS[7:0] : rx_bits);
+    total_bits_eff = (tx_bits_eff > rx_bits_eff) ? tx_bits_eff : rx_bits_eff;
+  end
 
   // Chip select (active low)
   always_comb begin
@@ -83,13 +99,20 @@ module spi_sat #(
       sclk_reg   <= 1'b0;
       resp       <= '0;
       done_pulse <= 1'b0;
+      tx_bits_lat <= TX_BITS[7:0];
+      rx_bits_lat <= RX_BITS[7:0];
+      total_bits_lat <= (TX_BITS > RX_BITS) ? TX_BITS[7:0] : RX_BITS[7:0];
     end else begin
       done_pulse <= 1'b0;
       if (trmt && !busy) begin
         // launch transfer
-        tx_shift <= (TX_BITS == 0) ? 64'h0 : {cmd, {(64-TX_BITS){1'b0}}};
+        tx_bits_lat <= tx_bits_eff;
+        rx_bits_lat <= rx_bits_eff;
+        total_bits_lat <= total_bits_eff;
+
+        tx_shift <= {cmd, {(64-TX_BITS){1'b0}}};
         rx_shift <= 64'h0;
-        bit_cnt  <= TOTAL_BITS[CNT_W-1:0];
+        bit_cnt  <= total_bits_eff[CNT_W-1:0];
         div_cnt  <= '0;
         busy     <= 1'b1;
         sclk_reg <= 1'b0;
@@ -106,7 +129,8 @@ module spi_sat #(
               bit_cnt  <= bit_cnt - 1'b1;
 
               if (bit_cnt == 1) begin
-                resp <= rx_shift_next[RX_BITS-1:0];
+                if (rx_bits_lat == 0) resp <= '0;
+                else resp <= rx_shift_next[RX_BITS-1:0] >> (RX_BITS - rx_bits_lat);
                 busy <= 1'b0;
                 sclk_reg <= 1'b0;
                 done_pulse <= 1'b1;

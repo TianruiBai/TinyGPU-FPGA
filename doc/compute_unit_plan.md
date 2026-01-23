@@ -46,9 +46,9 @@ Goal: Stall only when sources/dests are busy; allow latency hiding (vmask-aware)
 
 ## Step 3: Vector Unit (data path)
 Goal: Execute `VADD v1, v2, v3` with BRAM-backed VRF and respect `vm`/`vmask` predication.
-- `regfile_vector.sv`: infer BRAM (sync read). 32 entries x 128 bits, 2R/1W. Account for 1-cycle read latency. `vmask` sits in CSR file; V ops gate per-lane writeback when `vm`=1.
+- `regfile_vector.sv`: As-built uses combinational reads (`regfile_vector.sv` presents combinational mem reads), providing data in the same cycle. Synthesis may infer BRAM and therefore introduce target-dependent read latency; the RTL includes forwarding and scoreboard mechanisms to handle these timing variations. If an architectural 1-cycle VRF read latency is desired, consider changing the VRF to synchronous reads and updating scoreboard/issue timing accordingly. `vmask` sits in `csr_file.sv`; V ops gate per-lane behavior when `vm` is enabled.
 - `alu_vector.sv`: 4 parallel 32-bit adders (or FP32 adders) for basic VADD; later extend to VCMP/VSEL/VDOT/VCROSS, VPACK/VUNPACK and sat mode.
-- Pipeline: Fetch -> Decode -> RegRead (1-cycle VRF) -> Execute -> WB; scoreboard covers the regread latency.
+- Pipeline: Fetch -> Decode -> RegRead (combinational in current RTL; forwarding/scoreboard handle timing variations) -> Execute -> WB; scoreboard covers regread hazards and forwarding.
 - Testbench: feed VLD-like preloads or direct writes, then VADD, check result matches lane-wise add.
 
 ## Step 4: LSU + Local Memory
@@ -67,12 +67,11 @@ Goal: Functional `TEX` without full filtering.
 ## Step 6: Hardware Rasterizer & Triangle Setup
 Goal: Accelerate triangle edge evaluation and pixel coverage generation.
 -   `raster_unit.sv`: Implement edge-function based rasterizer.
-    -   Current RTL iterates **1x1 pixels** (still using a quad-shaped interface):
-        - `quad_x/quad_y` are the pixel coordinate.
-        - `quad_mask` indicates which pixels in a conceptual 2x2 are valid; current path emits `4'b0001`.
-    -   Coverage uses 64-bit edge functions to avoid overflow; sampling is at **pixel center** using a 2x subpixel grid.
-    -   Winding is normalized (`tri_area` exported as non-negative) so triangles render regardless of CW/CCW order; only degenerate (zero-area) triangles are rejected.
-    -   Barycentric weights (`quad_bary_w0/w1/w2`) are unnormalized edge-function values in the same scale as `tri_area_out` for downstream interpolation.
+    -   Current RTL emits 2×2 quads (scanline stepping by +2) and produces a 4-bit `quad_mask` that indicates coverage for the 2×2 pixels; the mask can contain any combination of bits (not fixed to `4'b0001`).
+    -   The rasterizer computes per-quad edge values and samples at pixel center using a 2× subpixel grid to form coverage and barycentric values.
+    -   Coverage uses 64-bit edge functions to avoid overflow.
+    -   Winding is normalized (`tri_area` exported as non-negative) so triangles render regardless of CW/CCW order; degenerate (zero-area) triangles are rejected.
+    -   Barycentric outputs (`quad_bary_w0/w1/w2`) are unnormalized edge-function values in the same scale as `tri_area_out` for downstream interpolation; the implementation selects a representative pixel (first set bit in the mask) to provide barycentrics for the quad payload.
 
 -   Raster→ROP handshake (normative for RTL):
     - `quad_valid` indicates the fragment payload is valid.

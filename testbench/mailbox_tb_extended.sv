@@ -1,4 +1,5 @@
 `timescale 1ns/1ps
+/* LEGACY AXI‑Lite mailbox_tb_extended (disabled)
 
 // Extended unit testbench for mailbox interconnect: QoS, priority, and mute tests
 module mailbox_tb_extended;
@@ -415,6 +416,204 @@ module mailbox_tb_extended;
     end
 
     $display("All extended mailbox tests passed.");
+    $finish;
+  end
+
+endmodule
+*/
+
+// Stream-based extended testbench for AXI‑MailboxFabric (Must‑Sink behavior)
+module mailbox_tb_extended;
+  import mailbox_pkg::*;
+
+  logic clk;
+  logic rst_n;
+  initial clk = 1'b0;
+  always #1 clk <= ~clk;
+
+  initial begin
+    rst_n = 1'b0;
+    repeat (10) @(posedge clk);
+    rst_n = 1'b1;
+  end
+
+  // Core-side signals
+  logic ep0_tx_valid, ep0_tx_ready;
+  logic [DATA_WIDTH-1:0] ep0_tx_data;
+  logic [NODE_ID_WIDTH-1:0] ep0_tx_dest;
+  logic [3:0] ep0_tx_opcode;
+  logic [1:0] ep0_tx_prio;
+  logic ep0_tx_eop, ep0_tx_debug;
+
+  logic ep1_tx_valid, ep1_tx_ready;
+  logic [DATA_WIDTH-1:0] ep1_tx_data;
+  logic [NODE_ID_WIDTH-1:0] ep1_tx_dest;
+  logic [3:0] ep1_tx_opcode;
+  logic [1:0] ep1_tx_prio;
+  logic ep1_tx_eop, ep1_tx_debug;
+
+  logic ep0_rx_valid, ep1_rx_valid;
+  logic [DATA_WIDTH-1:0] ep0_rx_data, ep1_rx_data;
+  mailbox_header_t ep0_rx_hdr, ep1_rx_hdr;
+  logic [NODE_ID_WIDTH-1:0] ep0_rx_dest_id, ep1_rx_dest_id;
+  logic ep0_rx_ready, ep1_rx_ready;
+  logic ep0_rx_irq, ep1_rx_irq;
+  logic ep0_rx_err, ep1_rx_err;
+
+  // Fabric links
+  logic ep0_link_tx_valid, ep0_link_tx_ready;
+  mailbox_flit_t ep0_link_tx_data;
+  logic [NODE_ID_WIDTH-1:0] ep0_link_tx_dest;
+  logic ep0_link_rx_valid, ep0_link_rx_ready;
+  mailbox_flit_t ep0_link_rx_data;
+  logic [NODE_ID_WIDTH-1:0] ep0_link_rx_dest;
+
+  logic ep1_link_tx_valid, ep1_link_tx_ready;
+  mailbox_flit_t ep1_link_tx_data;
+  logic [NODE_ID_WIDTH-1:0] ep1_link_tx_dest;
+  logic ep1_link_rx_valid, ep1_link_rx_ready;
+  mailbox_flit_t ep1_link_rx_data;
+  logic [NODE_ID_WIDTH-1:0] ep1_link_rx_dest;
+
+  // Switch -> Center (uplink) raw
+  logic sw_up_valid, sw_up_ready;
+  mailbox_flit_t sw_up_data;
+  logic [NODE_ID_WIDTH-1:0] sw_up_dest;
+
+  // Center -> Switch (downlink) raw
+  logic center_sw_valid, center_sw_ready;
+  mailbox_flit_t center_sw_data;
+  logic [NODE_ID_WIDTH-1:0] center_sw_dest;
+
+  // Registered slices to break combinational loops
+  logic sw0_to_center_valid;
+  mailbox_flit_t sw0_to_center_data;
+  logic [NODE_ID_WIDTH-1:0] sw0_to_center_dest;
+  logic sw0_to_center_ready;
+
+  logic center_to_sw0_valid;
+  mailbox_flit_t center_to_sw0_data;
+  logic [NODE_ID_WIDTH-1:0] center_to_sw0_dest;
+  logic center_to_sw0_ready;
+
+  mailbox_endpoint_stream #(.SRC_ID(16'h1100), .TX_DEPTH(2), .RX_DEPTH(2), .STALL_MAX(8)) ep0 (
+    .clk(clk), .rst_n(rst_n),
+    .tx_valid(ep0_tx_valid), .tx_ready(ep0_tx_ready), .tx_data(ep0_tx_data), .tx_dest_id(ep0_tx_dest),
+    .tx_opcode(ep0_tx_opcode), .tx_prio(ep0_tx_prio), .tx_eop(ep0_tx_eop), .tx_debug(ep0_tx_debug),
+    .rx_valid(ep0_rx_valid), .rx_ready(ep0_rx_ready), .rx_data(ep0_rx_data), .rx_hdr(ep0_rx_hdr), .rx_irq(ep0_rx_irq), .rx_error(ep0_rx_err), .rx_dest_id(ep0_rx_dest_id),
+    .link_tx_valid(ep0_link_tx_valid), .link_tx_ready(ep0_link_tx_ready), .link_tx_data(ep0_link_tx_data), .link_tx_dest_id(ep0_link_tx_dest),
+    .link_rx_valid(ep0_link_rx_valid), .link_rx_ready(ep0_link_rx_ready), .link_rx_data(ep0_link_rx_data), .link_rx_dest_id(ep0_link_rx_dest)
+  );
+
+  mailbox_endpoint_stream #(.SRC_ID(16'h1110), .TX_DEPTH(2), .RX_DEPTH(2), .STALL_MAX(8)) ep1 (
+    .clk(clk), .rst_n(rst_n),
+    .tx_valid(ep1_tx_valid), .tx_ready(ep1_tx_ready), .tx_data(ep1_tx_data), .tx_dest_id(ep1_tx_dest),
+    .tx_opcode(ep1_tx_opcode), .tx_prio(ep1_tx_prio), .tx_eop(ep1_tx_eop), .tx_debug(ep1_tx_debug),
+    .rx_valid(ep1_rx_valid), .rx_ready(ep1_rx_ready), .rx_data(ep1_rx_data), .rx_hdr(ep1_rx_hdr), .rx_irq(ep1_rx_irq), .rx_error(ep1_rx_err), .rx_dest_id(ep1_rx_dest_id),
+    .link_tx_valid(ep1_link_tx_valid), .link_tx_ready(ep1_link_tx_ready), .link_tx_data(ep1_link_tx_data), .link_tx_dest_id(ep1_link_tx_dest),
+    .link_rx_valid(ep1_link_rx_valid), .link_rx_ready(ep1_link_rx_ready), .link_rx_data(ep1_link_rx_data), .link_rx_dest_id(ep1_link_rx_dest)
+  );
+
+  // -----------------------------
+  // Register slices (break combinational loops)
+  // -----------------------------
+  // Switch -> Center
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      sw0_to_center_valid <= 1'b0;
+      sw0_to_center_data  <= '0;
+      sw0_to_center_dest  <= '0;
+    end else if (sw_up_ready) begin
+      sw0_to_center_valid <= sw_up_valid;
+      sw0_to_center_data  <= sw_up_data;
+      sw0_to_center_dest  <= sw_up_dest;
+    end
+  end
+  assign sw_up_ready = !sw0_to_center_valid || sw0_to_center_ready;
+
+  // Center -> Switch
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      center_to_sw0_valid <= 1'b0;
+      center_to_sw0_data  <= '0;
+      center_to_sw0_dest  <= '0;
+    end else if (center_sw_ready) begin
+      center_to_sw0_valid <= center_sw_valid;
+      center_to_sw0_data  <= center_sw_data;
+      center_to_sw0_dest  <= center_sw_dest;
+    end
+  end
+  assign center_sw_ready = !center_to_sw0_valid || center_to_sw0_ready;
+
+  mailbox_switch_2x1_stream #(.MY_CLUSTER_ID(8'h11)) sw0 (
+    .clk(clk), .rst_n(rst_n),
+    .dl0_valid(ep0_link_tx_valid), .dl0_ready(ep0_link_tx_ready), .dl0_data(ep0_link_tx_data), .dl0_dest_id(ep0_link_tx_dest),
+    .dl1_valid(ep1_link_tx_valid), .dl1_ready(ep1_link_tx_ready), .dl1_data(ep1_link_tx_data), .dl1_dest_id(ep1_link_tx_dest),
+    .up_valid(center_to_sw0_valid), .up_ready(center_to_sw0_ready), .up_data(center_to_sw0_data), .up_dest_id(center_to_sw0_dest),
+    .m_up_valid(sw_up_valid), .m_up_ready(sw_up_ready), .m_up_data(sw_up_data), .m_up_dest_id(sw_up_dest),
+    .m_dl0_valid(ep0_link_rx_valid), .m_dl0_ready(ep0_link_rx_ready), .m_dl0_data(ep0_link_rx_data), .m_dl0_dest_id(ep0_link_rx_dest),
+    .m_dl1_valid(ep1_link_rx_valid), .m_dl1_ready(ep1_link_rx_ready), .m_dl1_data(ep1_link_rx_data), .m_dl1_dest_id(ep1_link_rx_dest)
+  );
+
+  mailbox_center_stream #(.CHILD_CLUSTER_ID('{8'h11, 8'h22, 8'h33, 8'h44})) center (
+    .clk(clk), .rst_n(rst_n),
+    .sw0_valid(sw0_to_center_valid), .sw0_ready(sw0_to_center_ready), .sw0_data(sw0_to_center_data), .sw0_dest_id(sw0_to_center_dest),
+    .sw1_valid(1'b0), .sw1_ready(), .sw1_data('0), .sw1_dest_id('0),
+    .sw2_valid(1'b0), .sw2_ready(), .sw2_data('0), .sw2_dest_id('0),
+    .sw3_valid(1'b0), .sw3_ready(), .sw3_data('0), .sw3_dest_id('0),
+    .hp_valid(1'b0), .hp_ready(), .hp_data('0), .hp_dest_id('0),
+
+    .m_sw0_valid(center_sw_valid), .m_sw0_ready(center_sw_ready), .m_sw0_data(center_sw_data), .m_sw0_dest_id(center_sw_dest),
+    .m_sw1_valid(), .m_sw1_ready(1'b1), .m_sw1_data(), .m_sw1_dest_id(),
+    .m_sw2_valid(), .m_sw2_ready(1'b1), .m_sw2_data(), .m_sw2_dest_id(),
+    .m_sw3_valid(), .m_sw3_ready(1'b1), .m_sw3_data(), .m_sw3_dest_id(),
+    .m_hp_valid(), .m_hp_ready(1'b1), .m_hp_data(), .m_hp_dest_id()
+  );
+
+  // RX backpressure: hold ep0 until FIFO fills to trigger Must‑Sink drop
+  assign ep0_rx_ready = 1'b0;
+  assign ep1_rx_ready = 1'b1;
+
+  task automatic send_ep1(input logic [NODE_ID_WIDTH-1:0] dest, input logic [31:0] data);
+    begin
+      ep1_tx_dest   <= dest;
+      ep1_tx_data   <= data;
+      ep1_tx_opcode <= OPC_DATA;
+      ep1_tx_prio   <= 2'd0;
+      ep1_tx_eop    <= 1'b1;
+      ep1_tx_debug  <= 1'b0;
+      ep1_tx_valid  <= 1'b1;
+      while (!ep1_tx_ready) @(posedge clk);
+      @(posedge clk);
+      ep1_tx_valid  <= 1'b0;
+    end
+  endtask
+
+  initial begin
+    ep0_tx_valid = 1'b0; ep1_tx_valid = 1'b0;
+    ep0_tx_data = 32'h0; ep1_tx_data = 32'h0;
+    ep0_tx_dest = '0; ep1_tx_dest = '0;
+
+    wait (rst_n);
+    repeat (5) @(posedge clk);
+
+    // Send multiple flits to ep0 to overflow and trigger Must‑Sink
+    send_ep1(16'h1100, 32'h1111_0001);
+    send_ep1(16'h1100, 32'h1111_0002);
+    send_ep1(16'h1100, 32'h1111_0003);
+    send_ep1(16'h1100, 32'h1111_0004);
+
+    begin
+      int tcnt;
+      tcnt = 0;
+      while (!ep0_rx_err && (tcnt < 200)) begin
+        @(posedge clk);
+        tcnt++;
+      end
+      if (!ep0_rx_err) $fatal("[TB] expected ep0_rx_err due to Must‑Sink drop");
+    end
+
+    $display("[TB] AXI‑MailboxFabric Must‑Sink test complete");
     $finish;
   end
 

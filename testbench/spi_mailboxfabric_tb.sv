@@ -9,43 +9,16 @@ module spi_mailboxfabric_tb;
   logic clk;
   logic rst_n;
 
-  // Mailbox slave ports (driven by TB)
-  logic s_awvalid;
-  logic s_awready;
-  logic [15:0] s_awaddr;
-  logic s_wvalid;
-  logic s_wready;
-  logic [31:0] s_wdata;
-  logic [3:0] s_wstrb;
-  mailbox_tag_t s_tag;
-  logic s_bready;
-  logic s_bvalid;
+  // MailboxFabric stream link
+  logic mb_tx_valid;
+  logic mb_tx_ready;
+  mailbox_flit_t mb_tx_data;
+  logic [NODE_ID_WIDTH-1:0] mb_tx_dest_id;
 
-  logic s_arvalid;
-  logic s_arready;
-  logic [15:0] s_araddr;
-  logic s_rvalid;
-  logic s_rready;
-  logic [31:0] s_rdata;
-
-  // Mailbox master ports (observed)
-  logic m_awvalid;
-  logic m_awready;
-  logic [15:0] m_awaddr;
-  logic m_wvalid;
-  logic m_wready;
-  logic [31:0] m_wdata;
-  logic [3:0] m_wstrb;
-  mailbox_tag_t m_tag;
-  logic m_bready;
-  logic m_bvalid;
-
-  logic m_arvalid;
-  logic m_arready;
-  logic [15:0] m_araddr;
-  logic m_rvalid;
-  logic m_rready;
-  logic [31:0] m_rdata;
+  logic mb_rx_valid;
+  logic mb_rx_ready;
+  mailbox_flit_t mb_rx_data;
+  logic [NODE_ID_WIDTH-1:0] mb_rx_dest_id;
 
   // SPI pins (loopback)
   logic SPI_SCLK;
@@ -55,6 +28,9 @@ module spi_mailboxfabric_tb;
   assign SPI_MISO = SPI_MOSI;
 
   int timeout;
+  logic got_resp;
+  logic [15:0] resp_addr;
+  logic [31:0] resp_data;
 
   spi_mailboxfabric #(
     .TX_LEN(TX_LEN),
@@ -67,11 +43,8 @@ module spi_mailboxfabric_tb;
   ) dut (
     .clk(clk), .rst_n(rst_n),
 
-    .m_awvalid(m_awvalid), .m_awready(m_awready), .m_awaddr(m_awaddr), .m_wvalid(m_wvalid), .m_wready(m_wready), .m_wdata(m_wdata), .m_wstrb(m_wstrb), .m_tag(m_tag), .m_bready(m_bready), .m_bvalid(m_bvalid),
-    .m_arvalid(m_arvalid), .m_arready(m_arready), .m_araddr(m_araddr), .m_rvalid(m_rvalid), .m_rready(m_rready), .m_rdata(m_rdata),
-
-    .s_awvalid(s_awvalid), .s_awready(s_awready), .s_awaddr(s_awaddr), .s_wvalid(s_wvalid), .s_wready(s_wready), .s_wdata(s_wdata), .s_wstrb(s_wstrb), .s_tag(s_tag), .s_bready(s_bready), .s_bvalid(s_bvalid),
-    .s_arvalid(s_arvalid), .s_arready(s_arready), .s_araddr(s_araddr), .s_rvalid(s_rvalid), .s_rready(s_rready), .s_rdata(s_rdata),
+    .mb_tx_valid(mb_tx_valid), .mb_tx_ready(mb_tx_ready), .mb_tx_data(mb_tx_data), .mb_tx_dest_id(mb_tx_dest_id),
+    .mb_rx_valid(mb_rx_valid), .mb_rx_ready(mb_rx_ready), .mb_rx_data(mb_rx_data), .mb_rx_dest_id(mb_rx_dest_id),
 
     .SPI_SCLK(SPI_SCLK), .SPI_MOSI(SPI_MOSI), .SPI_MISO(SPI_MISO), .SPI_CS(SPI_CS)
   );
@@ -83,45 +56,63 @@ module spi_mailboxfabric_tb;
 
   initial begin
     rst_n = 0;
-    s_awvalid = 0; s_wvalid = 0; s_awaddr = 16'h0; s_wdata = 32'h0; s_wstrb = 4'hF;
-    s_tag = '{src_id:8'hFF, eop:1'b1, prio:1'b0, opcode:OPC_DATA, hops:4'h0, parity:1'b0};
-    s_bready = 1'b1;
-    s_arvalid = 0; s_araddr = 16'h0; s_rready = 1'b1;
-
-    m_awready = 1'b1; m_wready = 1'b1; m_bvalid = 1'b0; m_arready = 1'b1; m_rvalid = 1'b0; m_rdata = 32'h0;
+    mb_rx_valid = 1'b0; mb_rx_dest_id = 16'h0; mb_rx_data = '0;
+    mb_tx_ready = 1'b1;
 
     #50; rst_n = 1;
 
-    // Send command (CSR0)
-    do_write(16'h0000, 32'h0000A55A);
+    // Set destination (CSR5)
+    send_csr(16'h0005, 32'h00001234);
 
-    // Wait for response on mailbox master
+    // Load TX data (CSR0/CSR1)
+    send_csr(16'h0000, 32'h0000A55A);
+    send_csr(16'h0001, 32'h00000000);
+
+    // Set control: tx_bits=16, rx_bits=16, start=1 (CSR4)
+    send_csr(16'h0004, 32'h00011010);
+
+    // Wait for response on mailbox master (sample on clock edge)
     timeout = 0;
-    while (m_awvalid == 1'b0) begin
+    while (!got_resp) begin
       @(posedge clk);
       timeout = timeout + 1;
       if (timeout > 2000) $fatal("[TB] Timeout waiting for SPI mailbox response");
     end
 
-    if (m_awaddr !== 16'h1234) $fatal("[TB] Dest mismatch: got 0x%0h", m_awaddr);
-    if (m_wdata[15:0] !== 16'hA55A) $fatal("[TB] Resp mismatch: got 0x%0h", m_wdata[15:0]);
+    if (resp_addr !== 16'h1234) begin
+      $display("[TB] Dest mismatch: got 0x%0h", resp_addr);
+      $fatal;
+    end
+    if (resp_data[15:0] !== 16'hA55A) begin
+      $display("[TB] Resp mismatch: got 0x%0h", resp_data[15:0]);
+      $fatal;
+    end
 
     $display("[TB] SPI Mailbox test complete");
     $finish;
   end
 
-  task automatic do_write(input logic [15:0] addr, input logic [31:0] data);
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      got_resp  <= 1'b0;
+      resp_addr <= 16'h0;
+      resp_data <= 32'h0;
+    end else if (!got_resp && mb_tx_valid) begin
+      got_resp  <= 1'b1;
+      resp_addr <= mb_tx_dest_id;
+      resp_data <= mb_tx_data.payload;
+    end
+  end
+
+  task automatic send_csr(input logic [15:0] addr, input logic [31:0] data);
     begin
       @(posedge clk);
-      s_awaddr <= addr;
-      s_wdata <= data;
-      s_awvalid <= 1'b1;
-      s_wvalid <= 1'b1;
-      wait (s_awready && s_wready);
+      mb_rx_dest_id <= addr;
+      mb_rx_data <= '{hdr:'{src_id:16'h00FF, opcode:OPC_DATA, prio:2'd0, eop:1'b1, debug:1'b0}, payload:data};
+      mb_rx_valid <= 1'b1;
+      wait (mb_rx_ready);
       @(posedge clk);
-      s_awvalid <= 1'b0; s_wvalid <= 1'b0;
-      wait (s_bvalid == 1);
-      @(posedge clk);
+      mb_rx_valid <= 1'b0;
     end
   endtask
 

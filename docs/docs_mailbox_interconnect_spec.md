@@ -1,8 +1,8 @@
-# **MailboxFabric Specification**
+# **AXI‑MailboxFabric Specification**
 
 ## **1\. Concept Overview**
 
-The **MailboxFabric** is a dedicated, low-latency "Network-on-Chip" (NoC) designed for high-speed synchronization and small data transfers between Processing Elements (PEs) and the Control MCU.
+The **AXI‑MailboxFabric** is a dedicated, low-latency "Network-on-Chip" (NoC) designed for high-speed synchronization and small data transfers between Processing Elements (PEs) and the Control MCU.
 
 Architecture: Hierarchical Tree Topology
 
@@ -19,15 +19,15 @@ To optimize for physical layout and timing closure (FPGA/ASIC), the network is s
 * **Hardware Flow Control:** Backpressure propagates from Endpoint $\\to$ Switch $\\to$ Center $\\to$ Sender.  
 * **Burst-Capable:** The protocol supports streaming multiple words to the same destination efficiently.
 
-## **2\. Addressing & Protocol**
+## **2\. AXI-MailboxFabric Protocol (AXI-Stream hybrid)**
 
-The system leverages the **MPU's "Mailbox Mesh" region (0x7000\_XXXX)** to map network destinations.
+The interconnect has been redesigned into the **AXI‑MailboxFabric**: a hybrid that uses the physical simplicity of **AXI-Stream** (Valid/Ready/Data) while enforcing the routing semantics of **AXI-Lite** (explicit Destination/CSR index). The goal is low-latency, single-cycle hops with minimal control overhead.
 
 ### **2.1 Hierarchical & Aggregate Addressing (with CSR index)**
 
-Destination is 16 bits carrying Cluster, Endpoint, and a 4-bit CSR index. Split into **Cluster ID \[15:8\]**, **Endpoint ID \[7:4\]** (up to 16 endpoints per cluster), and **CSR index \[3:0\]** (16 words per endpoint for data/CSRs). CSR index 0 is the data channel (RX ring pop on read, enqueue on write); indices 1–15 are user/control/status registers that read directly (no pop).
+Destination remains 16 bits carrying Cluster, Endpoint, and a 4-bit CSR index. Split into **Cluster ID \[15:8\]**, **Endpoint ID \[7:4\]** (up to 16 endpoints per cluster), and **CSR index \[3:0\]** (16 32-bit words per endpoint for data/CSRs). CSR index 0 is the data channel (RX ring pop on read, enqueue on write); indices 1–15 are user/control/status registers that read directly (no pop).
 
-**Address Format (byte aligned):** 0x7000\_{ClusterID\[7:0\]}{EndpointID\[3:0\]}{CsrIdx\[3:0\]}
+**Address Format (word-aligned, 32-bit words):** 0x7000\_{ClusterID\[7:0\]}{EndpointID\[3:0\]}{CsrIdx\[3:0\]}
 
 | Cluster ID | Endpoint ID | Target |
 | :---- | :---- | :---- |
@@ -43,94 +43,135 @@ Destination is 16 bits carrying Cluster, Endpoint, and a 4-bit CSR index. Split 
 | 0xFF | 0x0 | **Group 0 Broadcast** (Endpoint 0 of every Cluster) |
 | 0xFF | 0xF | **Global Broadcast** (All Nodes) |
 
-*Example:* Writing to 0x7000_0102 targets Cluster 0x01 (Compute), Endpoint 0x1, CSR index 0x2. Writing to 0x7000_01F0 targets **ALL** endpoints in Cluster 1 (broadcast, CSR index 0).
+*Note:* We removed byte-addressable subword write support — mailbox transfers are 32-bit word oriented. Software should address 32-bit words using the CSR index; subword operations must be performed by software reading/modifying the 32-bit CSR or using masked payload conventions.
 
-### **2.2 Packet Format**
+*Example:* Writing to 0x7000_0448 targets Cluster 0x01 (Compute), Endpoint 0x1, CSR index 0x2 (32-bit word).
 
-Goal: keep width friendly to FPGA BRAM/URAM slices and reserve space for control/QoS.
+---
 
-* **Baseline (44-bit flit, 8-bit SrcID):** \[31:0\] Data, \[39:32\] SrcID, \[40\] EOP, \[41\] Prio (0=best-effort, 1=latency), \[42\] Parity, \[43\] Valid.  
-* **Compact (42-bit flit):** Drop Prio+Parity if area/timing are tight.
+### **2.2 Packet Structure (mailbox_packet_t / mailbox_flit_t)**
 
-Sideband (per transfer, not necessarily stored in flit): 4-bit `Opcode` from LSU/CSR (`DATA`, `IRQ`, `ACK`, `NACK`, `RSV`).
+Packets are "fire-and-forget" and carry their routing fields and metadata with the flit. This allows single-beat transactions and removes a separate Address Phase.
 
-Handshake: `Valid`/`Ready` on every hop. `Ready` reflects downstream FIFO space; backpressure propagates.
+```systemverilog
+package mailbox_pkg;
+  localparam int DATA_WIDTH = 32;
+  localparam int NODE_ID_WIDTH = 16; // 256 x 16 clusters / endpoints
 
-### **2.3 Interconnect Bus Specification (Mailbox over AXI4-Lite, read + write full-duplex)**
+  typedef struct packed {
+    logic [NODE_ID_WIDTH-1:0] src_id;   // Who sent this? (For reply)
+    logic [3:0]               opcode;   // DATA, IRQ, ACK, ERROR
+    logic [1:0]               prio;     // 0=Low, 3=Critical/NMI
+    logic                     eop;      // End of Packet (for multi-flit msgs)
+    logic                     debug;    // 1 = Trace this packet
+  } mailbox_header_t;
 
-Scope: point-to-point links between Endpoint↔Switch and Switch↔Center implemented as **full-duplex AXI4-Lite read + write** channels (two unidirectional write paths and two unidirectional read paths). Loads and stores to the mailbox address window are redirected into the mailbox network. All links are synchronous to the fabric clock; use CDC FIFOs if crossing domains.
+  typedef struct packed {
+    mailbox_header_t          hdr;
+    logic [DATA_WIDTH-1:0]    payload;
+  } mailbox_flit_t;
 
-**Channel model:**
+endpackage : mailbox_pkg
+```
 
-* TX direction: source is AXI-Lite master issuing writes; sink is AXI-Lite slave.  
-* RX direction: sink becomes master to return messages back (mirrored interface).  
-* Read direction (pop semantics): source is AXI-Lite master issuing reads on `ar*`; sink returns data on `r*` with a single-beat response. Reads pop the target RX FIFO; if empty, return 32'hDEADBEEF. One outstanding read per ingress (except CSR reads) to keep the bus passive.  
-* AW and W must be asserted together; B is the acceptance response. No bursting beyond single-beat writes (route-lock preserves multi-beat mailbox packets using `tag_eop`). Reads are single-beat and aligned to the mailbox word size.
+Key points:
 
-**Signals per direction (TX or RX):**
+* All routing metadata required to deliver and interpret the packet travels with the flit.  
+* `opcode` encodes DATA/IRQ/ACK/ERROR semantics.  
+* `prio` is 2-bit to allow several prioritized classes (including a critical NMI class).  
+* Multi-flit messages are supported (EOP marks the last flit).
 
-* `clk`, `rst_n` — Shared clock/reset.  
-* `awvalid/awready`, `awaddr[15:0]` — Address phase carrying Cluster/Endpoint/CSR index.  
-* `wvalid/wready`, `wdata[31:0]`, `wstrb[3:0]` — Data phase. `wstrb` typically 4'hF.  
-* `bvalid/bready` — Write response (OK only). Used as acceptance pulse; no error encoding.  
-* `tag_src_id[7:0]`, `tag_eop`, `tag_prio`, `tag_parity`, `tag_opcode[3:0]`, `tag_hops[3:0]` — Mailbox sideband aligned with AW/W. Parity is even over `wdata|tag_src_id|tag_eop|tag_prio` when enabled.
+---
 
-**Signals per direction (read path AR/R):**
+### **2.3 Link Interface (mailbox_link_if)**
 
-* `arvalid/arready`, `araddr[15:0]` — Address phase carrying Cluster/Endpoint/CSR index.  
-* `rvalid/rready`, `rdata[31:0]`, `rresp` (always OKAY) — Data return (DEADBEEF if RX empty).  
-* Sideband tags (optional on read return): implementations may echo the request tag or return implicit status; baseline keeps tags on write path and treats reads as single-word pulls of status/mailbox payload or control CSR fields.
+Each unidirectional link is an AXI-Stream-like interface optimized for look-ahead routing: the `dest_id` is carried *separately* and is valid when `valid` is asserted.
 
-**Handshake & timing:**
+```systemverilog
+interface mailbox_link_if (input logic clk, input logic rst_n);
+  import mailbox_pkg::*;
 
-* Transfer occurs when `awvalid && wvalid && awready && wready`; `bvalid` must pulse for the same beat and deassert once `bready` is seen. Reads occur when `arvalid && arready` then complete on `rvalid && rready`; only one outstanding read per ingress (except CSR reads).  
-* Slaves gate `awready/wready` (and `arready` for reads) to reflect FIFO space and broadcast fanout readiness.  
-* Masters hold `awvalid/wvalid` until handshake; `bready` is typically tied high. Masters hold `arvalid` until `arready`; `rready` is typically tied high unless SW stalls consumption.  
-* `tag_eop` marks last beat of a mailbox burst; route-lock holds from first beat until the beat after `eop` is accepted.  
-* Reset: deassert `awvalid/wvalid`; `bvalid` must be 0 during reset.
+  logic                     valid;    // "I have data"
+  logic                     ready;    // "I can accept data" (Backpressure)
 
-**Error handling:**
+  mailbox_flit_t            data;     // Payload + Header
+  logic [NODE_ID_WIDTH-1:0] dest_id;  // Look-Ahead Routing ID
 
-* Parity error at slave: drop flit, increment error counter, optional IRQ.  
-* Unsupported `opcode`: treat as DATA.  
-* AXI-Lite BRESP is always OKAY; drops are surfaced via counters only.
+  modport source (
+    output valid, data, dest_id,
+    input  ready
+  );
 
-**Transfer ordering and atomicity:**
+  modport sink (
+    input  valid, data, dest_id,
+    output ready
+  );
 
-* In-order per AXI-Lite write and read channel. Bursts are contiguous due to route-lock keyed by `tag_eop`.  
-* Broadcast replication preserves order per child; if any child stalls, upstream master sees withheld `awready/wready` (and therefore no `bvalid`).
+  modport monitor (
+    input valid, ready, data, dest_id
+  );
+endinterface
+```
 
-**QoS and distance-aware arbitration:**
+Design choice: `dest_id` separate from `data` enables the Switch to perform look-ahead routing and set crossbars/selects before the full flit is latched — saving a clock cycle.
 
-* Priority tiers: latency class (`tag_prio`=1) is served ahead of best-effort, but cannot starve best-effort; recommend weighted RR with at least 1 BE grant per 4 total grants.  
-* Distance/age: use `tag_hops` (saturating increment per hop) as a tiebreaker to favor older/further-traveled packets. If `tag_hops` not implemented, approximate distance by port class (local vs upstream).  
-* Suggested arb order: (1) latency class, higher `tag_hops` first, RR among equals; (2) best-effort, higher `tag_hops` first, RR among equals; enforce BE minimum service (e.g., grant BE after at most 3 consecutive latency grants).  
-* `tag_hops` optional; if absent, treat as zero and rely on `tag_prio` and BE minimum service.
+---
 
-**Multi-initiator (cross-cluster) handling:**
+### **2.4 Dual-Role Endpoint (TX + RX)**
 
-* Every ingress (each Leaf TX) has its own FIFO; Switch/Center arbiters choose among ingress FIFOs per output.  
-* Route-lock is per destination output; bursts from one CU hold the output until `tag_eop` completes, but other destinations can still progress through other outputs.  
-* Admission control: if an output is busy, upstream masters see withheld `ack`; no drops. Recommended ingress FIFO depth ≥4 (≥2 minimum) to absorb multi-initiator bursts while keeping logic small.  
-* Fairness: weighted RR across ingress FIFOs with the QoS/distance rules above prevents any single CU from starving others when multiple CUs target the same remote cluster.  
-* For broadcasts from many CUs, the Center aggregates backpressure; consider limiting outstanding broadcasts per CU in software if workloads are highly bursty.
+Endpoints are dual-role: they expose one TX (egress) port and one RX (ingress) port for full-duplex operation. If SystemVerilog `interface`s are not convenient, the raw signal list follows the same direction rules (see `mailbox_endpoint` port list in the spec).
 
-**Physical/CDC guidance:**
+Essentials:
 
-* Single clock per link; add async FIFO if domains differ (keep AXI-Lite master on source side of FIFO).  
-* Optional skid buffer or register slice on `awready/wready/bvalid` for timing in Switch↔Center paths.  
-* Limit ready fanout by per-port FIFOs; avoid combinational backpressure trees.
+* TX (Source): `tx_valid`, `tx_ready`, `tx_data`, `tx_dest_id`, `tx_src_id`, `tx_opcode`, `tx_prio`.
+* RX (Sink): `rx_valid`, `rx_ready`, `rx_data`, `rx_dest_id`, `rx_src_id`, `rx_opcode`.
+* IRQ: `irq_new_msg` asserted when RX FIFO is non-empty.
 
-**Endpoint↔Switch (minimal profile):**
+This separation allows the core to send while simultaneously receiving messages.
 
-* May omit `tag_prio` and `tag_parity` (Compact mode).  
-* Endpoint masters issue writes for TX and reads for pop-style mailbox loads; Switch masters the reverse direction.  
-* Byte enables fixed to 4'hF; reads are single-beat pulls; RX empty returns 32'hDEADBEEF.
+---
 
-**Switch↔Center (robust profile):**
+### **2.5 Flow Control & the "Must-Sink" Rule**
 
-* Keep `tag_prio` and `tag_parity` enabled; carry `tag_opcode` for diagnostics/ACK.  
-* Per-child FIFO ≥4 to mask broadcast fanout; optional register slice on `awready/wready/bvalid`.
+Handshake is standard: transaction completes when `valid && ready` on the hop. Backpressure is expressed by deasserting `ready`.
+
+Crucially, to avoid network-wide deadlock when a core stops servicing its mailbox, *endpoints must implement a "Must-Sink" policy.* In short: an endpoint's `rx_ready` is not merely `!rx_fifo_full`. If the core ignores the mailbox for an extended period, the endpoint should (configurably) drop or accept-and-discard packets and raise an error/IRQ rather than permanently stall the fabric.
+
+Example behaviour (conceptual):
+
+```systemverilog
+assign rx_ready = !rx_fifo_full; // standard
+
+// Safety valve: after N cycles of rx_fifo_full while rx_valid==1, raise an error
+logic [7:0] stall_counter;
+always_ff @(posedge clk) begin
+  if (rx_valid && rx_fifo_full)
+    stall_counter <= stall_counter + 1;
+  else
+    stall_counter <= 0;
+
+  if (stall_counter == 8'hFF) begin
+    error_irq <= 1'b1; // notify software
+    // optional: accept and drop new flits to avoid backpressure
+  end
+end
+```
+
+This prevents an unresponsive core from causing systemic deadlock.
+
+---
+
+### **2.6 Channel Semantics & Operational Notes**
+
+* Fire-and-Forget: There is no separate write-response (`BVALID`) channel. Once `tx_ready` is asserted on the handshake cycle, the write is accepted. Use `ACK` opcode if software-level confirmation is required.  
+* Look-Ahead Routing: `dest_id` is valid together with `valid` so switches can steer the packet immediately.  
+* No byte-enable semantics: mailbox traffic is word-oriented (32-bit). Partial updates must be handled in software.  
+* Broadcast/Multicast: same semantics as before (Cluster/Group/Global). The Center replicates and each switch performs local replication; delivery is flow-controlled (no hardware drops).  
+* Priority: `prio` field is used by switches/center for QoS.  
+
+
+<!-- End of new protocol section -->
+
 
 ## **3\. Hardware Implementation**
 
@@ -140,7 +181,7 @@ Each **Mailbox Switch** contains a simple routing table logic to keep traffic lo
 
 Inputs: Packet from Core $i$ (Source).
 
-Destination: Extracted from the write address (provided by LSU sideband).
+Destination: supplied as a separate `dest_id` sideband from the LSU (look-ahead routing) or derived from a write to 0x7000_xxxx; `dest_id` is valid together with `valid` so switches can steer packets immediately.
 
 **Algorithm:**
 
@@ -185,7 +226,7 @@ Connects the "System Cluster" (MCU) to the "Worker Clusters".
 Integrated into compute\_unit\_top.sv.
 
 1. **TX Path (LSU Hook):**  
-   * LSU detects write to 0x7000\_XXXX.  
+   * LSU detects write to 0x7000\_XXXX and instantiates a flit with a separate `dest_id` sideband for look-ahead routing.  
    * Pushes Data \+ DestID into **TX FIFO** (Depth 8).  
    * Stalls core if FIFO full.  
 2. **RX Path (CSR Hook):**  
@@ -196,12 +237,12 @@ Integrated into compute\_unit\_top.sv.
 **Endpoint rules:**
 
 * IRQ is level-triggered until RX FIFO drains.  
-* If RX FIFO is full, Ready deasserts to the Switch; packets are stalled, not dropped.  
+* If RX FIFO is full, `rx_ready` should be deasserted to apply backpressure. Additionally, endpoints SHOULD implement the safety-valve policy (see Section 2.5) to optionally accept-and-discard or drop packets after a configurable stall threshold, preventing network-wide deadlocks.  
 * Ordering is preserved per source/destination; route-lock keeps bursts contiguous.  
 * Mark 0x7000_xxxx as strongly-ordered, non-cacheable to avoid store merging/reordering.  
 * Invalid DestID: drop and increment an error counter; optional local IRQ for diagnostics.  
 * Optional ACK/NACK via Opcode for software that needs reliability.
-* Reads pop RX FIFO; empty returns 32'hDEADBEEF.
+* Reads via `CSR_MAILBOX_RX` (0xF08) pop the RX FIFO; if empty, the read returns 32'hDEADBEEF.
 
 ## **4\. Usage Examples (Software)**
 

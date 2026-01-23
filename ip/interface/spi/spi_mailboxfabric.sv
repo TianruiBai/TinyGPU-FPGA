@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 
-// SPI SAT-IP with MailboxFabric interface
+// SPI SAT-IP with AXI‑MailboxFabric stream interface
 // - Mailbox CSR0 write triggers a SPI transfer (cmd)
 // - On completion, sends response to configured destination (CSR2)
 
@@ -16,43 +16,16 @@ module spi_mailboxfabric #(
   input  logic clk,
   input  logic rst_n,
 
-  // Mailbox master (toward switch/center)
-  output logic        m_awvalid,
-  input  logic        m_awready,
-  output logic [15:0] m_awaddr,
-  output logic        m_wvalid,
-  input  logic        m_wready,
-  output logic [31:0] m_wdata,
-  output logic [3:0]  m_wstrb,
-  output mailbox_pkg::mailbox_tag_t m_tag,
-  output logic        m_bready,
-  input  logic        m_bvalid,
+  // MailboxFabric stream link (to/from switch/center)
+  output logic                        mb_tx_valid,
+  input  logic                        mb_tx_ready,
+  output mailbox_pkg::mailbox_flit_t  mb_tx_data,
+  output logic [mailbox_pkg::NODE_ID_WIDTH-1:0] mb_tx_dest_id,
 
-  output logic        m_arvalid,
-  input  logic        m_arready,
-  output logic [15:0] m_araddr,
-  input  logic        m_rvalid,
-  output logic        m_rready,
-  input  logic [31:0] m_rdata,
-
-  // Mailbox slave (from switch/center)
-  input  logic        s_awvalid,
-  output logic        s_awready,
-  input  logic [15:0] s_awaddr,
-  input  logic        s_wvalid,
-  output logic        s_wready,
-  input  logic [31:0] s_wdata,
-  input  logic [3:0]  s_wstrb,
-  input  mailbox_pkg::mailbox_tag_t s_tag,
-  input  logic        s_bready,
-  output logic        s_bvalid,
-
-  input  logic        s_arvalid,
-  output logic        s_arready,
-  input  logic [15:0] s_araddr,
-  output logic        s_rvalid,
-  input  logic        s_rready,
-  output logic [31:0] s_rdata,
+  input  logic                        mb_rx_valid,
+  output logic                        mb_rx_ready,
+  input  mailbox_pkg::mailbox_flit_t  mb_rx_data,
+  input  logic [mailbox_pkg::NODE_ID_WIDTH-1:0] mb_rx_dest_id,
 
   // SPI pins
   output logic SPI_SCLK,
@@ -66,8 +39,10 @@ module spi_mailboxfabric #(
   // Endpoint RX/TX streams
   logic ep_rx_valid, ep_rx_ready;
   logic [31:0] ep_rx_data;
-  mailbox_tag_t ep_rx_tag;
+  mailbox_header_t ep_rx_hdr;
   logic ep_rx_irq;
+  logic ep_rx_err;
+  logic [NODE_ID_WIDTH-1:0] ep_rx_dest_id;
 
   logic ep_tx_valid, ep_tx_ready;
   logic [15:0] ep_tx_dest;
@@ -76,20 +51,19 @@ module spi_mailboxfabric #(
   logic ep_tx_eop;
   logic [3:0] ep_tx_opcode;
 
-  // Mailbox endpoint
-  mailbox_endpoint #(.SRC_ID(SRC_ID), .TX_DEPTH(4), .RX_DEPTH(4)) u_mbox_ep (
+  mailbox_endpoint_stream #(
+    .SRC_ID({8'h00, SRC_ID}),
+    .TX_DEPTH(4),
+    .RX_DEPTH(4)
+  ) u_mbox_ep (
     .clk(clk), .rst_n(rst_n),
 
-    .tx_valid(ep_tx_valid), .tx_ready(ep_tx_ready), .tx_dest(ep_tx_dest), .tx_data(ep_tx_data), .tx_prio(ep_tx_prio), .tx_eop(ep_tx_eop), .tx_opcode(ep_tx_opcode),
-    .rx_valid(ep_rx_valid), .rx_ready(ep_rx_ready), .rx_data(ep_rx_data), .rx_tag(ep_rx_tag), .rx_irq(ep_rx_irq),
+    .tx_valid(ep_tx_valid), .tx_ready(ep_tx_ready), .tx_data(ep_tx_data), .tx_dest_id(ep_tx_dest),
+    .tx_opcode(ep_tx_opcode), .tx_prio(ep_tx_prio), .tx_eop(ep_tx_eop), .tx_debug(1'b0),
+    .rx_valid(ep_rx_valid), .rx_ready(ep_rx_ready), .rx_data(ep_rx_data), .rx_hdr(ep_rx_hdr), .rx_irq(ep_rx_irq), .rx_error(ep_rx_err), .rx_dest_id(ep_rx_dest_id),
 
-    .rd_valid(1'b0), .rd_ready(), .rd_dest(), .rd_prio(1'b0), .rd_opcode(4'h0), .rd_resp_valid(), .rd_resp_ready(1'b0), .rd_resp_data(), .rd_resp_tag(),
-
-    .m_awvalid(m_awvalid), .m_awready(m_awready), .m_awaddr(m_awaddr), .m_wvalid(m_wvalid), .m_wready(m_wready), .m_wdata(m_wdata), .m_wstrb(m_wstrb), .m_tag(m_tag), .m_bready(m_bready), .m_bvalid(m_bvalid),
-    .m_arvalid(m_arvalid), .m_arready(m_arready), .m_araddr(m_araddr), .m_rvalid(m_rvalid), .m_rready(m_rready), .m_rdata(m_rdata),
-
-    .s_awvalid(s_awvalid), .s_awready(s_awready), .s_awaddr(s_awaddr), .s_wvalid(s_wvalid), .s_wready(s_wready), .s_wdata(s_wdata), .s_wstrb(s_wstrb), .s_tag(s_tag), .s_bready(s_bready), .s_bvalid(s_bvalid),
-    .s_arvalid(s_arvalid), .s_arready(s_arready), .s_araddr(s_araddr), .s_rvalid(s_rvalid), .s_rready(s_rready), .s_rdata(s_rdata)
+    .link_tx_valid(mb_tx_valid), .link_tx_ready(mb_tx_ready), .link_tx_data(mb_tx_data), .link_tx_dest_id(mb_tx_dest_id),
+    .link_rx_valid(mb_rx_valid), .link_rx_ready(mb_rx_ready), .link_rx_data(mb_rx_data), .link_rx_dest_id(mb_rx_dest_id)
   );
 
   // SPI core
@@ -107,34 +81,64 @@ module spi_mailboxfabric #(
     .SCLK_DIV(SCLK_DIV)
   ) u_spi_sat (
     .clk(clk), .rst_n(rst_n),
+    .tx_bits(tx_bits_reg), .rx_bits(rx_bits_reg),
     .cmd(cmd_reg), .resp(resp_reg), .trmt(trmt_pulse), .rx_rdy(rx_rdy), .clr_rdy(clr_rdy),
     .SPI_SCLK(SPI_SCLK), .SPI_MOSI(SPI_MOSI), .SPI_MISO(SPI_MISO), .SPI_CS(SPI_CS)
   );
 
-  // Default destination register (CSR2)
+  // Local CSR storage
+  logic [63:0] tx_buf;
+  logic [63:0] rx_buf;
+  logic [7:0]  tx_bits_reg;
+  logic [7:0]  rx_bits_reg;
   logic [15:0] cfg_dest;
-  always_ff @(posedge clk or negedge rst_n) begin
-    if (!rst_n) cfg_dest <= DEFAULT_DEST;
-    else if (s_awvalid && s_wvalid && (s_awaddr[3:0] == 4'd2)) cfg_dest <= s_wdata[15:0];
-  end
+  logic        busy;
+  logic        done_flag;
 
-  // Accept mailbox writes to CSR0 as SPI commands
-  logic busy;
-  assign ep_rx_ready = !busy;
+  // Stream CSR handling
+  wire wr_fire = ep_rx_valid && ep_rx_ready;
+  wire [3:0] rx_csr_idx = ep_rx_dest_id[3:0];
+  assign ep_rx_ready = 1'b1;
 
+  // Accept mailbox writes to CSR0/1/4/5 as SPI control
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-      cmd_reg <= '0;
+      tx_buf     <= 64'h0;
+      rx_buf     <= 64'h0;
+      tx_bits_reg <= TX_LEN*8;
+      rx_bits_reg <= RX_LEN*8;
+      cfg_dest   <= DEFAULT_DEST;
       trmt_pulse <= 1'b0;
-      busy <= 1'b0;
+      busy       <= 1'b0;
+      done_flag  <= 1'b0;
+      // no AXI-Lite response in stream mode
     end else begin
       trmt_pulse <= 1'b0;
-      if (ep_rx_valid && ep_rx_ready) begin
-        cmd_reg <= ep_rx_data[TX_LEN*8-1:0];
-        trmt_pulse <= 1'b1;
-        busy <= 1'b1;
+      if (wr_fire) begin
+        unique case (rx_csr_idx)
+          4'd0: tx_buf[31:0]  <= ep_rx_data;
+          4'd1: tx_buf[63:32] <= ep_rx_data;
+          4'd4: begin
+            tx_bits_reg <= ep_rx_data[7:0];
+            rx_bits_reg <= ep_rx_data[15:8];
+            if (ep_rx_data[18]) done_flag <= 1'b0;
+            if (ep_rx_data[16] && !busy) begin
+              trmt_pulse <= 1'b1;
+              busy <= 1'b1;
+              done_flag <= 1'b0;
+              cmd_reg <= tx_buf[TX_LEN*8-1:0];
+            end
+          end
+          4'd5: cfg_dest <= ep_rx_data[15:0];
+          default: ;
+        endcase
       end
-      if (rx_rdy) busy <= 1'b0;
+
+      if (rx_rdy) begin
+        rx_buf <= {{(64-RESP_BITS){1'b0}}, resp_reg};
+        done_flag <= 1'b1;
+        busy <= 1'b0;
+      end
     end
   end
 

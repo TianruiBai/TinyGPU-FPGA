@@ -2,6 +2,25 @@
 // Package for mailbox interconnect common types and helpers
 package mailbox_pkg;
 
+  // ---------------------------------------------------------
+  // AXI‑MailboxFabric (stream hybrid) types
+  // ---------------------------------------------------------
+  localparam int DATA_WIDTH    = 32;
+  localparam int NODE_ID_WIDTH = 16; // Cluster[15:8] + Endpoint[7:4] + CSR[3:0]
+
+  typedef struct packed {
+    logic [NODE_ID_WIDTH-1:0] src_id; // Source node (for replies)
+    logic [3:0]               opcode; // DATA/IRQ/ACK/ERROR
+    logic [1:0]               prio;   // 0=low, 3=critical
+    logic                     eop;    // End of packet
+    logic                     debug;  // Trace hint
+  } mailbox_header_t;
+
+  typedef struct packed {
+    mailbox_header_t          hdr;
+    logic [DATA_WIDTH-1:0]    payload;
+  } mailbox_flit_t;
+
   // Opcode enumeration
   typedef enum logic [3:0] {
     OPC_DATA = 4'h0,
@@ -10,6 +29,10 @@ package mailbox_pkg;
     OPC_NACK = 4'h3,
     OPC_RSV  = 4'hF
   } mailbox_opcode_e;
+
+  // ---------------------------------------------------------
+  // Legacy AXI4‑Lite mailbox tag (kept for backward compatibility)
+  // ---------------------------------------------------------
 
   typedef struct packed {
     logic [7:0] src_id;    // Return address (Cluster[7:0])

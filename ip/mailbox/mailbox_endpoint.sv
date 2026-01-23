@@ -16,6 +16,7 @@ module mailbox_endpoint #(
   input  logic        tx_prio,
   input  logic        tx_eop,
   input  logic [3:0]  tx_opcode,
+  input  logic [3:0]  tx_strb,
 
   // Core RX streaming interface (pop by rx_ready)
   output logic        rx_valid,
@@ -115,7 +116,7 @@ module mailbox_endpoint #(
     tx_tag.parity = compute_parity(tx_data, tx_tag_np);
 
     tx_w_en   = tx_valid && tx_ready;
-    tx_w_flit = '{adr:tx_dest, dat:tx_data, strb:4'hF, tag:tx_tag};
+    tx_w_flit = '{adr:tx_dest, dat:tx_data, strb:tx_strb, tag:tx_tag};
     tx_w_data = tx_w_flit;
   end
 

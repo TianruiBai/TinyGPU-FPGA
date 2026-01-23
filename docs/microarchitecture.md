@@ -98,7 +98,7 @@ This change is primarily about QoS and timing closure: it prevents ROP writes or
 ### 6.1 Raster → ROP fragment interface (as-built)
 `raster_unit.sv` produces fragments into `rop_unit.sv` via a small **ready/valid** interface:
 - Payload: `quad_x/quad_y`, `quad_mask`, `quad_bary_w0/w1/w2`, `tri_area_out`.
-- The interface is shaped like a 2x2 “quad”, but the current raster path emits **one pixel at a time** with `quad_mask=4'b0001`.
+- The interface is shaped like a 2x2 “quad”, and the current raster path emits 2×2 quads (scanline stepping by +2) with a 4-bit `quad_mask` indicating coverage for each pixel in the quad (the mask can be any combination of enabled pixels).
 
 **Handshake rules (normative):**
 - When `quad_valid=1` and `quad_ready=0`, the rasterizer must hold the payload stable (no pixel loss).

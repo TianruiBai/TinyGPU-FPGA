@@ -72,6 +72,7 @@ module lsu #(
     output logic         mailbox_tx_eop,
     output logic [3:0]   mailbox_tx_opcode,
     input  logic         mailbox_tx_ready,
+    output logic [3:0]   mailbox_tx_strb,
     output logic         mailbox_rd_valid,
     input  logic         mailbox_rd_ready,
     output logic [15:0]  mailbox_rd_dest,
@@ -786,6 +787,10 @@ module lsu #(
     assign mailbox_tx_prio   = MAILBOX_ENABLE ? 1'b0 : 1'b0;
     assign mailbox_tx_eop    = MAILBOX_ENABLE ? 1'b1 : 1'b0;
     assign mailbox_tx_opcode = MAILBOX_ENABLE ? 4'h0 : 4'h0;
+    assign mailbox_tx_strb   = MAILBOX_ENABLE ? (mailbox_dest_r[1:0] == 2'b00 ? 4'b1111:
+                                                    mailbox_dest_r[1:0] == 2'b01 ? 4'b1110 :
+                                                    mailbox_dest_r[1:0] == 2'b10 ? 4'b1100 :
+                                                    mailbox_dest_r[1:0] == 2'b11 ? 4'b1000 : 4'h0) : 4'h0;
     assign mailbox_rx_ready  = MAILBOX_ENABLE && mailbox_load_pending;
 
 endmodule

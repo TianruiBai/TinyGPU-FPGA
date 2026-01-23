@@ -1,7 +1,7 @@
 `timescale 1ns/1ps
 
-// UART peripheral as a MailboxFabric Leaf (Endpoint)
-// - Instantiates `mailbox_endpoint` for the actual AXI4-Lite leaf behavior
+// UART peripheral as an AXI‑MailboxFabric Leaf (Endpoint)
+// - Instantiates `mailbox_endpoint_stream` for the stream leaf behavior
 // - Converts inbound mailbox writes (CSR idx 0) into UART TX bytes
 // - Converts UART RX bytes into outbound mailbox TX messages (to a configured dest)
 
@@ -15,43 +15,16 @@ module uart_mailboxfabric #(
   input  logic clk,
   input  logic rst_n,
 
-  // Top-level mailbox master (toward switch/center)
-  output logic        m_awvalid,
-  input  logic        m_awready,
-  output logic [15:0] m_awaddr,
-  output logic        m_wvalid,
-  input  logic        m_wready,
-  output logic [31:0] m_wdata,
-  output logic [3:0]  m_wstrb,
-  output mailbox_pkg::mailbox_tag_t m_tag,
-  output logic        m_bready,
-  input  logic        m_bvalid,
+  // MailboxFabric stream link (to/from switch/center)
+  output logic                        mb_tx_valid,
+  input  logic                        mb_tx_ready,
+  output mailbox_pkg::mailbox_flit_t  mb_tx_data,
+  output logic [mailbox_pkg::NODE_ID_WIDTH-1:0] mb_tx_dest_id,
 
-  output logic        m_arvalid,
-  input  logic        m_arready,
-  output logic [15:0] m_araddr,
-  input  logic        m_rvalid,
-  output logic        m_rready,
-  input  logic [31:0] m_rdata,
-
-  // Top-level mailbox slave (from switch/center)
-  input  logic        s_awvalid,
-  output logic        s_awready,
-  input  logic [15:0] s_awaddr,
-  input  logic        s_wvalid,
-  output logic        s_wready,
-  input  logic [31:0] s_wdata,
-  input  logic [3:0]  s_wstrb,
-  input  mailbox_pkg::mailbox_tag_t s_tag,
-  input  logic        s_bready,
-  output logic        s_bvalid,
-
-  input  logic        s_arvalid,
-  output logic        s_arready,
-  input  logic [15:0] s_araddr,
-  output logic        s_rvalid,
-  input  logic        s_rready,
-  output logic [31:0] s_rdata,
+  input  logic                        mb_rx_valid,
+  output logic                        mb_rx_ready,
+  input  mailbox_pkg::mailbox_flit_t  mb_rx_data,
+  input  logic [mailbox_pkg::NODE_ID_WIDTH-1:0] mb_rx_dest_id,
 
   // UART pins
   output logic UART_TX,
@@ -63,27 +36,27 @@ module uart_mailboxfabric #(
   import mailbox_pkg::*;
 
   // ---------------------------
-  // Instantiate mailbox endpoint
+  // Instantiate mailbox endpoint (stream)
   // ---------------------------
-  mailbox_endpoint #(.SRC_ID(SRC_ID), .TX_DEPTH(TX_FIFO_DEPTH), .RX_DEPTH(RX_FIFO_DEPTH)) u_mbox_ep (
+  mailbox_endpoint_stream #(
+    .SRC_ID({8'h00, SRC_ID}),
+    .TX_DEPTH(TX_FIFO_DEPTH),
+    .RX_DEPTH(RX_FIFO_DEPTH)
+  ) u_mbox_ep (
     .clk(clk), .rst_n(rst_n),
 
     // Core TX side (from this UART -> fabric)
-    .tx_valid(ep_tx_valid), .tx_ready(ep_tx_ready), .tx_dest(ep_tx_dest), .tx_data(ep_tx_data), .tx_prio(ep_tx_prio), .tx_eop(ep_tx_eop), .tx_opcode(ep_tx_opcode),
+    .tx_valid(ep_tx_valid), .tx_ready(ep_tx_ready),
+    .tx_data(ep_tx_data), .tx_dest_id(ep_tx_dest),
+    .tx_opcode(ep_tx_opcode), .tx_prio(ep_tx_prio), .tx_eop(ep_tx_eop), .tx_debug(1'b0),
 
-    // Core RX streaming (incoming from fabric -> UART transmit)
-    .rx_valid(ep_rx_valid), .rx_ready(ep_rx_ready), .rx_data(ep_rx_data), .rx_tag(ep_rx_tag), .rx_irq(ep_rx_irq),
+    // Core RX streaming (used for CSR writes)
+    .rx_valid(ep_rx_valid), .rx_ready(ep_rx_ready),
+    .rx_data(ep_rx_data), .rx_hdr(ep_rx_hdr), .rx_irq(ep_rx_irq), .rx_error(ep_rx_err), .rx_dest_id(ep_rx_dest_id),
 
-    // Core mailbox read request (not used by UART core but left available)
-    .rd_valid(1'b0), .rd_ready(), .rd_dest(), .rd_prio(1'b0), .rd_opcode(4'h0), .rd_resp_valid(), .rd_resp_ready(1'b0), .rd_resp_data(), .rd_resp_tag(),
-
-    // AXI4-Lite master ports (to switch/center)
-    .m_awvalid(m_awvalid), .m_awready(m_awready), .m_awaddr(m_awaddr), .m_wvalid(m_wvalid), .m_wready(m_wready), .m_wdata(m_wdata), .m_wstrb(m_wstrb), .m_tag(m_tag), .m_bready(m_bready), .m_bvalid(m_bvalid),
-    .m_arvalid(m_arvalid), .m_arready(m_arready), .m_araddr(m_araddr), .m_rvalid(m_rvalid), .m_rready(m_rready), .m_rdata(m_rdata),
-
-    // AXI4-Lite slave ports (from switch/center)
-    .s_awvalid(s_awvalid), .s_awready(s_awready), .s_awaddr(s_awaddr), .s_wvalid(s_wvalid), .s_wready(s_wready), .s_wdata(s_wdata), .s_wstrb(s_wstrb), .s_tag(s_tag), .s_bready(s_bready), .s_bvalid(s_bvalid),
-    .s_arvalid(s_arvalid), .s_arready(s_arready), .s_araddr(s_araddr), .s_rvalid(s_rvalid), .s_rready(s_rready), .s_rdata(s_rdata)
+    // Fabric link
+    .link_tx_valid(mb_tx_valid), .link_tx_ready(mb_tx_ready), .link_tx_data(mb_tx_data), .link_tx_dest_id(mb_tx_dest_id),
+    .link_rx_valid(mb_rx_valid), .link_rx_ready(mb_rx_ready), .link_rx_data(mb_rx_data), .link_rx_dest_id(mb_rx_dest_id)
   );
 
   // ---------------------------
@@ -100,10 +73,22 @@ module uart_mailboxfabric #(
   logic tx_full, tx_empty;
   logic tx_w_en, tx_r_en;
 
-  // Simple write pointer driven by endpoint RX stream
-  assign ep_rx_ready = !tx_full;
+  // Mailbox stream CSR handling
+  logic        ep_rx_valid;
+  logic        ep_rx_ready;
+  logic [31:0] ep_rx_data;
+  mailbox_header_t ep_rx_hdr;
+  logic        ep_rx_irq;
+  logic        ep_rx_err;
+  logic [NODE_ID_WIDTH-1:0] ep_rx_dest_id;
 
-  assign tx_w_en = ep_rx_valid && ep_rx_ready;
+  wire [3:0] rx_csr_idx = ep_rx_dest_id[3:0];
+  wire csr0_block = (rx_csr_idx == 4'd0) && tx_full;
+  wire wr_fire = ep_rx_valid && ep_rx_ready;
+  assign ep_rx_ready = !csr0_block;
+
+  // Simple write pointer driven by CSR0 writes
+  assign tx_w_en = wr_fire && (rx_csr_idx == 4'd0) && !tx_full;
   assign tx_r_en = tx_finished && !tx_empty;
 
   always_ff @(posedge clk or negedge rst_n) begin
@@ -243,28 +228,37 @@ module uart_mailboxfabric #(
   logic ep_tx_eop;
   logic [3:0] ep_tx_opcode;
 
-  // Signals from endpoint RX streaming (inbound mailbox writes -> UART TX)
-  logic ep_rx_valid;
-  logic ep_rx_ready;
-  logic [31:0] ep_rx_data;
-  mailbox_tag_t ep_rx_tag;
-  logic ep_rx_irq;
+  // RX register (passive readable)
+  logic [7:0] rx_data_reg;
+  logic       rx_data_valid;
 
   // Config registers (written by mailbox writes to CSR idx 2 and readable by CSR idx2 through mailbox_endpoint's csr_reg)
   logic [15:0] cfg_dest;
   logic [31:0] cfg_baud_div;
 
-  // sample config writes from s_awvalid/s_wvalid when idx != 0
+  // CSR and RX tracking
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
       cfg_dest <= DEFAULT_DEST;
       cfg_baud_div <= BAUD_DIV;
+      rx_data_reg <= 8'h0;
+      rx_data_valid <= 1'b0;
+      // no AXI-Lite response in stream mode
     end else begin
-      if (s_awvalid && s_wvalid && (s_awaddr[3:0] == 4'd2)) begin
-        cfg_dest <= s_wdata[15:0];
+      if (wr_fire) begin
+        case (rx_csr_idx)
+          4'd2: cfg_dest <= ep_rx_data[15:0];
+          4'd3: cfg_baud_div <= ep_rx_data;
+          4'd4: begin
+            if (ep_rx_data[0]) rx_data_valid <= 1'b0; // clear RX valid
+          end
+          default: ;
+        endcase
       end
-      if (s_awvalid && s_wvalid && (s_awaddr[3:0] == 4'd3)) begin
-        cfg_baud_div <= s_wdata;
+
+      if (rx_byte_valid) begin
+        rx_data_reg <= rx_byte;
+        rx_data_valid <= 1'b1;
       end
     end
   end
@@ -326,7 +320,7 @@ module uart_mailboxfabric #(
   // ---------------------------
   // Status outputs
   // ---------------------------
-  // expose a simple status CSR in index 1 via writes handled by mailbox_endpoint already
-  // Also update s_rdata for other indices is handled inside mailbox_endpoint; to provide visibility for cfg_dest and cfg_baud_div we rely on CSR 2 and 3 being written/read by SW (these are stored in endpoint's csr_reg array by endpoint on writes but we keep a local copy too so SW can read it back via our stored copy if desired by reading CSR 2/3)
+  // expose a simple status CSR in index 1 via stream writes (CSR idx)
+  // cfg_dest/cfg_baud_div are updated via incoming stream writes to CSR 2/3
 
 endmodule
