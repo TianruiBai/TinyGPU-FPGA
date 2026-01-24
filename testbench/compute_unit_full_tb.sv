@@ -228,12 +228,12 @@ module compute_unit_full_tb;
     // --------------------------------------------------------------
     always @(posedge clk) begin
         if (rst_n) begin
-            if (dut.u_regfile_scalar.we && (dut.u_regfile_scalar.waddr == 5'd30 || dut.u_regfile_scalar.waddr == 5'd31)) begin
+            if (dut.u_regfile_scalar.we0 && (dut.u_regfile_scalar.waddr0 == 5'd30 || dut.u_regfile_scalar.waddr0 == 5'd31)) begin
                 $display(
                     "%0t SREG_WB rd=%0d data=%08h src(pend/lsu/fp/valu/alu)=%0d%0d%0d%0d%0d fp_wb(valid/rd/data)=%0b/%0d/%08h wb(valid/rd/res)=%0b/%0d/%08h",
                     $time,
-                    dut.u_regfile_scalar.waddr,
-                    dut.u_regfile_scalar.wdata,
+                    dut.u_regfile_scalar.waddr0,
+                    dut.u_regfile_scalar.wdata0,
                     dut.scalar_wb_from_pending,
                     dut.scalar_wb_from_lsu,
                     dut.scalar_wb_from_fp,
@@ -249,12 +249,12 @@ module compute_unit_full_tb;
             end
 
             // x4/x5 are used by the early conditional-branch marker tests
-            if (dut.u_regfile_scalar.we && (dut.u_regfile_scalar.waddr == 5'd4 || dut.u_regfile_scalar.waddr == 5'd5)) begin
+            if (dut.u_regfile_scalar.we0 && (dut.u_regfile_scalar.waddr0 == 5'd4 || dut.u_regfile_scalar.waddr0 == 5'd5)) begin
                 $display(
                     "%0t SREG_WB rd=%0d data=%08h src(pend/lsu/fp/valu/alu)=%0d%0d%0d%0d%0d wb_valid=%0b wb_rd=%0d wb_rs1=%0d wb_imm=%08h wb_f3=%0d wb_uses_rs2=%0b wb_scalar_res=%08h",
                     $time,
-                    dut.u_regfile_scalar.waddr,
-                    dut.u_regfile_scalar.wdata,
+                    dut.u_regfile_scalar.waddr0,
+                    dut.u_regfile_scalar.wdata0,
                     dut.scalar_wb_from_pending,
                     dut.scalar_wb_from_lsu,
                     dut.scalar_wb_from_fp,

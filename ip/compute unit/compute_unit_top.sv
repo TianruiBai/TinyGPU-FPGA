@@ -969,12 +969,22 @@ module compute_unit_top #(
         .raddr_a(rr_ctrl.rs1),
         .raddr_b(rr_ctrl.rs2),
         .raddr_c(rr1_scalar_raddr),
+        .raddr_d(5'd0),
+        .raddr_e(5'd0),
         .rdata_a(s_rdata_a_raw),
         .rdata_b(s_rdata_b_raw),
         .rdata_c(s_rdata_c_raw),
-        .we(s_we),
-        .waddr(s_waddr),
-        .wdata(s_wdata)
+        .rdata_d(),
+        .rdata_e(),
+        .we0(s_we),
+        .waddr0(s_waddr),
+        .wdata0(s_wdata),
+        .we1(1'b0),
+        .waddr1(5'd0),
+        .wdata1(32'h0),
+        .we2(1'b0),
+        .waddr2(5'd0),
+        .wdata2(32'h0)
     );
 
     // Scalar writeback bypass: prefer same-cycle WB data over regfile read.

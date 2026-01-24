@@ -1,0 +1,36 @@
+name: RTL Lint & Smoke
+
+on:
+  push:
+    paths:
+      - 'rtl/**'
+      - 'ip/**'
+      - 'docs/**'
+  pull_request:
+    paths:
+      - 'rtl/**'
+      - 'ip/**'
+      - 'docs/**'
+
+jobs:
+  rtl-check:
+    name: Verilator lint + Yosys smoke
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y verilator yosys git
+
+      - name: Make scripts executable
+        run: |
+          chmod +x scripts/rtl_lint.sh scripts/rtl_smoke_synth.sh
+
+      - name: Run Verilator lint
+        run: scripts/rtl_lint.sh
+
+      - name: Run Yosys smoke synthesis
+        run: scripts/rtl_smoke_synth.sh
