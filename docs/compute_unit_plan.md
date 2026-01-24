@@ -131,6 +131,11 @@ Goal: Accelerate triangle edge evaluation and pixel coverage generation.
 - Waveform/trace: observe stall signals and busy masks; ensure only dependent ops stall.
 - Use Verilator or Vivado sim before FPGA bring-up.
 
+### Testbench refinements (recent)
+- `compute_unit_full_tb`: add assertions/logs that the final DONE store (`0xfffff9f0`) issues a write-through within N cycles after PC=0x430; fail fast if not seen.
+- Instrument L1 WT path: log `wt_pending_valid` set/clear and `mem_req_valid/src` pulses for MEM_SRC_L1_WT; assert that a store hit to DONE triggers a WT request while the line is valid.
+- Memory model scoreboard: print on first write to DONE to confirm backing store update; short debug runs use reduced `+max_cycles` and immediate assertion on missing DONE WT to avoid long hangs.
+
 ## Checklist
 - [ ] `isa_pkg.sv` opcode/structs defined.
 - [ ] Scalar core (fetch/decode/regread/execute/wb) runs ADD/BEQ loop.
@@ -140,3 +145,10 @@ Goal: Accelerate triangle edge evaluation and pixel coverage generation.
 - [ ] LSU handles shared/global, with wb + scoreboard clear.
 - [ ] TEX stub returns constant color and exercises TEX pipeline.
 - [ ] Raster Unit implements edge-test and fragment generation (2×2 quad stepping; quad_mask capable).
+
+## Dual-issue (second pipeline) plan
+- Frontend/rename: add second issue slot with per-slot decode/rename bookkeeping; widen regfile read ports and scoreboard to cover two independent ops; define structural conflict rules (no dual branches; restrict LSU pairing as needed).
+- EX/LSU duplication: instantiate second scalar/ALU and a second LSU path (or shared LSU with dual request queue); ensure LSU arbitration and store/load bypassing are deterministic.
+- Commit/retire: two-wide retire with precise exceptions; expand ROB or commit queue with per-slot valid/exception bits.
+- Memory ordering: specify ordering for two LSU ops per cycle; arbitrate L1/L2 writes and write-throughs; keep deterministic ordering for fences/MEMBAR.
+- Verification: directed dual-issue tests (ALU+LSU, LSU+LSU hazard, back-to-back branches); assertions for structural conflicts and scoreboard correctness.

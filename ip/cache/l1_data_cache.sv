@@ -21,6 +21,7 @@ module l1_data_cache #(
     // LSU0 interface
     input  logic                 lsu0_req_valid,
     input  logic [1:0]           lsu0_req_type, // 0=LOAD,1=STORE,2=ATOM
+    input  logic [2:0]           lsu0_req_atomic_op,
     input  logic [31:0]          lsu0_req_addr,
     input  logic [(MAX_RDATA_WIDTH*VEC_WORDS)-1:0] lsu0_req_wdata,
     input  logic [LINE_BYTES/8-1:0] lsu0_req_wstrb,
@@ -37,6 +38,7 @@ module l1_data_cache #(
     // LSU1 interface
     input  logic                 lsu1_req_valid,
     input  logic [1:0]           lsu1_req_type,
+    input  logic [2:0]           lsu1_req_atomic_op,
     input  logic [31:0]          lsu1_req_addr,
     input  logic [(MAX_RDATA_WIDTH*VEC_WORDS)-1:0] lsu1_req_wdata,
     input  logic [LINE_BYTES/8-1:0] lsu1_req_wstrb,
@@ -132,6 +134,13 @@ module l1_data_cache #(
     mem_src_t mem_outstanding_src;
     logic mem_busy; // indicates mem_req is inflight
 
+    // Pending write-through when the bus is busy (WRITEBACK=0 path)
+    logic wt_pending_valid;
+    logic [31:0] wt_pending_addr;
+    logic [LINE_BYTES*8-1:0] wt_pending_data;
+    logic [LINE_BYTES/8-1:0] wt_pending_wstrb;
+    logic [7:0] wt_pending_id;
+
     // Write-back buffer (small FIFO) to avoid stalling misses on dirty evictions
     typedef struct packed {
         logic [31:0]             addr;
@@ -153,12 +162,9 @@ module l1_data_cache #(
     logic [LINE_BYTES*8-1:0] wb_push_data;
     logic wb_push_dirty_flag;
 
-    // Capture pending eviction when WB buffer is temporarily full
+    // Dirty eviction bookkeeping while WB buffer is full
     logic [31:0] evict_addr_pending;
     logic [LINE_BYTES*8-1:0] evict_data_pending;
-
-    // Handy decode helpers for pending miss
-    wire [INDEX_BITS-1:0] pending_idx_calc = addr_idx(pending_addr);
     wire [TAG_BITS-1:0]   pending_tag_calc = addr_tag(pending_addr);
 
     // Flush scanner state for write-back mode
@@ -174,6 +180,7 @@ module l1_data_cache #(
     logic [1:0]  req_type_s;
     logic [31:0] req_addr_s;
     logic [(MAX_RDATA_WIDTH*VEC_WORDS)-1:0] req_wdata_s;
+    logic [2:0]  req_atomic_op_s;
     logic        req_is_vector_s;
     logic [VEC_WORDS-1:0] req_vec_wmask_s;
     logic [7:0]  req_id_s;
@@ -182,6 +189,8 @@ module l1_data_cache #(
     logic        pending_valid;
     logic        pending_is_store;
     logic        pending_is_vector;
+    logic        pending_is_atomic;
+    logic [2:0]  pending_atomic_op;
     logic [31:0] pending_addr;
     logic [(MAX_RDATA_WIDTH*VEC_WORDS)-1:0] pending_wdata;
     logic [VEC_WORDS-1:0] pending_vec_wmask;
@@ -190,6 +199,8 @@ module l1_data_cache #(
 
     typedef enum logic [1:0] {ST_IDLE, ST_WB_EVICT, ST_MISS_REQ, ST_MISS_WAIT} l1_state_t;
     l1_state_t state;
+
+    wire [INDEX_BITS-1:0] pending_idx_calc = addr_idx(pending_addr);
 
     // Refill assembly (multi-beat when AXI_DATA_BITS < LINE_BYTES*8)
     localparam int BEAT_BYTES = AXI_DATA_BITS / 8;
@@ -219,6 +230,29 @@ module l1_data_cache #(
     endfunction
     function automatic [OFFSET_BITS-1:0] addr_off(input logic [31:0] a);
         addr_off = a[OFFSET_BITS-1:0];
+    endfunction
+
+    function automatic [MAX_RDATA_WIDTH-1:0] atomic_apply(
+        input logic [MAX_RDATA_WIDTH-1:0] old_val,
+        input logic [MAX_RDATA_WIDTH-1:0] opnd,
+        input logic [2:0] op_code
+    );
+        logic signed [MAX_RDATA_WIDTH-1:0] a_s;
+        logic signed [MAX_RDATA_WIDTH-1:0] b_s;
+        begin
+            a_s = old_val;
+            b_s = opnd;
+            unique case (op_code)
+                3'b000: atomic_apply = old_val + opnd; // ADD
+                3'b001: atomic_apply = (a_s < b_s) ? old_val : opnd; // MIN
+                3'b010: atomic_apply = (a_s > b_s) ? old_val : opnd; // MAX
+                3'b011: atomic_apply = opnd; // XCHG
+                3'b101: atomic_apply = old_val & opnd; // AND
+                3'b110: atomic_apply = old_val | opnd; // OR
+                3'b111: atomic_apply = old_val ^ opnd; // XOR
+                default: atomic_apply = old_val;
+            endcase
+        end
     endfunction
 
     // Texture cache wiring (bypass L1)
@@ -299,6 +333,7 @@ module l1_data_cache #(
     assign req_type_s = req_sel_lsu0 ? lsu0_req_type : lsu1_req_type;
     assign req_addr_s = req_sel_lsu0 ? lsu0_req_addr : lsu1_req_addr;
     assign req_wdata_s = req_sel_lsu0 ? lsu0_req_wdata : lsu1_req_wdata;
+    assign req_atomic_op_s = req_sel_lsu0 ? lsu0_req_atomic_op : lsu1_req_atomic_op;
     assign req_is_vector_s = req_sel_lsu0 ? lsu0_req_is_vector : lsu1_req_is_vector;
     assign req_vec_wmask_s = req_sel_lsu0 ? lsu0_req_vec_wmask : lsu1_req_vec_wmask;
     assign req_id_s = req_sel_lsu0 ? lsu0_req_id : lsu1_req_id;
@@ -320,10 +355,17 @@ module l1_data_cache #(
             mem_req_wstrb_r <= '0;
             mem_busy <= 1'b0;
             mem_outstanding_src <= MEM_SRC_NONE;
+            wt_pending_valid <= 1'b0;
+            wt_pending_addr <= 32'b0;
+            wt_pending_data <= '0;
+            wt_pending_wstrb <= '0;
+            wt_pending_id <= 8'b0;
             state <= ST_IDLE;
             pending_valid <= 1'b0;
             pending_is_store <= 1'b0;
             pending_is_vector <= 1'b0;
+            pending_is_atomic <= 1'b0;
+            pending_atomic_op <= 3'b000;
             pending_addr <= 32'b0;
             pending_wdata <= '0;
             pending_vec_wmask <= '0;
@@ -354,6 +396,8 @@ module l1_data_cache #(
                 data_ram[i]      <= '0;
             end
         end else begin
+            logic issued_mem_req;
+            issued_mem_req = 1'b0;
             // default pulses
             lsu0_resp_valid_r <= 1'b0;
             lsu1_resp_valid_r <= 1'b0;
@@ -386,7 +430,13 @@ module l1_data_cache #(
                     refill_buf <= '0;
                 end
             end
-            if (mem_resp_valid) begin
+            // Keep mem_busy asserted until the final beat of a multi-beat refill/tex transfer.
+            // This avoids clearing the outstanding source after the first beat and losing the remainder.
+            if (mem_resp_valid && (mem_outstanding_src == MEM_SRC_L1_REFILL)) begin
+                // mem_busy cleared only when the last refill beat is observed below
+            end else if (mem_resp_valid && (mem_outstanding_src == MEM_SRC_TEX_REFILL)) begin
+                // mem_busy cleared only when the last tex beat is observed below
+            end else if (mem_resp_valid) begin
                 mem_busy <= 1'b0;
             end
 
@@ -415,8 +465,10 @@ module l1_data_cache #(
             end
 
             // Texture cache miss handling: issue read when bus idle and L1 not asserting mem_req
-            if (tex_miss_req_valid && tex_miss_req_ready && !mem_busy && !mem_req_valid_r) begin
+            // Avoid stealing the single outstanding slot when an L1 miss is pending.
+            if (tex_miss_req_valid && tex_miss_req_ready && !mem_busy && !mem_req_valid_r && !pending_valid && (state == ST_IDLE)) begin
                 mem_req_valid_r <= 1'b1;
+                issued_mem_req = 1'b1;
                 mem_req_rw_r <= 1'b0;
                 mem_req_addr_r <= tex_miss_req_addr;
                 mem_req_size_r <= LINE_BYTES[7:0];
@@ -490,10 +542,95 @@ module l1_data_cache #(
                                     end
                                 end
                                 data_ram[idx] <= line_new;
+                                if (wt_pending_valid && (wt_pending_addr == {tag, idx, {OFFSET_BITS{1'b0}}})) begin
+                                    wt_pending_valid <= 1'b0;
+                                end
+                                if (WRITEBACK) begin
+                                    tag_ram[idx].dirty <= 1'b1;
+                                end else if (!mem_busy && !mem_req_valid_r && mem_req_ready) begin
+                                    mem_req_valid_r <= 1'b1;
+                                    issued_mem_req = 1'b1;
+                                    mem_req_rw_r <= 1'b1;
+                                    mem_req_addr_r <= {tag, idx, {OFFSET_BITS{1'b0}}};
+                                    mem_req_size_r <= LINE_BYTES[7:0];
+                                    mem_req_qos_r <= 4'b0001;
+                                    mem_req_id_r <= req_id_s;
+                                    mem_req_wdata_r <= line_new;
+                                    mem_req_wstrb_r <= {LINE_BYTES/8{1'b1}};
+                                    mem_req_src_r <= MEM_SRC_L1_WT;
+                                end else begin
+                                    wt_pending_valid <= 1'b1;
+                                    wt_pending_addr <= {tag, idx, {OFFSET_BITS{1'b0}}};
+                                    wt_pending_data <= line_new;
+                                    wt_pending_wstrb <= {LINE_BYTES/8{1'b1}};
+                                    wt_pending_id <= req_id_s;
+                                end
+                            end else if (req_type_s == 2'b10) begin
+                                // ATOMIC add: return old data, store updated data
+                                integer lane;
+                                integer base_word;
+                                logic [LINE_BYTES*8-1:0] line_old;
+                                logic [LINE_BYTES*8-1:0] line_new;
+                                base_word = int'(off[OFFSET_BITS-1:2]);
+                                line_old = data_ram[idx];
+                                line_new = line_old;
+                                if (!req_is_vector_s) begin
+                                    line_new[base_word*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH]
+                                        = atomic_apply(
+                                            line_old[base_word*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH],
+                                            req_wdata_s[0 +: MAX_RDATA_WIDTH],
+                                            req_atomic_op_s
+                                        );
+                                end else begin
+                                    for (lane = 0; lane < VEC_WORDS; lane = lane + 1) begin
+                                        if (req_vec_wmask_s[lane]) begin
+                                            line_new[(base_word+lane)*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH]
+                                                = atomic_apply(
+                                                    line_old[(base_word+lane)*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH],
+                                                    req_wdata_s[lane*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH],
+                                                    req_atomic_op_s
+                                                );
+                                        end
+                                    end
+                                end
+
+                                if (req_sel_lsu0) begin
+                                    lsu0_resp_id_r <= req_id_s;
+                                    lsu0_resp_data_r <= '0;
+                                    if (req_is_vector_s) begin
+                                        for (lane = 0; lane < VEC_WORDS; lane = lane + 1) begin
+                                            lsu0_resp_data_r[lane*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH]
+                                                <= line_old[(base_word+lane)*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH];
+                                        end
+                                    end else begin
+                                        lsu0_resp_data_r[0 +: MAX_RDATA_WIDTH]
+                                            <= line_old[base_word*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH];
+                                    end
+                                    lsu0_resp_valid_r <= 1'b1;
+                                end else begin
+                                    lsu1_resp_id_r <= req_id_s;
+                                    lsu1_resp_data_r <= '0;
+                                    if (req_is_vector_s) begin
+                                        for (lane = 0; lane < VEC_WORDS; lane = lane + 1) begin
+                                            lsu1_resp_data_r[lane*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH]
+                                                <= line_old[(base_word+lane)*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH];
+                                        end
+                                    end else begin
+                                        lsu1_resp_data_r[0 +: MAX_RDATA_WIDTH]
+                                            <= line_old[base_word*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH];
+                                    end
+                                    lsu1_resp_valid_r <= 1'b1;
+                                end
+
+                                data_ram[idx] <= line_new;
+                                if (wt_pending_valid && (wt_pending_addr == {tag, idx, {OFFSET_BITS{1'b0}}})) begin
+                                    wt_pending_valid <= 1'b0;
+                                end
                                 if (WRITEBACK) begin
                                     tag_ram[idx].dirty <= 1'b1;
                                 end else if (!mem_busy && mem_req_ready) begin
                                     mem_req_valid_r <= 1'b1;
+                                    issued_mem_req = 1'b1;
                                     mem_req_rw_r <= 1'b1;
                                     mem_req_addr_r <= {tag, idx, {OFFSET_BITS{1'b0}}};
                                     mem_req_size_r <= LINE_BYTES[7:0];
@@ -508,7 +645,9 @@ module l1_data_cache #(
                             // MISS
                             cnt_misses <= cnt_misses + 1;
                             pending_valid <= 1'b1;
-                            pending_is_store <= (req_type_s == 2'b01);
+                            pending_is_store <= (req_type_s == 2'b01) || (req_type_s == 2'b10);
+                            pending_is_atomic <= (req_type_s == 2'b10);
+                            pending_atomic_op <= req_atomic_op_s;
                             pending_is_vector <= req_is_vector_s;
                             pending_addr <= req_addr_s;
                             pending_wdata <= req_wdata_s;
@@ -533,6 +672,7 @@ module l1_data_cache #(
                             // Request line refill (can proceed even while WB buffer drains)
                             if (!mem_req_valid_r && !mem_busy) begin
                                 mem_req_valid_r <= 1'b1;
+                                issued_mem_req = 1'b1;
                                 mem_req_rw_r <= 1'b0;
                                 mem_req_addr_r <= {tag, idx, {OFFSET_BITS{1'b0}}};
                                 mem_req_size_r <= LINE_BYTES[7:0];
@@ -556,6 +696,7 @@ module l1_data_cache #(
                         // issue miss refill after buffering eviction
                         if (!mem_req_valid_r && !mem_busy) begin
                             mem_req_valid_r <= 1'b1;
+                            issued_mem_req = 1'b1;
                             mem_req_rw_r <= 1'b0;
                             mem_req_addr_r <= {pending_tag_calc, pending_idx_calc, {OFFSET_BITS{1'b0}}};
                             mem_req_size_r <= LINE_BYTES[7:0];
@@ -570,7 +711,20 @@ module l1_data_cache #(
                 end
 
                 ST_MISS_WAIT: begin
-                    // wait for refill response handled below
+                    // If an L1 miss is pending but no request is outstanding (e.g., TEX miss
+                    // previously took the slot), re-issue the refill.
+                    if (pending_valid && !mem_busy && !mem_req_valid_r && (mem_outstanding_src == MEM_SRC_NONE)) begin
+                        mem_req_valid_r <= 1'b1;
+                        issued_mem_req = 1'b1;
+                        mem_req_rw_r <= 1'b0;
+                        mem_req_addr_r <= {pending_tag_calc, pending_idx_calc, {OFFSET_BITS{1'b0}}};
+                        mem_req_size_r <= LINE_BYTES[7:0];
+                        mem_req_qos_r <= 4'b0000;
+                        mem_req_id_r <= pending_id;
+                        mem_req_wdata_r <= '0;
+                        mem_req_wstrb_r <= '0;
+                        mem_req_src_r <= MEM_SRC_L1_REFILL;
+                    end
                 end
 
                 default: begin
@@ -579,8 +733,21 @@ module l1_data_cache #(
             endcase
 
             // Drain WB buffer with lowest priority (after core/text requests in this cycle)
-            if (!mem_busy && !mem_req_valid_r && !wb_empty) begin
+            if (!mem_busy && !mem_req_valid_r && wt_pending_valid && !issued_mem_req) begin
                 mem_req_valid_r <= 1'b1;
+                issued_mem_req = 1'b1;
+                mem_req_rw_r <= 1'b1;
+                mem_req_addr_r <= wt_pending_addr;
+                mem_req_size_r <= LINE_BYTES[7:0];
+                mem_req_qos_r <= 4'b0001;
+                mem_req_id_r <= wt_pending_id;
+                mem_req_wdata_r <= wt_pending_data;
+                mem_req_wstrb_r <= wt_pending_wstrb;
+                mem_req_src_r <= MEM_SRC_L1_WT;
+                wt_pending_valid <= 1'b0;
+            end else if (!mem_busy && !mem_req_valid_r && !wb_empty && !issued_mem_req) begin
+                mem_req_valid_r <= 1'b1;
+                issued_mem_req = 1'b1;
                 mem_req_rw_r <= 1'b1;
                 mem_req_addr_r <= wb_fifo[wb_rd_ptr].addr;
                 mem_req_size_r <= LINE_BYTES[7:0];
@@ -632,74 +799,131 @@ module l1_data_cache #(
                         tag_ram[idx].dirty <= 1'b0;
                         cnt_refills <= cnt_refills + 1;
                         $display("L1 refill done addr=%08h pending_store=%0b @%0t", {tag, idx, {OFFSET_BITS{1'b0}}}, pending_is_store, $time);
-                    end
-
-                    if (refill_last && pending_is_store) begin
-                        integer lane;
-                        logic [LINE_BYTES*8-1:0] line_new2;
-                        line_new2 = refill_line;
-                        if (!pending_is_vector) begin
-                            line_new2[base_word*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH]
-                                = pending_wdata[0 +: MAX_RDATA_WIDTH];
-                        end else begin
-                            for (lane = 0; lane < VEC_WORDS; lane = lane + 1) begin
-                                if (pending_vec_wmask[lane]) begin
-                                    line_new2[(base_word+lane)*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH]
-                                        = pending_wdata[lane*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH];
-                                end
-                            end
-                        end
-                        data_ram[idx] <= line_new2;
-                        if (WRITEBACK) begin
-                            tag_ram[idx].dirty <= 1'b1;
-                        end else if (!mem_busy && mem_req_ready) begin
-                            mem_req_valid_r <= 1'b1;
-                            mem_req_rw_r <= 1'b1;
-                            mem_req_addr_r <= {tag, idx, {OFFSET_BITS{1'b0}}};
-                            mem_req_size_r <= LINE_BYTES[7:0];
-                            mem_req_qos_r <= 4'b0001;
-                            mem_req_id_r <= pending_id;
-                            mem_req_wdata_r <= line_new2;
-                            mem_req_wstrb_r <= {LINE_BYTES/8{1'b1}};
-                            mem_req_src_r <= MEM_SRC_L1_WT;
-                        end
-                    end
-
-                    if (refill_last && !pending_is_store) begin
-                        integer lane;
-                        if (pending_from_lsu0) begin
-                            lsu0_resp_id_r <= pending_id;
-                            lsu0_resp_data_r <= '0;
-                            if (pending_is_vector) begin
-                                for (lane = 0; lane < VEC_WORDS; lane = lane + 1) begin
-                                    lsu0_resp_data_r[lane*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH]
-                                        <= refill_line[(base_word+lane)*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH];
-                                end
+                        // Apply pending store/atomic updates after refill
+                        if (pending_is_store) begin
+                            integer lane;
+                            logic [LINE_BYTES*8-1:0] line_old2;
+                            logic [LINE_BYTES*8-1:0] line_new2;
+                            line_old2 = refill_line;
+                            line_new2 = refill_line;
+                            if (!pending_is_vector) begin
+                                line_new2[base_word*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH]
+                                    = pending_is_atomic
+                                    ? atomic_apply(
+                                        line_old2[base_word*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH],
+                                        pending_wdata[0 +: MAX_RDATA_WIDTH],
+                                        pending_atomic_op
+                                      )
+                                    : pending_wdata[0 +: MAX_RDATA_WIDTH];
                             end else begin
-                                lsu0_resp_data_r[0 +: MAX_RDATA_WIDTH]
-                                    <= refill_line[base_word*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH];
-                            end
-                            lsu0_resp_valid_r <= 1'b1;
-                        end else begin
-                            lsu1_resp_id_r <= pending_id;
-                            lsu1_resp_data_r <= '0;
-                            if (pending_is_vector) begin
                                 for (lane = 0; lane < VEC_WORDS; lane = lane + 1) begin
-                                    lsu1_resp_data_r[lane*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH]
-                                        <= refill_line[(base_word+lane)*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH];
+                                    if (pending_vec_wmask[lane]) begin
+                                        line_new2[(base_word+lane)*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH]
+                                            = pending_is_atomic
+                                            ? atomic_apply(
+                                                line_old2[(base_word+lane)*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH],
+                                                pending_wdata[lane*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH],
+                                                pending_atomic_op
+                                              )
+                                            : pending_wdata[lane*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH];
+                                    end
                                 end
-                            end else begin
-                                lsu1_resp_data_r[0 +: MAX_RDATA_WIDTH]
-                                    <= refill_line[base_word*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH];
                             end
-                            lsu1_resp_valid_r <= 1'b1;
-                        end
-                    end
+                            data_ram[idx] <= line_new2;
+                            if (WRITEBACK) begin
+                                tag_ram[idx].dirty <= 1'b1;
+                            end else if (!mem_busy && !mem_req_valid_r && mem_req_ready) begin
+                                mem_req_valid_r <= 1'b1;
+                                issued_mem_req = 1'b1;
+                                mem_req_rw_r <= 1'b1;
+                                mem_req_addr_r <= {tag, idx, {OFFSET_BITS{1'b0}}};
+                                mem_req_size_r <= LINE_BYTES[7:0];
+                                mem_req_qos_r <= 4'b0001;
+                                mem_req_id_r <= pending_id;
+                                mem_req_wdata_r <= line_new2;
+                                mem_req_wstrb_r <= {LINE_BYTES/8{1'b1}};
+                                mem_req_src_r <= MEM_SRC_L1_WT;
+                            end else begin
+                                wt_pending_valid <= 1'b1;
+                                wt_pending_addr <= {tag, idx, {OFFSET_BITS{1'b0}}};
+                                wt_pending_data <= line_new2;
+                                wt_pending_wstrb <= {LINE_BYTES/8{1'b1}};
+                                wt_pending_id <= pending_id;
+                            end
 
-                    if (refill_last) begin
+                            // Atomic returns old data after applying update
+                            if (pending_is_atomic) begin
+                                integer lane_resp_a;
+                                if (pending_from_lsu0) begin
+                                    lsu0_resp_id_r <= pending_id;
+                                    lsu0_resp_data_r <= '0;
+                                    if (pending_is_vector) begin
+                                        for (lane_resp_a = 0; lane_resp_a < VEC_WORDS; lane_resp_a = lane_resp_a + 1) begin
+                                            lsu0_resp_data_r[lane_resp_a*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH]
+                                                <= line_old2[(base_word+lane_resp_a)*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH];
+                                        end
+                                    end else begin
+                                        lsu0_resp_data_r[0 +: MAX_RDATA_WIDTH]
+                                            <= line_old2[base_word*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH];
+                                    end
+                                    lsu0_resp_valid_r <= 1'b1;
+                                end else begin
+                                    lsu1_resp_id_r <= pending_id;
+                                    lsu1_resp_data_r <= '0;
+                                    if (pending_is_vector) begin
+                                        for (lane_resp_a = 0; lane_resp_a < VEC_WORDS; lane_resp_a = lane_resp_a + 1) begin
+                                            lsu1_resp_data_r[lane_resp_a*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH]
+                                                <= line_old2[(base_word+lane_resp_a)*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH];
+                                        end
+                                    end else begin
+                                        lsu1_resp_data_r[0 +: MAX_RDATA_WIDTH]
+                                            <= line_old2[base_word*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH];
+                                    end
+                                    lsu1_resp_valid_r <= 1'b1;
+                                end
+                            end
+                        end
+
+                        // Load refill response (non-store) delivered here
+                        if (!pending_is_store) begin
+                            integer lane_resp;
+                            if (pending_from_lsu0) begin
+                                lsu0_resp_id_r <= pending_id;
+                                lsu0_resp_data_r <= '0;
+                                if (pending_is_vector) begin
+                                    for (lane_resp = 0; lane_resp < VEC_WORDS; lane_resp = lane_resp + 1) begin
+                                        lsu0_resp_data_r[lane_resp*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH]
+                                            <= refill_line[(base_word+lane_resp)*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH];
+                                    end
+                                end else begin
+                                    lsu0_resp_data_r[0 +: MAX_RDATA_WIDTH]
+                                        <= refill_line[base_word*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH];
+                                end
+                                lsu0_resp_valid_r <= 1'b1;
+                            end else begin
+                                lsu1_resp_id_r <= pending_id;
+                                lsu1_resp_data_r <= '0;
+                                if (pending_is_vector) begin
+                                    for (lane_resp = 0; lane_resp < VEC_WORDS; lane_resp = lane_resp + 1) begin
+                                        lsu1_resp_data_r[lane_resp*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH]
+                                            <= refill_line[(base_word+lane_resp)*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH];
+                                    end
+                                end else begin
+                                    lsu1_resp_data_r[0 +: MAX_RDATA_WIDTH]
+                                        <= refill_line[base_word*MAX_RDATA_WIDTH +: MAX_RDATA_WIDTH];
+                                end
+                                lsu1_resp_valid_r <= 1'b1;
+                            end
+                        end
+
                         pending_valid <= 1'b0;
+                        pending_is_store <= 1'b0;
+                        pending_is_atomic <= 1'b0;
+                        pending_is_vector <= 1'b0;
+                        pending_atomic_op <= 3'b000;
                         state <= ST_IDLE;
                         mem_outstanding_src <= MEM_SRC_NONE;
+                        mem_busy <= 1'b0;
                     end
                 end else if (mem_outstanding_src == MEM_SRC_TEX_REFILL) begin
                     logic [REFILL_BITS-1:0] refill_buf_next_tex;
@@ -722,9 +946,11 @@ module l1_data_cache #(
                     if (refill_last_tex) begin
                         tex_miss_resp_valid <= 1'b1;
                         mem_outstanding_src <= MEM_SRC_NONE;
+                        mem_busy <= 1'b0;
                     end
                 end else begin
                     mem_outstanding_src <= MEM_SRC_NONE;
+                    mem_busy <= 1'b0;
                 end
             end
 

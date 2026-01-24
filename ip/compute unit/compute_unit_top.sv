@@ -13,10 +13,13 @@ module compute_unit_top #(
 )(
     input  logic        clk,
     input  logic        rst_n,
-    // Instruction memory interface
-    input  logic [63:0] inst_rdata,
-    output logic [31:0] inst_addr,
-    // Data memory interface (32-bit width)
+    // Instruction memory interface (to L1 I-cache miss path)
+    output logic        inst_miss_req_valid,
+    output logic [31:0] inst_miss_req_addr,
+    input  logic        inst_miss_req_ready,
+    input  logic        inst_miss_resp_valid,
+    input  logic [63:0] inst_miss_resp_data,
+    // Legacy scalar data interface (unused by TB now; kept for completeness)
     output logic        data_req_valid,
     output logic        data_req_is_load,
     output logic [31:0] data_req_addr,
@@ -39,6 +42,38 @@ module compute_unit_top #(
     input  logic [4:0]  data_resp_rd,
     input  logic [31:0] data_resp_data,
 
+    // L1 D-cache external memory/AXI interface (to L2/memory system)
+    output logic        dcache_mem_req_valid,
+    output logic        dcache_mem_req_rw,
+    output logic [31:0] dcache_mem_req_addr,
+    output logic [7:0]  dcache_mem_req_size,
+    output logic [3:0]  dcache_mem_req_qos,
+    output logic [7:0]  dcache_mem_req_id,
+    output logic [511:0] dcache_mem_req_wdata,
+    output logic [7:0]  dcache_mem_req_wstrb,
+    input  logic        dcache_mem_req_ready,
+
+    input  logic        dcache_mem_resp_valid,
+    input  logic [63:0] dcache_mem_resp_data,
+    input  logic [7:0]  dcache_mem_resp_id,
+
+    // Framebuffer AXI4 write channel (gfx direct path)
+    output logic        fb_aw_valid,
+    output logic [31:0] fb_aw_addr,
+    output logic [7:0]  fb_aw_len,
+    output logic [2:0]  fb_aw_size,
+    output logic [1:0]  fb_aw_burst,
+    input  logic        fb_aw_ready,
+
+    output logic [31:0] fb_w_data,
+    output logic [3:0]  fb_w_strb,
+    output logic        fb_w_last,
+    output logic        fb_w_valid,
+    input  logic        fb_w_ready,
+
+    input  logic        fb_b_valid,
+    output logic        fb_b_ready,
+
     // Mailbox AXI‑MailboxFabric stream link
     output logic                           mailbox_tx_valid,
     input  logic                           mailbox_tx_ready,
@@ -60,6 +95,74 @@ module compute_unit_top #(
     logic        if_valid;
     logic        if_inst0_valid;
     logic        if_inst1_valid;
+
+    // I-cache wiring
+    logic        ic_req_valid;
+    logic [31:0] ic_req_addr;
+    logic        ic_req_ready;
+    logic        ic_resp_valid;
+    logic [63:0] ic_resp_data;
+
+    // D-cache wiring placeholders
+    logic        lsu0_req_valid;
+    logic [1:0]  lsu0_req_type;
+    logic [2:0]  lsu0_req_atomic_op;
+    logic [31:0] lsu0_req_addr;
+    logic [127:0] lsu0_req_wdata;
+    logic [7:0]  lsu0_req_wstrb;
+    logic        lsu0_req_is_vector;
+    logic [3:0]  lsu0_req_vec_wmask;
+    logic [7:0]  lsu0_req_id;
+    // Separate LSU0 pipeline ready from D-cache ready to avoid comb loops
+    logic        lsu0_req_ready;
+    logic        lsu0_dc_req_ready;
+    logic        lsu0_resp_valid;
+    logic [127:0] lsu0_resp_data;
+    logic [7:0]  lsu0_resp_id;
+    logic        lsu0_resp_err;
+    logic        lsu0_busy;
+
+    logic        lsu1_req_valid;
+    logic [1:0]  lsu1_req_type;
+    logic [2:0]  lsu1_req_atomic_op;
+    logic [31:0] lsu1_req_addr;
+    logic [127:0] lsu1_req_wdata;
+    logic [7:0]  lsu1_req_wstrb;
+    logic        lsu1_req_is_vector;
+    logic [3:0]  lsu1_req_vec_wmask;
+    logic [7:0]  lsu1_req_id;
+    logic        lsu1_req_ready;
+    logic        lsu1_resp_valid;
+    logic [127:0] lsu1_resp_data;
+    logic [7:0]  lsu1_resp_id;
+    logic        lsu1_resp_err;
+    logic        lsu1_busy;
+
+    logic        lsu_tex_req_valid;
+    logic [1:0]  lsu_tex_req_type;
+    logic [31:0] lsu_tex_req_addr;
+    logic [31:0] lsu_tex_req_wdata;
+    logic [7:0]  lsu_tex_req_wstrb;
+    logic [7:0]  lsu_tex_req_id;
+    logic        lsu_tex_req_ready;
+    logic        lsu_tex_resp_valid;
+    logic [31:0] lsu_tex_resp_data;
+    logic [7:0]  lsu_tex_resp_id;
+    logic        lsu_tex_resp_err;
+
+    // D-cache mem-side wiring
+    logic        dc_mem_req_valid;
+    logic        dc_mem_req_rw;
+    logic [31:0] dc_mem_req_addr;
+    logic [7:0]  dc_mem_req_size;
+    logic [3:0]  dc_mem_req_qos;
+    logic [7:0]  dc_mem_req_id;
+    logic [511:0] dc_mem_req_wdata;
+    logic [7:0]  dc_mem_req_wstrb;
+    logic        dc_mem_req_ready;
+    logic        dc_mem_resp_valid;
+    logic [63:0] dc_mem_resp_data;
+    logic [7:0]  dc_mem_resp_id;
 
     logic [3:0]  pc_advance_bytes;
 
@@ -122,23 +225,20 @@ module compute_unit_top #(
     logic [31:0] gfxd_gp_resp_data;
     logic [4:0]  gfxd_gp_resp_rd;
 
-    // Texture pipeline signals (shared between graphics_pipeline and texture_cache)
-    logic        tex_req_valid;
-    logic [31:0] tex_req_addr;
-    logic [4:0]  tex_req_rd;
-    logic        tex_req_ready;
-    logic        tex_resp_valid;
-    logic [31:0] tex_resp_data;
-    logic [4:0]  tex_resp_rd;
+    // Shared TEX/descriptor arbitration state (routes both streams onto L1 TEX port)
+    logic        tex_arb_req_valid;
+    logic        tex_arb_req_is_gfxd;
+    logic [31:0] tex_arb_req_addr;
+    logic [4:0]  tex_arb_req_rd;
+    logic        tex_arb_busy;      // request accepted by L1, awaiting response
+    logic        tex_arb_is_gfxd;   // source of outstanding response
+    logic [4:0]  tex_arb_rd;        // rd for outstanding response
 
-    // GFX descriptor cache signals (shared between graphics_pipeline and gfx_desc_cache)
-    logic        gfxd_req_valid;
-    logic [31:0] gfxd_req_addr;
-    logic [4:0]  gfxd_req_rd;
-    logic        gfxd_req_ready;
-    logic        gfxd_resp_valid;
-    logic [31:0] gfxd_resp_data;
-    logic [4:0]  gfxd_resp_rd;
+    // Debug visibility for texture refills (match legacy testbench probes)
+    logic        tex_miss_req_valid;
+    logic [31:0] tex_miss_req_addr;
+    logic        tex_miss_req_ready;
+    logic        tex_miss_resp_valid;
 
     // Redirect on control-flow mispredict (flush + refetch)
     logic        ex_redirect_valid;
@@ -327,6 +427,8 @@ module compute_unit_top #(
     logic         valuv_wb_is_scalar;
     logic         valuv_err_overflow;
     logic         valuv_err_invalid;
+    logic         valuv_inflight_valid;
+    logic [4:0]   valuv_inflight_rd;
 
     // FP ALU
     logic         fp_wb_valid;
@@ -472,7 +574,38 @@ module compute_unit_top #(
 
     wire stall_load_use = hazard_ex_load || hazard_mem_load || hazard_ex_vload || hazard_mem_vload;
 
-    wire stall_pipe          = lsu_stall || stall_membar || stall_gfxq_rr || stall_fp_ex || stall_scalar_wb || stall_load_use;
+    logic vwbq_rs2_match;
+    logic vwbq_rs2_head_match;
+    logic [VWBQ_DEPTH-1:0] vwbq_rs2_match_vec;
+
+    function automatic int vwbq_idx(input int head, input int offset);
+        int sum;
+        begin
+            sum = head + offset;
+            if (sum >= VWBQ_DEPTH) vwbq_idx = sum - VWBQ_DEPTH;
+            else vwbq_idx = sum;
+        end
+    endfunction
+
+    generate
+        genvar j;
+        for (j = 0; j < VWBQ_DEPTH; j = j + 1) begin : gen_vwbq_rs2_match
+            assign vwbq_rs2_match_vec[j] = (vwbq_count > j)
+                                          && (vwbq_rd[vwbq_idx(int'(vwbq_head), j)] == rr_ctrl.rs2);
+        end
+    endgenerate
+
+    assign vwbq_rs2_head_match = (vwbq_count != '0) && (vwbq_rd[vwbq_head] == rr_ctrl.rs2);
+    assign vwbq_rs2_match = |vwbq_rs2_match_vec;
+
+    wire hazard_vec_store = rr_valid && rr_ctrl.is_store && rr_ctrl.is_vector
+                            && (vec_pending_rd_hit(rr_ctrl.rs2)
+                                || (valuv_inflight_valid && (valuv_inflight_rd == rr_ctrl.rs2))
+                                || (valuv_vector_wb_issue && (valuv_wb_rd == rr_ctrl.rs2))
+                                || (vwbq_rs2_match && !vwbq_rs2_head_match));
+
+    wire stall_pipe          = lsu_stall || stall_membar || stall_gfxq_rr || stall_fp_ex || stall_scalar_wb
+                               || stall_load_use || hazard_vec_store;
     // Frontend stalls when it cannot accept slot0.
     // During reset force stall low to avoid X-propagation into fetch/PC
     assign stall_any         = rst_n ? stall_pipe : 1'b0;
@@ -520,11 +653,13 @@ module compute_unit_top #(
 
     wire issue0_rs1_fwd = (d0_ctrl.uses_rs1 && (d0_ctrl.rs1_class == CLASS_VEC) && vec_fwd_hit(d0_ctrl.rs1))
                        || (d0_ctrl.uses_rs1 && (d0_ctrl.rs1_class == CLASS_SCALAR) && scalar_fwd_hit(d0_ctrl.rs1));
-    wire issue0_rs2_fwd = (d0_ctrl.uses_rs2 && (d0_ctrl.rs2_class == CLASS_VEC) && vec_fwd_hit(d0_ctrl.rs2))
+    wire issue0_rs2_fwd = (d0_ctrl.uses_rs2 && (d0_ctrl.rs2_class == CLASS_VEC)
+                           && vec_fwd_hit(d0_ctrl.rs2) && !d0_ctrl.is_store && !d0_ctrl.is_atomic)
                        || (d0_ctrl.uses_rs2 && (d0_ctrl.rs2_class == CLASS_SCALAR) && scalar_fwd_hit(d0_ctrl.rs2));
     wire issue1_rs1_fwd = (d1_ctrl.uses_rs1 && (d1_ctrl.rs1_class == CLASS_VEC) && vec_fwd_hit(d1_ctrl.rs1))
                        || (d1_ctrl.uses_rs1 && (d1_ctrl.rs1_class == CLASS_SCALAR) && scalar_fwd_hit(d1_ctrl.rs1));
-    wire issue1_rs2_fwd = (d1_ctrl.uses_rs2 && (d1_ctrl.rs2_class == CLASS_VEC) && vec_fwd_hit(d1_ctrl.rs2))
+    wire issue1_rs2_fwd = (d1_ctrl.uses_rs2 && (d1_ctrl.rs2_class == CLASS_VEC)
+                           && vec_fwd_hit(d1_ctrl.rs2) && !d1_ctrl.is_store && !d1_ctrl.is_atomic)
                        || (d1_ctrl.uses_rs2 && (d1_ctrl.rs2_class == CLASS_SCALAR) && scalar_fwd_hit(d1_ctrl.rs2));
 
     // ---------------------------------------------------------------------
@@ -557,25 +692,77 @@ module compute_unit_top #(
     assign gp_issue_op_a  = gp_issue0_valid ? gp_issue0_op_a : gp_issue1_op_a;
     assign gp_issue_op_b  = gp_issue0_valid ? gp_issue0_op_b : gp_issue1_op_b;
 
-    // Wire Texture Cache to Graphics Pipeline (descriptor/texture reads share this path)
-    assign tex_gp_req_ready  = tex_req_ready;
-    assign tex_req_valid     = tex_gp_req_valid;
-    assign tex_req_addr      = tex_gp_req_addr;
-    assign tex_req_rd        = tex_gp_req_rd;
+    // ------------------------------------------------------------------
+    // Texture/descriptor arbitration onto shared L1 TEX port
+    // Priority: texture samples over descriptor fetches. Buffer one req
+    // while waiting for L1 ready; hold busy until response returns.
+    // ------------------------------------------------------------------
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            tex_arb_req_valid   <= 1'b0;
+            tex_arb_req_is_gfxd <= 1'b0;
+            tex_arb_req_addr    <= 32'h0;
+            tex_arb_req_rd      <= 5'h0;
+            tex_arb_busy        <= 1'b0;
+            tex_arb_is_gfxd     <= 1'b0;
+            tex_arb_rd          <= 5'h0;
+        end else begin
+            // Latch a new request when idle and the slot is free
+            if (!tex_arb_req_valid && !tex_arb_busy) begin
+                if (tex_gp_req_valid) begin
+                    tex_arb_req_valid   <= 1'b1;
+                    tex_arb_req_is_gfxd <= 1'b0;
+                    tex_arb_req_addr    <= tex_gp_req_addr;
+                    tex_arb_req_rd      <= tex_gp_req_rd;
+                end else if (gfxd_gp_req_valid) begin
+                    tex_arb_req_valid   <= 1'b1;
+                    tex_arb_req_is_gfxd <= 1'b1;
+                    tex_arb_req_addr    <= gfxd_gp_req_addr;
+                    tex_arb_req_rd      <= gfxd_gp_req_rd;
+                end
+            end
 
-    assign tex_gp_resp_valid = tex_resp_valid;
-    assign tex_gp_resp_data  = tex_resp_data;
-    assign tex_gp_resp_rd    = tex_resp_rd;
+            // Handshake into L1 texture port
+            if (tex_arb_req_valid && lsu_tex_req_ready) begin
+                tex_arb_req_valid <= 1'b0;
+                tex_arb_busy      <= 1'b1;
+                tex_arb_is_gfxd   <= tex_arb_req_is_gfxd;
+                tex_arb_rd        <= tex_arb_req_rd;
+            end
 
-    // Wire GFX descriptor cache to Graphics Pipeline
-    assign gfxd_gp_req_ready  = gfxd_req_ready;
-    assign gfxd_req_valid     = gfxd_gp_req_valid;
-    assign gfxd_req_addr      = gfxd_gp_req_addr;
-    assign gfxd_req_rd        = gfxd_gp_req_rd;
+            // Clear busy when response returns
+            if (lsu_tex_resp_valid) begin
+                tex_arb_busy <= 1'b0;
+            end
+        end
+    end
 
-    assign gfxd_gp_resp_valid = gfxd_resp_valid;
-    assign gfxd_gp_resp_data  = gfxd_resp_data;
-    assign gfxd_gp_resp_rd    = gfxd_resp_rd;
+    // Ready back to graphics pipeline: accept when buffer free (one entry)
+    assign tex_gp_req_ready  = !tex_arb_req_valid && !tex_arb_busy;
+    assign gfxd_gp_req_ready = !tex_arb_req_valid && !tex_arb_busy && !tex_gp_req_valid;
+
+    // Drive L1 texture port
+    assign lsu_tex_req_valid = tex_arb_req_valid;
+    assign lsu_tex_req_type  = 2'b00;         // load
+    assign lsu_tex_req_addr  = tex_arb_req_addr;
+    assign lsu_tex_req_wdata = 32'h0;
+    assign lsu_tex_req_wstrb = 8'h0;
+    assign lsu_tex_req_id    = {2'b00, tex_arb_req_is_gfxd, tex_arb_req_rd};
+
+    // Responses routed to the originating client
+    assign tex_gp_resp_valid  = lsu_tex_resp_valid && !tex_arb_is_gfxd;
+    assign tex_gp_resp_data   = lsu_tex_resp_data;
+    assign tex_gp_resp_rd     = tex_arb_rd;
+
+    assign gfxd_gp_resp_valid = lsu_tex_resp_valid && tex_arb_is_gfxd;
+    assign gfxd_gp_resp_data  = lsu_tex_resp_data;
+    assign gfxd_gp_resp_rd    = tex_arb_rd;
+
+    // Expose texture miss/refill activity (for TB debug)
+    assign tex_miss_req_valid  = dc_mem_req_valid && (dc_mem_req_id == 8'hfe);
+    assign tex_miss_req_addr   = dc_mem_req_addr;
+    assign tex_miss_req_ready  = dc_mem_req_ready;
+    assign tex_miss_resp_valid = dc_mem_resp_valid && (dc_mem_resp_id == 8'hfe);
 
     always_comb begin
         stall_scoreboard = stall_sb0 || stall_sb1;
@@ -606,6 +793,28 @@ module compute_unit_top #(
     assign if_pred_taken  = accept0 && bp_pred_taken;
     assign if_pred_target = bp_pred_target;
 
+    // L1 instruction cache (64-bit fetch width, 8-byte lines to align with existing bundle)
+    l1_inst_cache #(
+        .ENABLED(1'b1),
+        .LINE_BYTES(8),
+        .LINES(64),
+        .FETCH_DATA_BITS(64)
+    ) u_icache (
+        .clk(clk),
+        .rst_n(rst_n),
+        .req_valid(ic_req_valid),
+        .req_addr(ic_req_addr),
+        .req_ready(ic_req_ready),
+        .resp_valid(ic_resp_valid),
+        .resp_data(ic_resp_data),
+        .resp_err(),
+        .miss_req_valid(inst_miss_req_valid),
+        .miss_req_addr(inst_miss_req_addr),
+        .miss_req_ready(inst_miss_req_ready),
+        .miss_resp_valid(inst_miss_resp_valid),
+        .miss_resp_data(inst_miss_resp_data)
+    );
+
     fetch_unit u_fetch (
         .clk(clk),
         .rst_n(rst_n),
@@ -616,8 +825,11 @@ module compute_unit_top #(
         .branch_target(ex_redirect_target),
         .pc_advance_bytes(pc_advance_bytes),
         .pc(if_pc),
-        .inst_addr(inst_addr),
-        .inst_rdata(inst_rdata),
+        .req_valid(ic_req_valid),
+        .req_addr(ic_req_addr),
+        .req_ready(ic_req_ready),
+        .resp_valid(ic_resp_valid),
+        .resp_data(ic_resp_data),
         .inst_valid(if_valid),
         .inst0_valid(if_inst0_valid),
         .inst1_valid(if_inst1_valid),
@@ -1083,6 +1295,22 @@ module compute_unit_top #(
     wire valuv_issue_valid = vq_valid[vq_head] && !stall_any && valuv_issue_allow;
     wire valuv_fire        = valuv_issue_valid && valuv_ready;
 
+    // Track one in-flight VALU destination (one-cycle latency) to block dependent stores.
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            valuv_inflight_valid <= 1'b0;
+            valuv_inflight_rd    <= 5'd0;
+        end else begin
+            if (valuv_wb_valid_masked && !valuv_wb_is_scalar) begin
+                valuv_inflight_valid <= 1'b0;
+            end
+            if (valuv_fire && !valuv_dest_is_scalar) begin
+                valuv_inflight_valid <= 1'b1;
+                valuv_inflight_rd    <= vq[vq_head].ctrl.rd;
+            end
+        end
+    end
+
     wire push_vec_alu0     = rr_is_vec_alu  && !stall_pipe && !vector_queue_full;
     wire push_vec_alu1     = rr1_is_vec_alu && !stall_pipe && !vector_queue_full;
     wire push_vec_alu      = push_vec_alu0 || push_vec_alu1;
@@ -1151,70 +1379,7 @@ module compute_unit_top #(
         .wb_err_invalid(valuv_err_invalid)
     );
 
-    // Texture Miss signals
-    logic         tex_miss_req_valid;
-    logic [31:0]  tex_miss_req_addr;
-    logic         tex_miss_req_ready;
-    logic         tex_miss_resp_valid;
-    logic [127:0] tex_miss_resp_data;
-
-    // GFX descriptor cache miss signals
-    logic         gfxd_miss_req_valid;
-    logic [31:0]  gfxd_miss_req_addr;
-    logic         gfxd_miss_req_ready;
-    logic         gfxd_miss_resp_valid;
-    logic [127:0] gfxd_miss_resp_data;
-    
-    texture_cache #(
-        .LINE_BYTES(TEX_CACHE_LINE_BYTES),
-        .LINES(TEX_CACHE_LINES)
-    ) u_texture_cache (
-        .clk(clk),
-        .rst_n(rst_n),
-        .req_valid(tex_req_valid),
-        .req_addr(tex_req_addr),
-        .req_rd(tex_req_rd),
-        .req_ready(tex_req_ready),
-        .resp_valid(tex_resp_valid),
-        .resp_data(tex_resp_data),
-        .resp_rd(tex_resp_rd),
-        // Miss interface
-        .miss_req_valid(tex_miss_req_valid),
-        .miss_req_addr(tex_miss_req_addr),
-        .miss_req_ready(tex_miss_req_ready),
-        .miss_resp_valid(tex_miss_resp_valid),
-        .miss_resp_data(tex_miss_resp_data)
-    );
-
-    // Separate cache for gfx descriptors/geometry fetches
-    texture_cache #(
-        .LINE_BYTES(TEX_CACHE_LINE_BYTES),
-        .LINES(TEX_CACHE_LINES)
-    ) u_gfx_desc_cache (
-        .clk(clk),
-        .rst_n(rst_n),
-        .req_valid(gfxd_req_valid),
-        .req_addr(gfxd_req_addr),
-        .req_rd(gfxd_req_rd),
-        .req_ready(gfxd_req_ready),
-        .resp_valid(gfxd_resp_valid),
-        .resp_data(gfxd_resp_data),
-        .resp_rd(gfxd_resp_rd),
-        // Miss interface
-        .miss_req_valid(gfxd_miss_req_valid),
-        .miss_req_addr(gfxd_miss_req_addr),
-        .miss_req_ready(gfxd_miss_req_ready),
-        .miss_resp_valid(gfxd_miss_resp_valid),
-        .miss_resp_data(gfxd_miss_resp_data)
-    );
-
-    // Texture logic moved to graphics_pipeline module
-
-
-    // Texture logic moved to graphics_pipeline module
-    // Maintained connection to u_texture_cache via tex_gp_* signals
-
-
+    // Texture/descriptor requests now share the L1 TEX port (see arbiter above)
 
 
     // Shared local memory (banked BRAM)
@@ -1256,17 +1421,6 @@ module compute_unit_top #(
         .cmd_cons_ptr_bytes(csr_cmd_cons_ptr_bytes),
         .cmd_completion_base(csr_cmd_completion_base)
     );
-
-    // Internal LSU global port (drives external global data port)
-    logic        lsu_global_req_valid;
-    logic        lsu_global_req_is_load;
-    logic [31:0] lsu_global_req_addr;
-    logic [31:0] lsu_global_req_wdata;
-    logic [4:0]  lsu_global_req_rd;
-    logic        lsu_global_req_ready;
-    logic        lsu_global_resp_valid;
-    logic [4:0]  lsu_global_resp_rd;
-    logic [31:0] lsu_global_resp_data;
 
     // Mailbox sideband
     logic        lsu_mailbox_tx_valid;
@@ -1322,68 +1476,56 @@ module compute_unit_top #(
         end
     end
 
-    // Split-path LSU handles local vs global and blocking scalar behavior
-    lsu #(
-        .WMB_ENTRIES(ROP_WCACHE_ENTRIES),
+    // Scalar/vector LSU hooked to L1 D-cache (slot0)
+    logic [7:0] lsu_scalar_wstrb;
+    always_comb begin
+        case (mem_ctrl.funct3)
+            3'b000: lsu_scalar_wstrb = 8'b0000_0001 << mem_addr[2:0];
+            3'b001: lsu_scalar_wstrb = 8'b0000_0011 << {mem_addr[2:1], 1'b0};
+            3'b010: lsu_scalar_wstrb = 8'b0000_1111 << {mem_addr[2], 2'b00};
+            default: lsu_scalar_wstrb = 8'hFF;
+        endcase
+    end
+
+    lsu_core #(
         .MAILBOX_ENABLE(MAILBOX_ENABLE)
-    ) u_lsu (
+    ) u_lsu_core (
         .clk(clk),
         .rst_n(rst_n),
-        .valid_in(mem_valid && (mem_ctrl.is_load || mem_ctrl.is_store || mem_ctrl.is_atomic)),
-        .is_vector(mem_ctrl.is_vector),
-        .is_store(mem_ctrl.is_store),
-        .scalar_funct3(mem_ctrl.funct3),
-        .is_atomic(mem_ctrl.is_atomic),
-        .atomic_op(mem_ctrl.funct3),
-        .vec_mode(mem_ctrl.funct3[1:0]),
-        .vec_stride(mem_scalar_wdata),
-        .vec_index(mem_vec_wdata),
-        .addr(mem_addr),
-        .write_data(mem_ctrl.is_vector ? mem_vec_wdata : {96'h0, mem_scalar_wdata}),
-        .flush_wmb(mem_is_membar),
-        .dest_reg_idx(mem_ctrl.rd),
-        .stall_pipeline(lsu_stall),
+        .req_valid(mem_valid && (mem_ctrl.is_load || mem_ctrl.is_store || mem_ctrl.is_atomic)),
+        .req_is_store(mem_ctrl.is_store),
+        .req_is_vector(mem_ctrl.is_vector),
+        .req_is_atomic(mem_ctrl.is_atomic),
+        .req_funct3(mem_ctrl.funct3),
+        .req_vec_mode(mem_ctrl.funct3[1:0]),
+        .req_addr(mem_addr),
+        .req_wdata(mem_ctrl.is_vector ? mem_vec_wdata : {96'h0, mem_scalar_wdata}),
+        .req_wstrb(mem_ctrl.is_vector ? 8'hFF : lsu_scalar_wstrb),
+        .req_vec_wmask(mem_ctrl.is_vector ? 4'hF : 4'h0),
+        .req_rd(mem_ctrl.rd),
+        .req_ready(lsu0_req_ready),
+
+        .dc_req_valid(lsu0_req_valid),
+        .dc_req_type(lsu0_req_type),
+        .dc_req_atomic_op(lsu0_req_atomic_op),
+        .dc_req_addr(lsu0_req_addr),
+        .dc_req_wdata(lsu0_req_wdata),
+        .dc_req_wstrb(lsu0_req_wstrb),
+        .dc_req_is_vector(lsu0_req_is_vector),
+        .dc_req_vec_wmask(lsu0_req_vec_wmask),
+        .dc_req_id(lsu0_req_id),
+        .dc_req_ready(lsu0_dc_req_ready),
+
+        .dc_resp_valid(lsu0_resp_valid),
+        .dc_resp_data(lsu0_resp_data),
+        .dc_resp_id(lsu0_resp_id),
+        .dc_resp_err(lsu0_resp_err),
+
+        .wb_valid(lsu_wb_valid),
+        .wb_is_vector(lsu_wb_is_vector),
+        .wb_rd(lsu_wb_rd),
+        .wb_data(lsu_wb_data),
         .busy(lsu_busy),
-
-        .gfx_st_valid(gp_st_valid),
-        .gfx_st_addr(gp_st_addr),
-        .gfx_st_wdata(gp_st_wdata),
-        .gfx_st_wstrb(gp_st_wstrb),
-        .gfx_st_ready(gp_st_ready),
-        
-        // Texture Cache Miss Interface
-        .tex_req_valid(tex_miss_req_valid),
-        .tex_req_addr(tex_miss_req_addr),
-        .tex_req_ready(tex_miss_req_ready),
-        .tex_resp_valid(tex_miss_resp_valid),
-        .tex_resp_data(tex_miss_resp_data),
-
-        // GFX Descriptor Cache Miss Interface
-        .gfx_req_valid(gfxd_miss_req_valid),
-        .gfx_req_addr(gfxd_miss_req_addr),
-        .gfx_req_ready(gfxd_miss_req_ready),
-        .gfx_resp_valid(gfxd_miss_resp_valid),
-        .gfx_resp_data(gfxd_miss_resp_data),
-
-        .local_req_valid(local_req_valid),
-        .local_we(local_we),
-        .local_req_is_vector(local_req_is_vector),
-        .local_addr(local_addr),
-        .local_wdata(local_wdata),
-        .local_bank_sel(local_bank_sel),
-        .local_rdata(local_rdata),
-        
-        // Unified 32-bit Global Interface (arbitrated externally)
-        .global_req_valid(lsu_global_req_valid),
-        .global_req_is_load(lsu_global_req_is_load),
-        .global_req_addr(lsu_global_req_addr),
-        .global_req_wdata(lsu_global_req_wdata),
-        .global_req_rd(lsu_global_req_rd),
-        .global_req_ready(lsu_global_req_ready),
-        
-        .global_resp_valid(lsu_global_resp_valid),
-        .global_resp_rd(lsu_global_resp_rd),
-        .global_resp_data(lsu_global_resp_data),
 
         .mailbox_tx_valid(lsu_mailbox_tx_valid),
         .mailbox_tx_dest(lsu_mailbox_tx_dest),
@@ -1399,14 +1541,61 @@ module compute_unit_top #(
         .mailbox_rd_opcode(lsu_mailbox_rd_opcode),
         .mailbox_rd_resp_valid(lsu_mailbox_rd_resp_valid),
         .mailbox_rd_resp_ready(lsu_mailbox_rd_resp_ready),
-        .mailbox_rd_resp_data(lsu_mailbox_rd_resp_data),
-        .mailbox_rd_resp_tag(lsu_mailbox_rd_resp_tag),
-        
-        .wb_valid(lsu_wb_valid),
-        .wb_is_vector(lsu_wb_is_vector),
-        .wb_reg_idx(lsu_wb_rd),
-        .wb_data(lsu_wb_data)
+        .mailbox_rd_resp_data(lsu_mailbox_rd_resp_data)
     );
+
+    // Graphics LSU drives D-cache slot1 (framebuffer AXI remains tied off)
+    lsu_gfx u_lsu_gfx (
+        .clk(clk),
+        .rst_n(rst_n),
+        .st_valid(gp_st_valid),
+        .st_addr(gp_st_addr),
+        .st_data(gp_st_wdata),
+        .st_strb(gp_st_wstrb),
+        .st_ready(gp_st_ready),
+        .dc_req_valid(lsu1_req_valid),
+        .dc_req_type(lsu1_req_type),
+        .dc_req_addr(lsu1_req_addr),
+        .dc_req_wdata(lsu1_req_wdata),
+        .dc_req_wstrb(lsu1_req_wstrb),
+        .dc_req_id(lsu1_req_id),
+        .dc_req_ready(lsu1_req_ready),
+        .dc_resp_valid(lsu1_resp_valid),
+        .dc_resp_data(lsu1_resp_data),
+        .dc_resp_id(lsu1_resp_id),
+        .dc_resp_err(lsu1_resp_err),
+        .fb_aw_valid(fb_aw_valid),
+        .fb_aw_addr(fb_aw_addr),
+        .fb_aw_len(fb_aw_len),
+        .fb_aw_size(fb_aw_size),
+        .fb_aw_burst(fb_aw_burst),
+        .fb_aw_ready(fb_aw_ready),
+        .fb_w_data(fb_w_data),
+        .fb_w_strb(fb_w_strb),
+        .fb_w_last(fb_w_last),
+        .fb_w_valid(fb_w_valid),
+        .fb_w_ready(fb_w_ready),
+        .fb_b_valid(fb_b_valid),
+        .fb_b_ready(fb_b_ready)
+    );
+
+    // GFX path uses scalar-width stores; keep vector metadata clear
+    assign lsu1_req_atomic_op = 3'b000;
+    assign lsu1_req_is_vector = 1'b0;
+    assign lsu1_req_vec_wmask = 4'h0;
+    assign lsu0_busy          = lsu_busy;
+    assign lsu1_busy          = 1'b0;
+
+    // LSU stall feeds pipeline control
+    assign lsu_stall = mem_valid && (mem_ctrl.is_load || mem_ctrl.is_store || mem_ctrl.is_atomic) && !lsu0_req_ready;
+
+    // Local memory currently unused; tie off requests
+    assign local_req_valid     = 1'b0;
+    assign local_we            = 1'b0;
+    assign local_req_is_vector = 1'b0;
+    assign local_addr          = 32'h0;
+    assign local_wdata         = 128'h0;
+    assign local_bank_sel      = 2'b00;
 
         // Mailbox endpoint integration (optional)
         generate
@@ -1464,19 +1653,97 @@ module compute_unit_top #(
             end
         endgenerate
 
+    // Legacy data_req_* interface retired; tie off
+    assign data_req_valid   = 1'b0;
+    assign data_req_is_load = 1'b0;
+    assign data_req_addr    = 32'h0;
+    assign data_req_wdata   = 32'h0;
+    assign data_req_rd      = 5'h0;
     // ---------------------------------------------------------------------
-    // Global memory interface: direct LSU -> external port
+    // L1 D-cache instantiation (currently idle/tied-off; to be wired to LSUs)
     // ---------------------------------------------------------------------
-    assign data_req_valid   = lsu_global_req_valid;
-    assign data_req_is_load = lsu_global_req_is_load;
-    assign data_req_addr    = lsu_global_req_addr;
-    assign data_req_wdata   = lsu_global_req_wdata;
-    assign data_req_rd      = lsu_global_req_rd;
+    l1_data_cache #(
+        .L1_ENABLED(1),
+        .LINE_BYTES(64),
+        .AXI_DATA_BITS(64),
+        .MAX_RDATA_WIDTH(32),
+        .VEC_WORDS(4)
+    ) u_dcache (
+        .clk(clk),
+        .rst_n(rst_n),
+        // LSU0
+        .lsu0_req_valid(lsu0_req_valid),
+        .lsu0_req_type(lsu0_req_type),
+        .lsu0_req_atomic_op(lsu0_req_atomic_op),
+        .lsu0_req_addr(lsu0_req_addr),
+        .lsu0_req_wdata(lsu0_req_wdata),
+        .lsu0_req_wstrb(lsu0_req_wstrb[7:0]),
+        .lsu0_req_is_vector(lsu0_req_is_vector),
+        .lsu0_req_vec_wmask(lsu0_req_vec_wmask),
+        .lsu0_req_id(lsu0_req_id),
+        .lsu0_req_ready(lsu0_dc_req_ready),
+        .lsu0_resp_valid(lsu0_resp_valid),
+        .lsu0_resp_data(lsu0_resp_data),
+        .lsu0_resp_id(lsu0_resp_id),
+        .lsu0_resp_err(lsu0_resp_err),
+        // LSU1
+        .lsu1_req_valid(lsu1_req_valid),
+        .lsu1_req_type(lsu1_req_type),
+        .lsu1_req_atomic_op(lsu1_req_atomic_op),
+        .lsu1_req_addr(lsu1_req_addr),
+        .lsu1_req_wdata(lsu1_req_wdata),
+        .lsu1_req_wstrb(lsu1_req_wstrb[7:0]),
+        .lsu1_req_is_vector(lsu1_req_is_vector),
+        .lsu1_req_vec_wmask(lsu1_req_vec_wmask),
+        .lsu1_req_id(lsu1_req_id),
+        .lsu1_req_ready(lsu1_req_ready),
+        .lsu1_resp_valid(lsu1_resp_valid),
+        .lsu1_resp_data(lsu1_resp_data),
+        .lsu1_resp_id(lsu1_resp_id),
+        .lsu1_resp_err(lsu1_resp_err),
+        // TEX port (unused for now)
+        .lsu_tex_req_valid(lsu_tex_req_valid),
+        .lsu_tex_req_type(lsu_tex_req_type),
+        .lsu_tex_req_addr(lsu_tex_req_addr),
+        .lsu_tex_req_wdata(lsu_tex_req_wdata),
+        .lsu_tex_req_wstrb(lsu_tex_req_wstrb[7:0]),
+        .lsu_tex_req_id(lsu_tex_req_id),
+        .lsu_tex_req_ready(lsu_tex_req_ready),
+        .lsu_tex_resp_valid(lsu_tex_resp_valid),
+        .lsu_tex_resp_data(lsu_tex_resp_data),
+        .lsu_tex_resp_id(lsu_tex_resp_id),
+        .lsu_tex_resp_err(lsu_tex_resp_err),
+        // Control
+        .cfg_flush(1'b0),
+        .cfg_invalidate(1'b0),
+        // Memory side
+        .mem_req_valid(dc_mem_req_valid),
+        .mem_req_rw(dc_mem_req_rw),
+        .mem_req_addr(dc_mem_req_addr),
+        .mem_req_size(dc_mem_req_size),
+        .mem_req_qos(dc_mem_req_qos),
+        .mem_req_id(dc_mem_req_id),
+        .mem_req_wdata(dc_mem_req_wdata),
+        .mem_req_wstrb(dc_mem_req_wstrb[7:0]),
+        .mem_req_ready(dc_mem_req_ready),
+        .mem_resp_valid(dc_mem_resp_valid),
+        .mem_resp_data(dc_mem_resp_data),
+        .mem_resp_id(dc_mem_resp_id)
+    );
 
-    assign lsu_global_req_ready  = data_req_ready;
-    assign lsu_global_resp_valid = data_resp_valid;
-    assign lsu_global_resp_rd    = data_resp_rd;
-    assign lsu_global_resp_data  = data_resp_data;
+    // Drive top-level D-cache memory ports
+    assign dcache_mem_req_valid = dc_mem_req_valid;
+    assign dcache_mem_req_rw    = dc_mem_req_rw;
+    assign dcache_mem_req_addr  = dc_mem_req_addr;
+    assign dcache_mem_req_size  = dc_mem_req_size;
+    assign dcache_mem_req_qos   = dc_mem_req_qos;
+    assign dcache_mem_req_id    = dc_mem_req_id;
+    assign dcache_mem_req_wdata = dc_mem_req_wdata;
+    assign dcache_mem_req_wstrb = dc_mem_req_wstrb;
+    assign dc_mem_req_ready     = dcache_mem_req_ready;
+    assign dc_mem_resp_valid    = dcache_mem_resp_valid;
+    assign dc_mem_resp_data     = dcache_mem_resp_data;
+    assign dc_mem_resp_id       = dcache_mem_resp_id;
 
     // ------------------------------------------------------------------------
 

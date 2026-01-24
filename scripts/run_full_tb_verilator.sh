@@ -5,6 +5,7 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
 
 rtl_dir="ip/compute unit"
+cache_dir="ip/cache"
 mailbox_dir="ip/mailbox"
 mailbox_pkg="ip/mailbox/mailbox_pkg.sv"
 
@@ -20,12 +21,18 @@ for f in "$mailbox_dir"/*.sv; do
   rtl_files+=("$f")
 done
 
+for f in "$cache_dir"/*.sv; do
+  rtl_files+=("$f")
+done
+
 verilator \
   -j 0 \
   -Wall -Wno-fatal \
   --timing \
+  --trace \
+  --trace-structs \
   --binary \
-  -Iip/mailbox \
+  -Iip/mailbox -Iip/cache \
   --top-module compute_unit_full_tb \
   "$mailbox_pkg" \
   "$rtl_dir/isa_pkg.sv" \

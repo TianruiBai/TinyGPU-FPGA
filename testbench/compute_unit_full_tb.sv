@@ -26,11 +26,18 @@ module compute_unit_full_tb;
     logic clk_en;
     logic rst_n;
 
-    // Instruction interface
+    // Instruction interface (I-cache miss path)
+    logic        inst_miss_req_valid;
+    logic [31:0] inst_miss_req_addr;
+    logic        inst_miss_req_ready;
+    logic        inst_miss_resp_valid;
+    logic [63:0] inst_miss_resp_data;
+
+    // Debug mirrors
     logic [63:0] inst_rdata;
     logic [31:0] inst_addr;
 
-    // Data interface (unified global bus)
+    // Legacy data interface (unused now, kept for port tie-off)
     logic        data_req_valid;
     logic        data_req_is_load;
     logic [31:0] data_req_addr;
@@ -40,6 +47,46 @@ module compute_unit_full_tb;
     logic        data_resp_valid;
     logic [4:0]  data_resp_rd;
     logic [31:0] data_resp_data;
+
+    // D-cache memory side interface
+    logic        dcache_mem_req_valid;
+    logic        dcache_mem_req_rw;
+    logic [31:0] dcache_mem_req_addr;
+    logic [7:0]  dcache_mem_req_size;
+    logic [3:0]  dcache_mem_req_qos;
+    logic [7:0]  dcache_mem_req_id;
+    logic [511:0] dcache_mem_req_wdata;
+    logic [7:0]  dcache_mem_req_wstrb;
+    logic        dcache_mem_req_ready;
+    logic        dcache_mem_resp_valid;
+    logic [63:0] dcache_mem_resp_data;
+    logic [7:0]  dcache_mem_resp_id;
+
+    // Framebuffer AXI (unused in this TB)
+    logic        fb_aw_valid;
+    logic [31:0] fb_aw_addr;
+    logic [7:0]  fb_aw_len;
+    logic [2:0]  fb_aw_size;
+    logic [1:0]  fb_aw_burst;
+    logic        fb_aw_ready;
+    logic [31:0] fb_w_data;
+    logic [3:0]  fb_w_strb;
+    logic        fb_w_last;
+    logic        fb_w_valid;
+    logic        fb_w_ready;
+    logic        fb_b_valid;
+    logic        fb_b_ready;
+
+    // Mailbox stream (tied off)
+    import mailbox_pkg::*;
+    mailbox_pkg::mailbox_flit_t mailbox_tx_data;
+    mailbox_pkg::mailbox_flit_t mailbox_rx_data;
+    logic mailbox_tx_valid;
+    logic mailbox_tx_ready;
+    logic [mailbox_pkg::NODE_ID_WIDTH-1:0] mailbox_tx_dest_id;
+    logic mailbox_rx_valid;
+    logic mailbox_rx_ready;
+    logic [mailbox_pkg::NODE_ID_WIDTH-1:0] mailbox_rx_dest_id;
 
     // CSR visibility
     logic [31:0] csr_status;
@@ -77,8 +124,11 @@ module compute_unit_full_tb;
     ) dut (
         .clk(clk),
         .rst_n(rst_n),
-        .inst_rdata(inst_rdata),
-        .inst_addr(inst_addr),
+        .inst_miss_req_valid(inst_miss_req_valid),
+        .inst_miss_req_addr(inst_miss_req_addr),
+        .inst_miss_req_ready(inst_miss_req_ready),
+        .inst_miss_resp_valid(inst_miss_resp_valid),
+        .inst_miss_resp_data(inst_miss_resp_data),
         .data_req_valid(data_req_valid),
         .data_req_is_load(data_req_is_load),
         .data_req_addr(data_req_addr),
@@ -94,7 +144,40 @@ module compute_unit_full_tb;
         .data_req_ready(data_req_ready),
         .data_resp_valid(data_resp_valid),
         .data_resp_rd(data_resp_rd),
-        .data_resp_data(data_resp_data)
+        .data_resp_data(data_resp_data),
+        .dcache_mem_req_valid(dcache_mem_req_valid),
+        .dcache_mem_req_rw(dcache_mem_req_rw),
+        .dcache_mem_req_addr(dcache_mem_req_addr),
+        .dcache_mem_req_size(dcache_mem_req_size),
+        .dcache_mem_req_qos(dcache_mem_req_qos),
+        .dcache_mem_req_id(dcache_mem_req_id),
+        .dcache_mem_req_wdata(dcache_mem_req_wdata),
+        .dcache_mem_req_wstrb(dcache_mem_req_wstrb),
+        .dcache_mem_req_ready(dcache_mem_req_ready),
+        .dcache_mem_resp_valid(dcache_mem_resp_valid),
+        .dcache_mem_resp_data(dcache_mem_resp_data),
+        .dcache_mem_resp_id(dcache_mem_resp_id),
+        .fb_aw_valid(fb_aw_valid),
+        .fb_aw_addr(fb_aw_addr),
+        .fb_aw_len(fb_aw_len),
+        .fb_aw_size(fb_aw_size),
+        .fb_aw_burst(fb_aw_burst),
+        .fb_aw_ready(fb_aw_ready),
+        .fb_w_data(fb_w_data),
+        .fb_w_strb(fb_w_strb),
+        .fb_w_last(fb_w_last),
+        .fb_w_valid(fb_w_valid),
+        .fb_w_ready(fb_w_ready),
+        .fb_b_valid(fb_b_valid),
+        .fb_b_ready(fb_b_ready),
+        .mailbox_tx_valid(mailbox_tx_valid),
+        .mailbox_tx_ready(mailbox_tx_ready),
+        .mailbox_tx_data(mailbox_tx_data),
+        .mailbox_tx_dest_id(mailbox_tx_dest_id),
+        .mailbox_rx_valid(mailbox_rx_valid),
+        .mailbox_rx_ready(mailbox_rx_ready),
+        .mailbox_rx_data(mailbox_rx_data),
+        .mailbox_rx_dest_id(mailbox_rx_dest_id)
     );
 
     // Waveform dump for debugging
@@ -117,7 +200,6 @@ module compute_unit_full_tb;
     // Reset and ready
     initial begin
         rst_n = 1'b0;
-        data_req_ready = 1'b1; // always-ready global memory model
         repeat (5) @(posedge clk);
         rst_n = 1'b1;
     end
@@ -218,11 +300,6 @@ module compute_unit_full_tb;
     // --------------------------------------------------------------
     // Instruction ROM
     // --------------------------------------------------------------
-    // NOTE: fetch is 64-bit aligned to 8 bytes. The core provides a byte address in inst_addr.
-    // We index ROM in 32-bit words, with inst_rdata[31:0] = word at inst_addr+0 and
-    // inst_rdata[63:32] = word at inst_addr+4.
-    //
-    // Keep ROM_WORDS a power-of-two so link-address checks can do cheap modulo masking.
     localparam int ROM_WORDS     = 4096;
     localparam int ROM_WORD_BITS = $clog2(ROM_WORDS);
     localparam int ROM_PAIR_BITS = ROM_WORD_BITS - 1; // 2 words per 64-bit fetch
@@ -232,16 +309,9 @@ module compute_unit_full_tb;
     logic [31:0] rom [0:ROM_WORDS-1];
     int exp_jal_link;
 
-    wire [ROM_PAIR_BITS-1:0] inst_pair_idx = inst_addr[ROM_PAIR_BITS+2:3];
-    wire [ROM_WORD_BITS-1:0] inst_word_idx0 = {inst_pair_idx, 1'b0};
-    wire [ROM_WORD_BITS-1:0] inst_word_idx1 = {inst_pair_idx, 1'b1};
-
-    assign inst_rdata = {rom[inst_word_idx1], rom[inst_word_idx0]};
-
     // --------------------------------------------------------------
-    // Global memory model (32-bit words) + simple response FIFO
+    // Global memory model (32-bit words)
     // --------------------------------------------------------------
-    // Grow backing store to 64KB to avoid accidental wraparound when debugging
     localparam int MEM_WORDS = 16384; // 64KB
     localparam logic [31:0] BASE_ADDR = 32'hFFFF_F800; // addr[31]=1 to select global
     localparam logic [31:0] DONE_OFF  = 32'h0000_01F0;
@@ -265,77 +335,287 @@ module compute_unit_full_tb;
         mem_index = (addr - BASE_ADDR) >> 2;
     endfunction
 
-    localparam int RESP_DEPTH = 32;
-    logic              resp_valid   [0:RESP_DEPTH-1];
-    logic [4:0]        resp_rd      [0:RESP_DEPTH-1];
-    logic [31:0]       resp_data_q  [0:RESP_DEPTH-1];
-    logic [4:0]        resp_wp;
-    logic [4:0]        resp_rp;
-    logic              resp_empty;
+    // Tie-offs for unused legacy/global paths
+    assign data_req_ready  = 1'b1;
+    assign data_resp_valid = 1'b0;
+    assign data_resp_rd    = '0;
+    assign data_resp_data  = 32'h0;
 
-    assign resp_empty = (resp_wp == resp_rp);
+    assign mailbox_tx_ready  = 1'b1;
+    assign mailbox_rx_valid  = 1'b0;
+    assign mailbox_rx_data   = '0;
+    assign mailbox_rx_dest_id = '0;
+    assign mailbox_rx_ready  = 1'b1;
 
-    always @(posedge clk) begin
+    assign fb_aw_ready = 1'b1;
+    assign fb_w_ready  = 1'b1;
+    assign fb_b_valid  = 1'b0;
+
+    // Always-ready backing memory
+    assign dcache_mem_req_ready = 1'b1;
+
+    // I-cache miss handler (1-cycle latency)
+    assign inst_miss_req_ready = 1'b1;
+    int if_debug_prints;
+    always_ff @(posedge clk) begin
         if (!rst_n) begin
-            resp_wp        <= '0;
-            resp_rp        <= '0;
-            data_resp_valid<= 1'b0;
-            data_resp_rd   <= '0;
-            data_resp_data <= 32'h0;
-            for (int i = 0; i < RESP_DEPTH; i++) begin
-                resp_valid[i]  <= 1'b0;
-                resp_rd[i]     <= '0;
-                resp_data_q[i] <= 32'h0;
-            end
+            inst_miss_resp_valid <= 1'b0;
+            inst_miss_resp_data  <= 64'h0;
+            inst_addr            <= 32'h0;
+            inst_rdata           <= 64'h0;
+            if_debug_prints      <= 0;
         end else begin
-            // Accept requests (single-cycle accept)
-            if (data_req_valid && data_req_ready) begin
-                if (data_req_is_load) begin
-                    int idx;
-                    idx = mem_index(data_req_addr);
-                    resp_valid[resp_wp]  <= 1'b1;
-                    resp_rd[resp_wp]     <= data_req_rd;
-                    resp_data_q[resp_wp] <= mem[idx];
-                    resp_wp <= resp_wp + 1'b1;
+            inst_miss_resp_valid <= 1'b0;
+            if ((if_debug_prints < 32) && (dut.if_pc >= 32'h00000428) && (dut.if_pc <= 32'h00000438)) begin
+                $display("DEBUG: IF @%08h if_valid=%0b inst0_valid=%0b inst1_valid=%0b inst0=%08h inst1=%08h issue0=%0b issue1=%0b accept0=%0b accept1=%0b stall_issue=%0b pc_adv=%0d",
+                         dut.if_pc, dut.if_valid, dut.if_inst0_valid, dut.if_inst1_valid, dut.if_inst0, dut.if_inst1,
+                         dut.issue0_valid, dut.issue1_valid, dut.accept0, dut.accept1, dut.stall_issue, dut.pc_advance_bytes);
+                if_debug_prints <= if_debug_prints + 1;
+            end
 
-                    // Debug: gfx descriptor window reads (BASE+0x500..0x5FF)
-                    if ((data_req_addr >= (BASE_ADDR + 32'h0000_0500)) && (data_req_addr < (BASE_ADDR + 32'h0000_0600))) begin
-                        $display("%0t TB_MEM_RD addr=%08h idx=%0d mem=%08h rd=%0d", $time, data_req_addr, idx, mem[idx], data_req_rd);
-                    end
-                end else begin
-                    int idx;
-                    idx = mem_index(data_req_addr);
-                    mem[idx] <= data_req_wdata;
+            if (dut.lsu0_req_valid && (dut.lsu0_req_type == 2'b01) && (dut.lsu0_req_addr == BASE_ADDR + DONE_OFF)) begin
+                $display("DEBUG: LSU0 STORE done addr=%08h wdata[31:0]=%08h wstrb=%02h vec=%0b vmask=%1h ready=%0b",
+                         dut.lsu0_req_addr, dut.lsu0_req_wdata[31:0], dut.lsu0_req_wstrb[7:0], dut.lsu0_req_is_vector, dut.lsu0_req_vec_wmask, dut.lsu0_dc_req_ready);
+            end
+            if (dut.valuv_wb_valid && (dut.valuv_wb_rd == 5'd19) && (dut.valuv_wb_is_scalar === 1'b0)) begin
+                $display("DEBUG: FP16 VMAX WB v19 data=%032h @%0t", dut.valuv_wb_data, $time);
+            end
+            if (inst_miss_req_valid && inst_miss_req_ready) begin
+                automatic logic [ROM_PAIR_BITS-1:0] pair_idx;
+                automatic logic [ROM_WORD_BITS-1:0] idx0, idx1;
+                pair_idx = inst_miss_req_addr[ROM_PAIR_BITS+2:3];
+                idx0 = {pair_idx, 1'b0};
+                idx1 = {pair_idx, 1'b1};
+                inst_addr  <= inst_miss_req_addr;
+                inst_rdata <= {rom[idx1], rom[idx0]};
+                inst_miss_resp_data  <= {rom[idx1], rom[idx0]};
+                inst_miss_resp_valid <= 1'b1;
+            end
+        end
+    end
 
-                    // Debug: flag any stores into the descriptor window
-                    if ((data_req_addr >= (BASE_ADDR + 32'h0000_0500)) && (data_req_addr < (BASE_ADDR + 32'h0000_0600))) begin
-                        $display("%0t TB_MEM_ST addr=%08h idx=%0d wdata=%08h", $time, data_req_addr, idx, data_req_wdata);
-                    end
+    // ------------------------------------------------------------------
+    // DONE store watchdog: ensure WT is issued to memory after store hits L1
+    // ------------------------------------------------------------------
+    logic done_store_watch;
+    logic done_wt_seen;
+    logic done_mem_seen;
+    logic done_pc_seen;
+    int   done_store_timer;
+    int   done_pc_timer;
+    logic prev_wt_pending;
 
-                    // Debug: branch marker writes (used by early control-flow smoke tests)
-                    if ((data_req_addr == MARK_BEQ_FALLTHRU) || (data_req_addr == MARK_BEQ_TARGET)
-                        || (data_req_addr == MARK_BNE_FALLTHRU) || (data_req_addr == MARK_BNE_TARGET)) begin
-                        $display(
-                            "%0t TB_MARK_ST addr=%08h wdata=%08h (x4=%08h x5=%08h)",
-                            $time,
-                            data_req_addr,
-                            data_req_wdata,
-                            dut.u_regfile_scalar.mem[5'd4],
-                            dut.u_regfile_scalar.mem[5'd5]
-                        );
-                    end
+    always_ff @(posedge clk) begin
+        if (!rst_n) begin
+            done_store_watch <= 1'b0;
+            done_wt_seen <= 1'b0;
+            done_mem_seen <= 1'b0;
+            done_pc_seen <= 1'b0;
+            done_store_timer <= 0;
+            done_pc_timer <= 0;
+            prev_wt_pending <= 1'b0;
+        end else begin
+            // Track when PC reaches the halt loop (post-DONE sequence)
+            if (!done_pc_seen && (dut.if_pc == 32'h00000438)) begin
+                done_pc_seen <= 1'b1;
+                done_pc_timer <= 0;
+                $display("TB_MON: reached halt loop PC @%0t", $time);
+            end
+            if (done_pc_seen && !done_mem_seen) begin
+                done_pc_timer <= done_pc_timer + 1;
+                if (done_pc_timer > 512) begin
+                    $display("TB_MON: DONE store never observed in mem stage after halt loop; mem_valid=%0b is_store=%0b mem_addr=%08h",
+                             dut.mem_valid, dut.mem_ctrl.is_store, dut.mem_addr);
+                    $fatal(1, "DONE store missing: did not reach mem stage");
                 end
             end
 
-            // Drive responses (one per cycle)
-            if (!resp_empty && resp_valid[resp_rp]) begin
-                data_resp_valid <= 1'b1;
-                data_resp_rd    <= resp_rd[resp_rp];
-                data_resp_data  <= resp_data_q[resp_rp];
-                resp_valid[resp_rp] <= 1'b0;
-                resp_rp <= resp_rp + 1'b1;
-            end else begin
-                data_resp_valid <= 1'b0;
+            // Track wt_pending transitions
+            if (dut.u_dcache.wt_pending_valid && !prev_wt_pending) begin
+                $display("TB_MON: wt_pending set addr=%08h id=%0d @%0t", dut.u_dcache.wt_pending_addr, dut.u_dcache.wt_pending_id, $time);
+            end
+            if (!dut.u_dcache.wt_pending_valid && prev_wt_pending) begin
+                $display("TB_MON: wt_pending cleared @%0t", $time);
+            end
+            prev_wt_pending <= dut.u_dcache.wt_pending_valid;
+
+            // Observe store in MEM stage
+            if (dut.mem_valid && dut.mem_ctrl.is_store && (dut.mem_addr == BASE_ADDR + DONE_OFF)) begin
+                done_mem_seen <= 1'b1;
+                $display("TB_MON: mem-stage DONE store @%0t", $time);
+            end
+
+            // Log when LSU0 emits a DONE store toward D-cache
+            if (dut.lsu0_req_valid && (dut.lsu0_req_type == 2'b01) && (dut.lsu0_req_addr == BASE_ADDR + DONE_OFF)) begin
+                $display("TB_MON: LSU0 req DONE addr=%08h ready=%0b dc_ready=%0b @%0t",
+                         dut.lsu0_req_addr, dut.lsu0_req_ready, dut.lsu0_dc_req_ready, $time);
+            end
+
+            // Start watchdog when DONE store handshakes into D-cache
+            if (dut.lsu0_req_valid && dut.lsu0_dc_req_ready && (dut.lsu0_req_type == 2'b01) && (dut.lsu0_req_addr == BASE_ADDR + DONE_OFF)) begin
+                done_store_watch <= 1'b1;
+                done_wt_seen <= 1'b0;
+                done_store_timer <= 0;
+                $display("TB_MON: arm DONE watchdog @%0t", $time);
+            end
+
+            // Detect WT request covering DONE line
+            if (dut.u_dcache.mem_req_valid_r && (dut.u_dcache.mem_req_src_r == dut.u_dcache.MEM_SRC_L1_WT)) begin
+                logic covers_done;
+                int done_word_idx;
+                logic [31:0] done_word_wdata;
+                covers_done = (dut.u_dcache.mem_req_addr_r <= (BASE_ADDR + DONE_OFF)) &&
+                              ((dut.u_dcache.mem_req_addr_r + 32'd64) > (BASE_ADDR + DONE_OFF));
+                done_word_idx = ((BASE_ADDR + DONE_OFF) - dut.u_dcache.mem_req_addr_r) >> 2;
+                done_word_wdata = dut.u_dcache.mem_req_wdata_r[done_word_idx*32 +: 32];
+                $display("TB_MON: WT req addr=%08h rw=%0b wstrb=%02h covers_done=%0b done_wdata=%08h @%0t",
+                         dut.u_dcache.mem_req_addr_r,
+                         dut.u_dcache.mem_req_rw_r,
+                         dut.u_dcache.mem_req_wstrb_r,
+                         covers_done,
+                         done_word_wdata,
+                         $time);
+                if (covers_done) begin
+                    done_wt_seen <= 1'b1;
+                    done_store_watch <= 1'b0;
+                end
+            end
+
+            // Timer and assertion
+            if (done_store_watch && !done_wt_seen) begin
+                done_store_timer <= done_store_timer + 1;
+                if (done_store_timer > 512) begin
+                    $display("TB_MON: DONE WT missing >512 cycles after store; mem_req_valid=%0b src=%0d addr=%08h wt_pending=%0b mem_busy=%0b",
+                             dut.u_dcache.mem_req_valid_r, dut.u_dcache.mem_req_src_r, dut.u_dcache.mem_req_addr_r,
+                             dut.u_dcache.wt_pending_valid, dut.u_dcache.mem_busy);
+                    $fatal(1, "DONE watchdog timeout: write-through not observed");
+                end
+            end
+        end
+    end
+
+    // D-cache backing memory: accept full-line transactions and return 64-bit beats
+    localparam int DCACHE_LINE_BYTES = 64;
+    localparam int DCACHE_BEATS      = DCACHE_LINE_BYTES / 8;
+
+    logic        dcache_tx_active;
+    logic        dcache_tx_rw;
+    logic [31:0] dcache_tx_addr;
+    logic [7:0]  dcache_tx_id_q;
+    logic [2:0]  dcache_tx_beat;
+    logic [511:0] dcache_tx_wdata;
+    logic [7:0]  dcache_tx_wstrb;
+
+    function automatic [63:0] dcache_read_beat(input logic [31:0] line_addr, input logic [2:0] beat);
+        int base_word;
+        begin
+            dcache_read_beat = 64'h0;
+            if ((line_addr - BASE_ADDR) < (MEM_WORDS*4)) begin
+                base_word = ((line_addr - BASE_ADDR) >> 2) + (beat*2);
+                dcache_read_beat[31:0]  = mem[base_word];
+                dcache_read_beat[63:32] = mem[base_word + 1];
+            end
+        end
+    endfunction
+
+    task automatic dcache_write_line(
+        input logic [31:0] line_addr,
+        input logic [511:0] line_data,
+        input logic [7:0]  line_wstrb
+    );
+        int base_word;
+        int done_idx;
+        logic [31:0] done_w;
+        done_idx = ((BASE_ADDR + DONE_OFF) - line_addr) >> 2;
+        if ((line_addr <= (BASE_ADDR + DONE_OFF)) && ((line_addr + 32'd64) > (BASE_ADDR + DONE_OFF))) begin
+            done_w = line_data[done_idx*32 +: 32];
+            $display("TB_MON: dcache_write_line addr=%08h wstrb=%02h done_wdata=%08h @%0t", line_addr, line_wstrb, done_w, $time);
+        end
+        for (int b = 0; b < DCACHE_BEATS; b++) begin
+            if (line_wstrb[b]) begin
+                base_word = ((line_addr - BASE_ADDR) >> 2) + (b*2);
+                if ((line_addr - BASE_ADDR) < (MEM_WORDS*4)) begin
+                    mem[base_word]     <= line_data[b*64 +: 32];
+                    mem[base_word + 1] <= line_data[b*64 + 32 +: 32];
+
+                    // Debug windows and markers
+                    if ((line_addr + (b*8) >= (BASE_ADDR + 32'h0000_0500)) && (line_addr + (b*8) < (BASE_ADDR + 32'h0000_0600))) begin
+                        $display("%0t TB_MEM_ST addr=%08h wdata=%08h", $time, line_addr + (b*8), line_data[b*64 +: 32]);
+                    end
+                    if (((line_addr + (b*8)) == MARK_BEQ_FALLTHRU) || ((line_addr + (b*8)) == MARK_BEQ_TARGET)
+                        || ((line_addr + (b*8)) == MARK_BNE_FALLTHRU) || ((line_addr + (b*8)) == MARK_BNE_TARGET)) begin
+                        $display("%0t TB_MARK_ST addr=%08h wdata=%08h (x4=%08h x5=%08h)",
+                                 $time,
+                                 line_addr + (b*8),
+                                 line_data[b*64 +: 32],
+                                 dut.u_regfile_scalar.mem[5'd4],
+                                 dut.u_regfile_scalar.mem[5'd5]);
+                    end
+                    if (((line_addr + (b*8) + 4) == MARK_BEQ_FALLTHRU) || ((line_addr + (b*8) + 4) == MARK_BEQ_TARGET)
+                        || ((line_addr + (b*8) + 4) == MARK_BNE_FALLTHRU) || ((line_addr + (b*8) + 4) == MARK_BNE_TARGET)) begin
+                        $display("%0t TB_MARK_ST addr=%08h wdata=%08h (x4=%08h x5=%08h)",
+                                 $time,
+                                 line_addr + (b*8) + 4,
+                                 line_data[b*64 + 32 +: 32],
+                                 dut.u_regfile_scalar.mem[5'd4],
+                                 dut.u_regfile_scalar.mem[5'd5]);
+                    end
+                    // Done flag tracker: print when the DONE_OFF word or its sibling word is written.
+                    if ((line_addr + (b*8) == (BASE_ADDR + DONE_OFF)) || (line_addr + (b*8) + 4 == (BASE_ADDR + DONE_OFF))) begin
+                        $display("%0t TB_DONE_ST line_addr=%08h beat=%0d word0=%08h word1=%08h x1=%08h x15=%08h",
+                                 $time, line_addr, b, line_data[b*64 +: 32], line_data[b*64 + 32 +: 32],
+                                 dut.u_regfile_scalar.mem[5'd1], dut.u_regfile_scalar.mem[5'd15]);
+                    end
+                    if ((line_addr + (b*8)) == (BASE_ADDR + 32'h0000_0250)) begin
+                        $display("%0t TB_FP16_VMAX_ST line_addr=%08h beat=%0d word0=%08h word1=%08h",
+                                 $time, line_addr, b, line_data[b*64 +: 32], line_data[b*64 + 32 +: 32]);
+                    end
+                end
+            end
+        end
+    endtask
+
+    always_ff @(posedge clk) begin
+        if (!rst_n) begin
+            dcache_tx_active      <= 1'b0;
+            dcache_tx_rw          <= 1'b0;
+            dcache_tx_addr        <= 32'h0;
+            dcache_tx_id_q        <= 8'h0;
+            dcache_tx_beat        <= 3'd0;
+            dcache_tx_wdata       <= '0;
+            dcache_tx_wstrb       <= '0;
+            dcache_mem_resp_valid <= 1'b0;
+            dcache_mem_resp_data  <= 64'h0;
+            dcache_mem_resp_id    <= 8'h0;
+        end else begin
+            dcache_mem_resp_valid <= 1'b0;
+
+            if (dcache_mem_req_valid && dcache_mem_req_ready) begin
+                dcache_tx_active <= !dcache_mem_req_rw;
+                dcache_tx_rw     <= dcache_mem_req_rw;
+                dcache_tx_addr   <= dcache_mem_req_addr;
+                dcache_tx_id_q   <= dcache_mem_req_id;
+                dcache_tx_wdata  <= dcache_mem_req_wdata;
+                dcache_tx_wstrb  <= dcache_mem_req_wstrb;
+                dcache_tx_beat   <= 3'd0;
+
+                if (dcache_mem_req_rw) begin
+                    $display("TB_MON: mem_req WRITE addr=%08h wstrb=%02h @%0t", dcache_mem_req_addr, dcache_mem_req_wstrb, $time);
+                    dcache_write_line(dcache_mem_req_addr, dcache_mem_req_wdata, dcache_mem_req_wstrb);
+                    dcache_mem_resp_valid <= 1'b1;
+                    dcache_mem_resp_id    <= dcache_mem_req_id;
+                    dcache_mem_resp_data  <= 64'h0;
+                end
+            end else if (dcache_tx_active) begin
+                dcache_mem_resp_valid <= 1'b1;
+                dcache_mem_resp_id    <= dcache_tx_id_q;
+                dcache_mem_resp_data  <= dcache_read_beat(dcache_tx_addr, dcache_tx_beat);
+
+                if (dcache_tx_beat == DCACHE_BEATS-1) begin
+                    dcache_tx_active <= 1'b0;
+                end else begin
+                    dcache_tx_beat <= dcache_tx_beat + 1'b1;
+                end
             end
         end
     end
@@ -353,6 +633,15 @@ module compute_unit_full_tb;
             if (dbg_vmask_programmed && !dbg_vsel_captured && (dut.valuv_wb_valid === 1'b1) && (dut.valuv_wb_rd == 5'd26) && (dut.valuv_wb_is_scalar === 1'b0)) begin
                 dbg_vsel_captured <= 1'b1;
                 dbg_vsel_wb_data  <= dut.valuv_wb_data;
+            end
+            if (dut.v_we && (dut.v_waddr == 5'd19)) begin
+                $display("DEBUG: v19 COMMIT v_wdata=%032h @%0t", dut.v_wdata, $time);
+            end
+            if (dut.rr_valid && dut.rr_ctrl.is_store && dut.rr_ctrl.is_vector && (dut.rr_ctrl.rs2 == 5'd19)) begin
+                $display("DEBUG: RR VST v19 v_rdata_b=%032h stall_pipe=%0d @%0t", dut.v_rdata_b, dut.stall_pipe, $time);
+            end
+            if (dut.mem_valid && dut.mem_ctrl.is_store && dut.mem_ctrl.is_vector && (dut.mem_addr == (BASE_ADDR + 32'h250))) begin
+                $display("DEBUG: MEM VST v19 mem_vec_wdata=%032h @%0t", dut.mem_vec_wdata, $time);
             end
         end
     end
@@ -1004,8 +1293,12 @@ module compute_unit_full_tb;
 
         // Done flag: store 1 to BASE+DONE_OFF and flush so TB can observe completion.
         rom[pc >> 2] = i_type(1, 5'd0, 3'b000, 5'd15, OP_INT_IMM); pc += 4; // x15=1
-        rom[pc >> 2] = s_type(DONE_OFF, 5'd1, 5'd15, 3'b010, OP_STORE); pc += 4;
-        rom[pc >> 2] = i_type(0, 5'd0, 3'b000, 5'd0, OP_SYSTEM); pc += 4;
+        rom[pc >> 2] = s_type(DONE_OFF, 5'd1, 5'd15, 3'b010, OP_STORE); // SW x15, DONE_OFF(x1)
+        $display("ROM final DONE store @pc=%0h inst=%08h", pc, rom[pc >> 2]);
+        pc += 4;
+        rom[pc >> 2] = i_type(0, 5'd0, 3'b000, 5'd0, OP_SYSTEM); // final MEMBAR
+        $display("ROM final MEMBAR @pc=%0h inst=%08h", pc, rom[pc >> 2]);
+        pc += 4;
 
         // Halt in-place so the instruction fetch address doesn't wrap and re-run the ROM.
         // IMPORTANT: The core can advance PC by 8B (dual-issue). Also, control-flow in the
@@ -1016,6 +1309,7 @@ module compute_unit_full_tb;
             pc += 4;
         end
         rom[pc >> 2] = 32'h0000_006F; // JAL x0, 0
+        $display("ROM final HALT JAL @pc=%0h inst=%08h", pc, rom[pc >> 2]);
     end
 
     // --------------------------------------------------------------
@@ -1343,21 +1637,20 @@ module compute_unit_full_tb;
                          dut.gp_issue_op_b);
             end
 
-            if (data_req_valid && data_req_ready) begin
+            if (dcache_mem_req_valid && dcache_mem_req_ready) begin
                 req_count <= req_count + 1;
-                if (data_req_is_load) load_req_count <= load_req_count + 1;
+                if (!dcache_mem_req_rw) load_req_count <= load_req_count + 1;
                 else store_req_count <= store_req_count + 1;
 
                 // Print the first few requests, plus a focused window around the vector/atomic region.
                 // (Atomic is expected to update BASE+48..+60 and later we copy to BASE+80..+92.)
                 if (req_count < 20
-                    || (!data_req_is_load && (data_req_addr == (BASE_ADDR + 32'd64)))
-                    || (data_req_addr >= (BASE_ADDR + 32'd48) && data_req_addr < (BASE_ADDR + 32'd96))
-                    || (data_req_addr >= (BASE_ADDR + RSTATE_OFF) && data_req_addr < (BASE_ADDR + VBO_BASE_OFF))
-                    || (!data_req_is_load && (data_req_addr >= (BASE_ADDR + FB_BASE_OFF) && data_req_addr < (BASE_ADDR + FB_BASE_OFF + 32'd256)))) begin
-                    $display("%0t MEM %s addr=%08h wdata=%08h rd=%0d", $time,
-                             data_req_is_load ? "LD" : "ST",
-                             data_req_addr, data_req_wdata, data_req_rd);
+                    || (dcache_mem_req_addr >= (BASE_ADDR + 32'd32) && dcache_mem_req_addr < (BASE_ADDR + 32'd128))
+                    || (dcache_mem_req_addr >= (BASE_ADDR + RSTATE_OFF) && dcache_mem_req_addr < (BASE_ADDR + VBO_BASE_OFF))
+                    || (dcache_mem_req_addr >= (BASE_ADDR + FB_BASE_OFF) && dcache_mem_req_addr < (BASE_ADDR + FB_BASE_OFF + 32'd256))) begin
+                    $display("%0t MEM %s addr=%08h wdata[63:0]=%016h wstrb=%02h id=%0d", $time,
+                             dcache_mem_req_rw ? "ST" : "LD",
+                             dcache_mem_req_addr, dcache_mem_req_wdata[63:0], dcache_mem_req_wstrb, dcache_mem_req_id);
                 end
             end
 
@@ -1422,13 +1715,7 @@ module compute_unit_full_tb;
                 end
             end
 
-            // Is the scalar store to BASE+64 entering/leaving the WMB?
-            if (dut.u_lsu.wmb_in_valid && dut.u_lsu.wmb_in_ready && (dut.u_lsu.wmb_in_addr == (BASE_ADDR + 32'd64))) begin
-                $display("%0t WMB ENQ addr=%08h wdata=%08h wstrb=%0h", $time, dut.u_lsu.wmb_in_addr, dut.u_lsu.wmb_in_wdata, dut.u_lsu.wmb_in_wstrb);
-            end
-            if (dut.u_lsu.wmb_out_valid && dut.u_lsu.wmb_out_ready && (dut.u_lsu.wmb_out_addr == (BASE_ADDR + 32'd64))) begin
-                $display("%0t WMB DEQ addr=%08h wdata=%08h wstrb=%0h", $time, dut.u_lsu.wmb_out_addr, dut.u_lsu.wmb_out_wdata, dut.u_lsu.wmb_out_wstrb);
-            end
+            // WMB path removed in refactored LSU; no direct probes here.
 
             if (cyc < 40) begin
                 automatic logic manual_stall0;
@@ -1563,9 +1850,16 @@ module compute_unit_full_tb;
                      dut.mem_valid, dut.mem_ctrl.is_load, dut.mem_ctrl.is_store, dut.mem_ctrl.is_vector, dut.mem_addr, dut.mem_ctrl.rd);
             $display("DEBUG: VQ  vq_count=%0d vq_valid=%b head=%0d tail=%0d valuv_ready=%0b valuv_wb_valid=%0b",
                      dut.vq_count, dut.vq_valid, dut.vq_head, dut.vq_tail, dut.valuv_ready, dut.valuv_wb_valid);
-            $display("DEBUG: LSU busy=%0b stall=%0b global_req_valid=%0b global_req_ready=%0b",
-                     dut.u_lsu.busy, dut.lsu_stall, data_req_valid, data_req_ready);
+            $display("DEBUG: LSU busy=%0b stall=%0b dcache_req_valid=%0b dcache_resp_valid=%0b tx_active=%0b",
+                     dut.lsu_busy, dut.lsu_stall, dcache_mem_req_valid, dcache_mem_resp_valid, dcache_tx_active);
             $display("DEBUG: GFX gq_count=%0d raster_busy=%0d rop_busy=%0d", dut.u_graphics_pipeline.queue_count, dut.u_graphics_pipeline.raster_busy, dut.u_graphics_pipeline.rop_busy);
+            $display("DEBUG: LSU0 req_valid=%0b req_ready=%0b dc_ready=%0b mem_valid=%0b mem_is_store=%0b mem_addr=%08h",
+                     dut.lsu0_req_valid, dut.lsu0_req_ready, dut.lsu0_dc_req_ready, dut.mem_valid, dut.mem_ctrl.is_store, dut.mem_addr);
+            $display("DEBUG: DCACHE state=%0d mem_busy=%0b mem_req_valid=%0b mem_out_src=%0d pending_valid=%0b pending_addr=%08h",
+                     dut.u_dcache.state, dut.u_dcache.mem_busy, dut.u_dcache.mem_req_valid_r, dut.u_dcache.mem_outstanding_src,
+                     dut.u_dcache.pending_valid, dut.u_dcache.pending_addr);
+            $display("DEBUG: x1(base)=%08h x15(done_val)=%08h done_word=%08h",
+                     dut.u_regfile_scalar.mem[5'd1], dut.u_regfile_scalar.mem[5'd15], mem[mem_index(BASE_ADDR + DONE_OFF)]);
             $fatal(1, "Timed out waiting for program completion (done flag)");
         end
 
@@ -1579,14 +1873,16 @@ module compute_unit_full_tb;
             // Use a 4-state-safe quiescence check: bus idle + internal units idle.
             // This avoids checking framebuffer contents before GDRAW has actually drained.
             if (
-                (data_req_valid === 1'b1)
-                || (data_resp_valid === 1'b1)
-                || (resp_empty === 1'b0)
+                (inst_miss_req_valid === 1'b1)
+                || (inst_miss_resp_valid === 1'b1)
+                || (dcache_mem_req_valid === 1'b1)
+                || (dcache_mem_resp_valid === 1'b1)
+                || (dcache_tx_active === 1'b1)
                 // Some LSU sub-states can conservatively hold busy high even when the
                 // external bus is idle. For memory-stability we primarily care about
                 // observable bus activity + GFX engine activity.
-                || ((dut.u_lsu.busy === 1'b1)
-                    && ((data_req_valid === 1'b1) || (data_resp_valid === 1'b1) || (resp_empty === 1'b0)))
+                || ((dut.lsu_busy === 1'b1)
+                    && ((dcache_mem_req_valid === 1'b1) || (dcache_mem_resp_valid === 1'b1) || (dcache_tx_active === 1'b1)))
                 || !(dut.u_graphics_pipeline.queue_count === 4'd0)
                 || (dut.u_graphics_pipeline.raster_busy === 1'b1)
                 || (dut.u_graphics_pipeline.rop_busy === 1'b1)
@@ -1599,8 +1895,8 @@ module compute_unit_full_tb;
         if (timeout >= 200000) begin
             $display("DEBUG: timeout waiting for stable quiescence");
             $display("DEBUG: stable=%0d", stable);
-            $display("DEBUG: bus: data_req_valid=%0b data_resp_valid=%0b resp_empty=%0b", data_req_valid, data_resp_valid, resp_empty);
-            $display("DEBUG: lsu.busy=%0d gq_count=%0d raster_busy=%0d rop_busy=%0d", dut.u_lsu.busy, dut.u_graphics_pipeline.queue_count, dut.u_graphics_pipeline.raster_busy, dut.u_graphics_pipeline.rop_busy);
+            $display("DEBUG: bus: inst_req=%0b inst_resp=%0b dcache_req=%0b dcache_resp=%0b tx_active=%0b", inst_miss_req_valid, inst_miss_resp_valid, dcache_mem_req_valid, dcache_mem_resp_valid, dcache_tx_active);
+            $display("DEBUG: lsu.busy=%0d gq_count=%0d raster_busy=%0d rop_busy=%0d", dut.lsu_busy, dut.u_graphics_pipeline.queue_count, dut.u_graphics_pipeline.raster_busy, dut.u_graphics_pipeline.rop_busy);
             $display("DEBUG: gfx_state=%0d", dut.u_graphics_pipeline.gfx_state);
             $display("DEBUG: tex_state=%0d", dut.u_graphics_pipeline.tex_state);
             $display("DEBUG: gq_head=%0d gq_tail=%0d", dut.u_graphics_pipeline.gq_head, dut.u_graphics_pipeline.gq_tail);
@@ -1640,10 +1936,12 @@ module compute_unit_full_tb;
             @(posedge clk);
             timeout++;
             if (
-                (data_req_valid === 1'b1)
-                || (data_resp_valid === 1'b1)
-                || (resp_empty === 1'b0)
-                || (dut.u_lsu.wmb_busy === 1'b1)
+                (inst_miss_req_valid === 1'b1)
+                || (inst_miss_resp_valid === 1'b1)
+                || (dcache_mem_req_valid === 1'b1)
+                || (dcache_mem_resp_valid === 1'b1)
+                || (dcache_tx_active === 1'b1)
+                // No WMB in refactored LSU; nothing to wait on here.
                 || !(dut.u_graphics_pipeline.queue_count === 4'd0)
                 || (dut.u_graphics_pipeline.raster_busy === 1'b1)
                 || (dut.u_graphics_pipeline.rop_busy === 1'b1)

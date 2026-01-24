@@ -52,6 +52,7 @@ module l1_cache_tb;
         .rst_n(rst_n),
         .lsu0_req_valid(req_valid),
         .lsu0_req_type(req_type),
+        .lsu0_req_atomic_op(3'b000),
         .lsu0_req_addr(req_addr),
         .lsu0_req_wdata(req_wdata),
         .lsu0_req_wstrb('0),
@@ -66,6 +67,7 @@ module l1_cache_tb;
 
         .lsu1_req_valid(lsu1_req_valid),
         .lsu1_req_type(lsu1_req_type),
+        .lsu1_req_atomic_op(3'b000),
         .lsu1_req_addr(lsu1_req_addr),
         .lsu1_req_wdata(lsu1_req_wdata),
         .lsu1_req_wstrb('0),
