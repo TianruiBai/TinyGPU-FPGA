@@ -82,6 +82,7 @@ module lsu #(
     output logic         mailbox_rd_resp_ready,
     input  logic [31:0]  mailbox_rd_resp_data,
     input  mailbox_pkg::mailbox_tag_t mailbox_rd_resp_tag,
+    output logic         mailbox_rx_ready,
 
     // Writeback toward register files
     output logic         wb_valid,

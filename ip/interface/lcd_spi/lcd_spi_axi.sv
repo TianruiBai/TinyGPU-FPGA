@@ -571,7 +571,7 @@ module lcd_spi_axi #(
                                 lcd_dc    <= 1'b1;
                             end
                             5'd9: begin // Yend LSB
-                                tx_byte   <= (FB_HEIGHT + 25)[7:0];
+                                tx_byte   <= (FB_HEIGHT + 25) & 8'hFF;
                                 tx_is_data <= 1'b1;
                                 lcd_dc    <= 1'b1;
                             end

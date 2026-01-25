@@ -173,6 +173,7 @@ module mcu_core #(
     logic [3:0]  lsu_mailbox_rd_opcode;
     logic        lsu_mailbox_rd_ready;
     logic        lsu_mailbox_rd_resp_valid;
+    logic        lsu_mailbox_rd_resp_ready;
     logic [31:0] lsu_mailbox_rd_resp_data;
     mailbox_tag_t lsu_mailbox_rd_resp_tag;
     logic        mailbox_tx_ready_int;
@@ -523,7 +524,7 @@ module mcu_core #(
         .mailbox_rd_prio(lsu_mailbox_rd_prio),
         .mailbox_rd_opcode(lsu_mailbox_rd_opcode),
         .mailbox_rd_resp_valid(lsu_mailbox_rd_resp_valid),
-        .mailbox_rd_resp_ready(mailbox_rd_resp_ready_int),
+        .mailbox_rd_resp_ready(lsu_mailbox_rd_resp_ready),
         .mailbox_rd_resp_data(lsu_mailbox_rd_resp_data),
         .mailbox_rd_resp_tag(lsu_mailbox_rd_resp_tag),
         .ex_mem_valid(ex_mem_valid),
