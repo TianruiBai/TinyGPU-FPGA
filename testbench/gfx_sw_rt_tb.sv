@@ -44,19 +44,63 @@ module gfx_sw_rt_tb;
     // ---------------------------------------------------------------------
     // DUT interfaces
     // ---------------------------------------------------------------------
-    logic [63:0] inst_rdata;
-    logic [31:0] inst_addr;
+    // Instruction miss interface (I-cache -> memory)
+    logic        inst_miss_req_valid;
+    logic [31:0] inst_miss_req_addr;
+    logic        inst_miss_req_ready;
+    logic        inst_miss_resp_valid;
+    logic [63:0] inst_miss_resp_data;
 
+    // Legacy data interface (unused)
     logic        data_req_valid;
     logic        data_req_is_load;
     logic [31:0] data_req_addr;
     logic [31:0] data_req_wdata;
     logic [4:0]  data_req_rd;
     logic        data_req_ready;
-
     logic        data_resp_valid;
     logic [4:0]  data_resp_rd;
     logic [31:0] data_resp_data;
+
+    // D-cache memory interface (L1 -> memory)
+    logic        dcache_mem_req_valid;
+    logic        dcache_mem_req_rw;
+    logic [31:0] dcache_mem_req_addr;
+    logic [7:0]  dcache_mem_req_size;
+    logic [3:0]  dcache_mem_req_qos;
+    logic [7:0]  dcache_mem_req_id;
+    logic [511:0] dcache_mem_req_wdata;
+    logic [7:0]  dcache_mem_req_wstrb;
+    logic        dcache_mem_req_ready;
+    logic        dcache_mem_resp_valid;
+    logic [63:0] dcache_mem_resp_data;
+    logic [7:0]  dcache_mem_resp_id;
+
+    // Framebuffer AXI (unused)
+    logic        fb_aw_valid;
+    logic [31:0] fb_aw_addr;
+    logic [7:0]  fb_aw_len;
+    logic [2:0]  fb_aw_size;
+    logic [1:0]  fb_aw_burst;
+    logic        fb_aw_ready;
+    logic [31:0] fb_w_data;
+    logic [3:0]  fb_w_strb;
+    logic        fb_w_last;
+    logic        fb_w_valid;
+    logic        fb_w_ready;
+    logic        fb_b_valid;
+    logic        fb_b_ready;
+
+    // Mailbox (tied off)
+    import mailbox_pkg::*;
+    mailbox_pkg::mailbox_flit_t mailbox_tx_data;
+    mailbox_pkg::mailbox_flit_t mailbox_rx_data;
+    logic mailbox_tx_valid;
+    logic mailbox_tx_ready;
+    logic [mailbox_pkg::NODE_ID_WIDTH-1:0] mailbox_tx_dest_id;
+    logic mailbox_rx_valid;
+    logic mailbox_rx_ready;
+    logic [mailbox_pkg::NODE_ID_WIDTH-1:0] mailbox_rx_dest_id;
 
     logic err_fp_overflow;
     logic err_fp_invalid;
@@ -70,8 +114,11 @@ module gfx_sw_rt_tb;
     compute_unit_top dut (
         .clk(clk),
         .rst_n(rst_n),
-        .inst_rdata(inst_rdata),
-        .inst_addr(inst_addr),
+        .inst_miss_req_valid(inst_miss_req_valid),
+        .inst_miss_req_addr(inst_miss_req_addr),
+        .inst_miss_req_ready(inst_miss_req_ready),
+        .inst_miss_resp_valid(inst_miss_resp_valid),
+        .inst_miss_resp_data(inst_miss_resp_data),
         .data_req_valid(data_req_valid),
         .data_req_is_load(data_req_is_load),
         .data_req_addr(data_req_addr),
@@ -87,16 +134,49 @@ module gfx_sw_rt_tb;
         .data_req_ready(data_req_ready),
         .data_resp_valid(data_resp_valid),
         .data_resp_rd(data_resp_rd),
-        .data_resp_data(data_resp_data)
+        .data_resp_data(data_resp_data),
+        .dcache_mem_req_valid(dcache_mem_req_valid),
+        .dcache_mem_req_rw(dcache_mem_req_rw),
+        .dcache_mem_req_addr(dcache_mem_req_addr),
+        .dcache_mem_req_size(dcache_mem_req_size),
+        .dcache_mem_req_qos(dcache_mem_req_qos),
+        .dcache_mem_req_id(dcache_mem_req_id),
+        .dcache_mem_req_wdata(dcache_mem_req_wdata),
+        .dcache_mem_req_wstrb(dcache_mem_req_wstrb),
+        .dcache_mem_req_ready(dcache_mem_req_ready),
+        .dcache_mem_resp_valid(dcache_mem_resp_valid),
+        .dcache_mem_resp_data(dcache_mem_resp_data),
+        .dcache_mem_resp_id(dcache_mem_resp_id),
+        .fb_aw_valid(fb_aw_valid),
+        .fb_aw_addr(fb_aw_addr),
+        .fb_aw_len(fb_aw_len),
+        .fb_aw_size(fb_aw_size),
+        .fb_aw_burst(fb_aw_burst),
+        .fb_aw_ready(fb_aw_ready),
+        .fb_w_data(fb_w_data),
+        .fb_w_strb(fb_w_strb),
+        .fb_w_last(fb_w_last),
+        .fb_w_valid(fb_w_valid),
+        .fb_w_ready(fb_w_ready),
+        .fb_b_valid(fb_b_valid),
+        .fb_b_ready(fb_b_ready),
+        .mailbox_tx_valid(mailbox_tx_valid),
+        .mailbox_tx_ready(mailbox_tx_ready),
+        .mailbox_tx_data(mailbox_tx_data),
+        .mailbox_tx_dest_id(mailbox_tx_dest_id),
+        .mailbox_rx_valid(mailbox_rx_valid),
+        .mailbox_rx_ready(mailbox_rx_ready),
+        .mailbox_rx_data(mailbox_rx_data),
+        .mailbox_rx_dest_id(mailbox_rx_dest_id)
     );
 
     // ---------------------------------------------------------------------
     // Wave dump (optional)
     // ---------------------------------------------------------------------
-    // initial begin
-    //     $dumpfile("gfx_sw_rt_tb.vcd");
-    //     $dumpvars(0, gfx_sw_rt_tb);
-    // end
+    initial begin
+         $dumpfile("gfx_sw_rt_tb.vcd");
+         $dumpvars(0, gfx_sw_rt_tb);
+    end
 
     // ---------------------------------------------------------------------
     // Mini assembler helpers
@@ -130,7 +210,10 @@ module gfx_sw_rt_tb;
     // ---------------------------------------------------------------------
     localparam int ROM_WORDS = 4096;
     logic [31:0] rom [0:ROM_WORDS-1];
-    assign inst_rdata = {rom[{inst_addr[13:3], 1'b1}], rom[{inst_addr[13:3], 1'b0}]};
+
+    // I-cache miss handler (1-cycle latency)
+    logic        inst_pending;
+    logic [31:0] inst_req_addr_q;
 
     // ---------------------------------------------------------------------
     // Global memory model
@@ -142,15 +225,104 @@ module gfx_sw_rt_tb;
         mem_index = (addr - BASE_ADDR) >> 2;
     endfunction
 
-    // Simple response FIFO
-    localparam int RESP_DEPTH = 256;
-    logic        resp_valid   [0:RESP_DEPTH-1];
-    logic [4:0]  resp_rd_q    [0:RESP_DEPTH-1];
-    logic [31:0] resp_data_q  [0:RESP_DEPTH-1];
-    logic [$clog2(RESP_DEPTH)-1:0] resp_wp;
-    logic [$clog2(RESP_DEPTH)-1:0] resp_rp;
+    // D-cache backing memory responder
+    localparam int DCACHE_LINE_BYTES = 64;
+    localparam int DCACHE_BEATS      = DCACHE_LINE_BYTES / 8;
 
-    assign data_req_ready = 1'b1;
+    logic        dcache_tx_active;
+    logic        dcache_tx_rw;
+    logic [31:0] dcache_tx_addr;
+    logic [7:0]  dcache_tx_id_q;
+    logic [2:0]  dcache_tx_beat;
+    logic [511:0] dcache_tx_wdata;
+    logic [7:0]  dcache_tx_wstrb;
+
+    function automatic [63:0] dcache_read_beat(input logic [31:0] line_addr, input logic [2:0] beat);
+        int base_word;
+        begin
+            base_word = mem_index(line_addr) + (beat * 2);
+            dcache_read_beat = {mem[base_word + 1], mem[base_word + 0]};
+        end
+    endfunction
+
+    task automatic dcache_write_line(
+        input logic [31:0] line_addr,
+        input logic [511:0] line_data,
+        input logic [7:0]  line_wstrb
+    );
+        int base_word;
+        int done_idx;
+        logic [31:0] done_w;
+        begin
+            base_word = mem_index(line_addr);
+            done_idx = ((BASE_ADDR + DONE_OFF) - line_addr) >> 2;
+            done_w = mem[base_word + done_idx];
+
+            if ((line_addr <= (BASE_ADDR + DONE_OFF)) && ((line_addr + 32'd64) > (BASE_ADDR + DONE_OFF))) begin
+                for (int b = 0; b < DCACHE_BEATS; b++) begin
+                    int word_idx;
+                    logic [31:0] w0;
+                    logic [31:0] w1;
+                    word_idx = base_word + (b * 2);
+                    w0 = mem[word_idx + 0];
+                    w1 = mem[word_idx + 1];
+                    for (int cbyte = 0; cbyte < 4; cbyte++) begin
+                        if (line_wstrb[(b*8) + cbyte]) begin
+                            w0[(cbyte*8) +: 8] = line_data[(b*64) + (cbyte*8) +: 8];
+                        end
+                        if (line_wstrb[(b*8) + cbyte + 4]) begin
+                            w1[(cbyte*8) +: 8] = line_data[(b*64) + (cbyte*8) + 32 +: 8];
+                        end
+                    end
+                    mem[word_idx + 0] = w0;
+                    mem[word_idx + 1] = w1;
+                end
+
+                done_w = mem[mem_index(BASE_ADDR + DONE_OFF)];
+            end else begin
+                for (int b = 0; b < DCACHE_BEATS; b++) begin
+                    int word_idx;
+                    logic [31:0] w0;
+                    logic [31:0] w1;
+                    word_idx = base_word + (b * 2);
+                    w0 = mem[word_idx + 0];
+                    w1 = mem[word_idx + 1];
+                    for (int cbyte = 0; cbyte < 4; cbyte++) begin
+                        if (line_wstrb[(b*8) + cbyte]) begin
+                            w0[(cbyte*8) +: 8] = line_data[(b*64) + (cbyte*8) +: 8];
+                        end
+                        if (line_wstrb[(b*8) + cbyte + 4]) begin
+                            w1[(cbyte*8) +: 8] = line_data[(b*64) + (cbyte*8) + 32 +: 8];
+                        end
+                    end
+                    mem[word_idx + 0] = w0;
+                    mem[word_idx + 1] = w1;
+                end
+            end
+
+            if (done_w != 32'h0) begin
+                $display("TB: DONE write value=%08h", done_w);
+            end
+        end
+    endtask
+
+    assign data_req_ready  = 1'b1;
+    assign data_resp_valid = 1'b0;
+    assign data_resp_rd    = '0;
+    assign data_resp_data  = 32'h0;
+
+    assign mailbox_tx_ready   = 1'b1;
+    assign mailbox_rx_valid   = 1'b0;
+    assign mailbox_rx_data    = '0;
+    assign mailbox_rx_dest_id = '0;
+    assign mailbox_rx_ready   = 1'b1;
+
+    assign fb_aw_ready = 1'b1;
+    assign fb_w_ready  = 1'b1;
+    assign fb_b_valid  = 1'b0;
+
+    assign dcache_mem_req_ready = 1'b1;
+    assign inst_miss_req_ready  = 1'b1;
 
     // ---------------------------------------------------------------------
     // Memory initialization (LUTs only; compute unit does all rendering)
@@ -553,39 +725,71 @@ module gfx_sw_rt_tb;
     endtask
 
     // ---------------------------------------------------------------------
-    // Memory request/response + frame trigger
+    // I-cache miss response + D-cache memory responder + frame trigger
     // ---------------------------------------------------------------------
     int frame_seen;
 
     always_ff @(posedge clk) begin
         if (!rst_n) begin
-            resp_wp <= '0;
-            resp_rp <= '0;
-            data_resp_valid <= 1'b0;
-            data_resp_rd <= '0;
-            data_resp_data <= '0;
-            frame_seen <= 0;
-            for (int i = 0; i < RESP_DEPTH; i++) begin
-                resp_valid[i] <= 1'b0;
-                resp_rd_q[i] <= '0;
-                resp_data_q[i] <= '0;
-            end
-        end else begin
-            data_resp_valid <= 1'b0;
-            if (data_req_valid) begin
-                if (data_req_is_load) begin
-                    int idx;
-                    idx = mem_index(data_req_addr);
-                    resp_valid[resp_wp] <= 1'b1;
-                    resp_rd_q[resp_wp] <= data_req_rd;
-                    resp_data_q[resp_wp] <= mem[idx];
-                    resp_wp <= resp_wp + 1'b1;
-                end else begin
-                    int idx;
-                    idx = mem_index(data_req_addr);
-                    mem[idx] <= data_req_wdata;
+            inst_miss_resp_valid <= 1'b0;
+            inst_miss_resp_data  <= 64'h0;
+            inst_pending         <= 1'b0;
+            inst_req_addr_q      <= 32'h0;
 
-                    if (data_req_addr == (BASE_ADDR + DONE_OFF)) begin
+            dcache_mem_resp_valid <= 1'b0;
+            dcache_mem_resp_data  <= 64'h0;
+            dcache_mem_resp_id    <= 8'h0;
+            dcache_tx_active      <= 1'b0;
+            dcache_tx_rw          <= 1'b0;
+            dcache_tx_addr        <= 32'h0;
+            dcache_tx_id_q        <= 8'h0;
+            dcache_tx_beat        <= 3'd0;
+            dcache_tx_wdata       <= '0;
+            dcache_tx_wstrb       <= '0;
+
+            frame_seen <= 0;
+        end else begin
+            // I-cache miss response (1-cycle latency)
+            inst_miss_resp_valid <= 1'b0;
+            if (inst_miss_req_valid && inst_miss_req_ready && !inst_pending) begin
+                inst_pending    <= 1'b1;
+                inst_req_addr_q <= {inst_miss_req_addr[31:3], 3'b000};
+            end
+            if (inst_pending) begin
+                int widx;
+                widx = int'(inst_req_addr_q >> 2);
+                if ((widx < 0) || (widx + 1 >= ROM_WORDS)) begin
+                    $display("TB: OOB IROM access addr=%08h", inst_req_addr_q);
+                    $fatal(1);
+                end
+                inst_miss_resp_valid <= 1'b1;
+                inst_miss_resp_data  <= {rom[widx + 1], rom[widx]};
+                inst_pending <= 1'b0;
+            end
+
+            // D-cache responder (64B line, 8 beats)
+            dcache_mem_resp_valid <= 1'b0;
+            if (dcache_tx_active) begin
+                if (!dcache_tx_rw) begin
+                    dcache_mem_resp_valid <= 1'b1;
+                    dcache_mem_resp_data  <= dcache_read_beat(dcache_tx_addr, dcache_tx_beat);
+                    dcache_mem_resp_id    <= dcache_tx_id_q;
+                    if (dcache_tx_beat == (DCACHE_BEATS - 1)) begin
+                        dcache_tx_active <= 1'b0;
+                        dcache_tx_beat   <= 3'd0;
+                    end else begin
+                        dcache_tx_beat <= dcache_tx_beat + 1'b1;
+                    end
+                end else begin
+                    dcache_mem_resp_valid <= 1'b1;
+                    dcache_mem_resp_data  <= 64'h0;
+                    dcache_mem_resp_id    <= dcache_tx_id_q;
+                    dcache_tx_active <= 1'b0;
+                    dcache_tx_beat   <= 3'd0;
+
+                    dcache_write_line(dcache_tx_addr, dcache_tx_wdata, dcache_tx_wstrb);
+
+                    if (mem[mem_index(BASE_ADDR + DONE_OFF)] != 32'h0) begin
                         if (frame_seen < FRAMES) begin
                             dump_fb_ppm(frame_seen);
                             if (frame_seen == (FRAMES - 1)) begin
@@ -596,14 +800,14 @@ module gfx_sw_rt_tb;
                         end
                     end
                 end
-            end
-
-            if (resp_valid[resp_rp]) begin
-                data_resp_valid <= 1'b1;
-                data_resp_rd <= resp_rd_q[resp_rp];
-                data_resp_data <= resp_data_q[resp_rp];
-                resp_valid[resp_rp] <= 1'b0;
-                resp_rp <= resp_rp + 1'b1;
+            end else if (dcache_mem_req_valid && dcache_mem_req_ready) begin
+                dcache_tx_active <= 1'b1;
+                dcache_tx_rw     <= dcache_mem_req_rw;
+                dcache_tx_addr   <= {dcache_mem_req_addr[31:6], 6'b0};
+                dcache_tx_id_q   <= dcache_mem_req_id;
+                dcache_tx_beat   <= 3'd0;
+                dcache_tx_wdata  <= dcache_mem_req_wdata;
+                dcache_tx_wstrb  <= dcache_mem_req_wstrb;
             end
         end
     end

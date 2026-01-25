@@ -62,9 +62,14 @@ module gfx_console_tb;
     // ------------------------------------------------------------------
     // DUT interfaces
     // ------------------------------------------------------------------
-    logic [63:0] inst_rdata;
-    logic [31:0] inst_addr;
+    // Instruction miss interface (I-cache -> memory)
+    logic        inst_miss_req_valid;
+    logic [31:0] inst_miss_req_addr;
+    logic        inst_miss_req_ready;
+    logic        inst_miss_resp_valid;
+    logic [63:0] inst_miss_resp_data;
 
+    // Legacy data interface (unused)
     logic        data_req_valid;
     logic        data_req_is_load;
     logic [31:0] data_req_addr;
@@ -75,6 +80,46 @@ module gfx_console_tb;
     logic        data_resp_valid;
     logic [4:0]  data_resp_rd;
     logic [31:0] data_resp_data;
+
+    // D-cache memory interface (L1 -> memory)
+    logic        dcache_mem_req_valid;
+    logic        dcache_mem_req_rw;
+    logic [31:0] dcache_mem_req_addr;
+    logic [7:0]  dcache_mem_req_size;
+    logic [3:0]  dcache_mem_req_qos;
+    logic [7:0]  dcache_mem_req_id;
+    logic [511:0] dcache_mem_req_wdata;
+    logic [7:0]  dcache_mem_req_wstrb;
+    logic        dcache_mem_req_ready;
+    logic        dcache_mem_resp_valid;
+    logic [63:0] dcache_mem_resp_data;
+    logic [7:0]  dcache_mem_resp_id;
+
+    // Framebuffer AXI (unused)
+    logic        fb_aw_valid;
+    logic [31:0] fb_aw_addr;
+    logic [7:0]  fb_aw_len;
+    logic [2:0]  fb_aw_size;
+    logic [1:0]  fb_aw_burst;
+    logic        fb_aw_ready;
+    logic [31:0] fb_w_data;
+    logic [3:0]  fb_w_strb;
+    logic        fb_w_last;
+    logic        fb_w_valid;
+    logic        fb_w_ready;
+    logic        fb_b_valid;
+    logic        fb_b_ready;
+
+    // Mailbox (tied off)
+    import mailbox_pkg::*;
+    mailbox_pkg::mailbox_flit_t mailbox_tx_data;
+    mailbox_pkg::mailbox_flit_t mailbox_rx_data;
+    logic mailbox_tx_valid;
+    logic mailbox_tx_ready;
+    logic [mailbox_pkg::NODE_ID_WIDTH-1:0] mailbox_tx_dest_id;
+    logic mailbox_rx_valid;
+    logic mailbox_rx_ready;
+    logic [mailbox_pkg::NODE_ID_WIDTH-1:0] mailbox_rx_dest_id;
 
     logic err_fp_overflow;
     logic err_fp_invalid;
@@ -88,8 +133,11 @@ module gfx_console_tb;
     compute_unit_top dut (
         .clk(clk),
         .rst_n(rst_n),
-        .inst_rdata(inst_rdata),
-        .inst_addr(inst_addr),
+        .inst_miss_req_valid(inst_miss_req_valid),
+        .inst_miss_req_addr(inst_miss_req_addr),
+        .inst_miss_req_ready(inst_miss_req_ready),
+        .inst_miss_resp_valid(inst_miss_resp_valid),
+        .inst_miss_resp_data(inst_miss_resp_data),
         .data_req_valid(data_req_valid),
         .data_req_is_load(data_req_is_load),
         .data_req_addr(data_req_addr),
@@ -105,7 +153,40 @@ module gfx_console_tb;
         .data_req_ready(data_req_ready),
         .data_resp_valid(data_resp_valid),
         .data_resp_rd(data_resp_rd),
-        .data_resp_data(data_resp_data)
+        .data_resp_data(data_resp_data),
+        .dcache_mem_req_valid(dcache_mem_req_valid),
+        .dcache_mem_req_rw(dcache_mem_req_rw),
+        .dcache_mem_req_addr(dcache_mem_req_addr),
+        .dcache_mem_req_size(dcache_mem_req_size),
+        .dcache_mem_req_qos(dcache_mem_req_qos),
+        .dcache_mem_req_id(dcache_mem_req_id),
+        .dcache_mem_req_wdata(dcache_mem_req_wdata),
+        .dcache_mem_req_wstrb(dcache_mem_req_wstrb),
+        .dcache_mem_req_ready(dcache_mem_req_ready),
+        .dcache_mem_resp_valid(dcache_mem_resp_valid),
+        .dcache_mem_resp_data(dcache_mem_resp_data),
+        .dcache_mem_resp_id(dcache_mem_resp_id),
+        .fb_aw_valid(fb_aw_valid),
+        .fb_aw_addr(fb_aw_addr),
+        .fb_aw_len(fb_aw_len),
+        .fb_aw_size(fb_aw_size),
+        .fb_aw_burst(fb_aw_burst),
+        .fb_aw_ready(fb_aw_ready),
+        .fb_w_data(fb_w_data),
+        .fb_w_strb(fb_w_strb),
+        .fb_w_last(fb_w_last),
+        .fb_w_valid(fb_w_valid),
+        .fb_w_ready(fb_w_ready),
+        .fb_b_valid(fb_b_valid),
+        .fb_b_ready(fb_b_ready),
+        .mailbox_tx_valid(mailbox_tx_valid),
+        .mailbox_tx_ready(mailbox_tx_ready),
+        .mailbox_tx_data(mailbox_tx_data),
+        .mailbox_tx_dest_id(mailbox_tx_dest_id),
+        .mailbox_rx_valid(mailbox_rx_valid),
+        .mailbox_rx_ready(mailbox_rx_ready),
+        .mailbox_rx_data(mailbox_rx_data),
+        .mailbox_rx_dest_id(mailbox_rx_dest_id)
     );
 
     // ------------------------------------------------------------------
@@ -144,11 +225,14 @@ module gfx_console_tb;
     endfunction
 
     // ------------------------------------------------------------------
-    // Instruction ROM
+    // Instruction ROM (dual-fetch 64b)
     // ------------------------------------------------------------------
     localparam int ROM_WORDS = 4096;
     logic [31:0] rom [0:ROM_WORDS-1];
-    assign inst_rdata = {rom[{inst_addr[13:3], 1'b1}], rom[{inst_addr[13:3], 1'b0}]};
+
+    // I-cache miss handler (1-cycle latency)
+    logic        inst_pending;
+    logic [31:0] inst_req_addr_q;
 
     // ------------------------------------------------------------------
     // Memory model
@@ -159,6 +243,96 @@ module gfx_console_tb;
     function automatic int mem_index(input logic [31:0] addr);
         mem_index = (addr - BASE_ADDR) >> 2;
     endfunction
+
+    // D-cache backing memory responder
+    localparam int DCACHE_LINE_BYTES = 64;
+    localparam int DCACHE_BEATS      = DCACHE_LINE_BYTES / 8;
+
+    logic        dcache_tx_active;
+    logic        dcache_tx_rw;
+    logic [31:0] dcache_tx_addr;
+    logic [7:0]  dcache_tx_id_q;
+    logic [2:0]  dcache_tx_beat;
+    logic [511:0] dcache_tx_wdata;
+    logic [7:0]  dcache_tx_wstrb;
+
+    function automatic [63:0] dcache_read_beat(input logic [31:0] line_addr, input logic [2:0] beat);
+        int base_word;
+        begin
+            base_word = mem_index(line_addr) + (beat * 2);
+            dcache_read_beat = {mem[base_word + 1], mem[base_word + 0]};
+        end
+    endfunction
+
+    task automatic dcache_write_line(
+        input logic [31:0] line_addr,
+        input logic [511:0] line_data,
+        input logic [7:0]  line_wstrb
+    );
+        int base_word;
+        int done_idx;
+        logic [31:0] done_w;
+        begin
+            base_word = mem_index(line_addr);
+            done_idx = ((BASE_ADDR + DONE_OFF) - line_addr) >> 2;
+            done_w = mem[mem_index(BASE_ADDR + DONE_OFF)];
+
+            for (int b = 0; b < DCACHE_BEATS; b++) begin
+                int word_idx;
+                logic [31:0] w0;
+                logic [31:0] w1;
+                word_idx = base_word + (b * 2);
+                w0 = mem[word_idx + 0];
+                w1 = mem[word_idx + 1];
+                if (line_wstrb[b]) begin
+                    w0 = line_data[(b*64) +: 32];
+                    w1 = line_data[(b*64) + 32 +: 32];
+                end
+
+                mem[word_idx + 0] = w0;
+                mem[word_idx + 1] = w1;
+
+                // Debug counters + framebuffer/triangle tracking
+                for (int woff = 0; woff < 2; woff++) begin
+                    logic [31:0] waddr;
+                    logic [31:0] wval;
+                    waddr = line_addr + ((b * 2 + woff) * 4);
+                    wval = (woff == 0) ? w0 : w1;
+                    if ((waddr >= FB_BASE_ADDR) && (waddr < FB_END_ADDR)) begin
+                        fb_write_total <= fb_write_total + 1;
+                        if (wval != 32'h0) fb_write_nonzero <= fb_write_nonzero + 1;
+                        if ((wval & 32'h00FF_FFFF) != 32'h0) fb_write_rgb_nonzero <= fb_write_rgb_nonzero + 1;
+                        if (dbg_color_en && ((wval & 32'h00FF_FFFF) != 32'h0)) begin
+                            $display("dbg: FB store addr=%h wdata=%h tex_en=%b const=%h", waddr, wval,
+                                     dut.u_graphics_pipeline.u_rop.quad_tex_enable,
+                                     dut.u_graphics_pipeline.u_rop.quad_const_color_argb);
+                        end
+                    end
+                    if (dbg_color_en && (dbg_tri_store_count < 120)
+                        && (waddr >= (BASE_ADDR + TRI_BUF_OFF))
+                        && (waddr < (BASE_ADDR + TRI_BUF_OFF + 32'h1000))) begin
+                        $display("dbg: TRI store t=%0t addr=%h wdata=%h rf30=%h rf26=%h rf27=%h rf28=%h rf29=%h rf6=%h", $time, waddr, wval,
+                                 dut.u_regfile_scalar.mem[30], dut.u_regfile_scalar.mem[26], dut.u_regfile_scalar.mem[27], dut.u_regfile_scalar.mem[28], dut.u_regfile_scalar.mem[29],
+                                 dut.u_regfile_scalar.mem[6]);
+                        dbg_tri_store_count <= dbg_tri_store_count + 1;
+                        if (!dbg_after_tri_store) dbg_after_tri_store <= 1'b1;
+                    end
+                end
+            end
+
+            if ((line_addr <= (BASE_ADDR + DONE_OFF)) && ((line_addr + 32'd64) > (BASE_ADDR + DONE_OFF))) begin
+                done_w = mem[mem_index(BASE_ADDR + DONE_OFF)];
+            end
+
+            if (done_w != last_done_word) begin
+                last_done_word <= done_w;
+                if (done_w != 32'h0) begin
+                    pending_dump_valid <= 1'b1;
+                    pending_dump_frame <= $signed(done_w);
+                end
+            end
+        end
+    endtask
 
     function automatic logic [31:0] pack_abgr(input int r, input int g, input int b);
         int rr, gg, bb;
@@ -206,6 +380,8 @@ module gfx_console_tb;
 
     int console_color_mode;
     int console_pixel_w;
+    int frames_cfg;
+    int timeout_cycles;
     bit dump_ascii_frames;
     bit dbg_en;
     bit dbg_color_en;
@@ -1127,7 +1303,7 @@ module gfx_console_tb;
             rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd0, 3'b000, 5'd0, OP_SYSTEM); pc += 4; // MEMBAR
             rom[pc>>2] = s_type(DONE_OFF, 5'd1, 5'd13, 3'b010, OP_STORE); pc += 4;
             rom[pc>>2] = i_type(1, 5'd13, 3'b000, 5'd13, OP_INT_IMM); pc += 4; // frame++
-            rom[pc>>2] = i_type(FRAMES, 5'd0, 3'b000, 5'd26, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(frames_cfg, 5'd0, 3'b000, 5'd26, OP_INT_IMM); pc += 4;
             blt_frame_pc = pc;
             rom[pc>>2] = b_type(0, 5'd13, 5'd26, 3'b100, OP_BRANCH); pc += 4; // patched
             rom[pc>>2] = nop(); pc += 4;
@@ -1149,14 +1325,23 @@ module gfx_console_tb;
     // ------------------------------------------------------------------
     // Memory request/response + frame trigger
     // ------------------------------------------------------------------
-    localparam int RESP_DEPTH = 256;
-    logic        resp_valid   [0:RESP_DEPTH-1];
-    logic [4:0]  resp_rd_q    [0:RESP_DEPTH-1];
-    logic [31:0] resp_data_q  [0:RESP_DEPTH-1];
-    logic [$clog2(RESP_DEPTH)-1:0] resp_wp;
-    logic [$clog2(RESP_DEPTH)-1:0] resp_rp;
+    assign data_req_ready  = 1'b1;
+    assign data_resp_valid = 1'b0;
+    assign data_resp_rd    = '0;
+    assign data_resp_data  = 32'h0;
 
-    assign data_req_ready = 1'b1;
+    assign mailbox_tx_ready   = 1'b1;
+    assign mailbox_rx_valid   = 1'b0;
+    assign mailbox_rx_data    = '0;
+    assign mailbox_rx_dest_id = '0;
+    assign mailbox_rx_ready   = 1'b1;
+
+    assign fb_aw_ready = 1'b1;
+    assign fb_w_ready  = 1'b1;
+    assign fb_b_valid  = 1'b0;
+
+    assign dcache_mem_req_ready = !dcache_tx_active;
+    assign inst_miss_req_ready  = !inst_pending;
 
     int frame_seen;
     bit pending_dump_valid;
@@ -1179,10 +1364,26 @@ module gfx_console_tb;
     int dbg_arb_resp_count;
     int dbg_load_after_count;
     bit dbg_after_tri_store;
+    int last_done_word;
 
     always_ff @(posedge clk) begin
         if (!rst_n) begin
-            resp_wp <= '0; resp_rp <= '0; data_resp_valid <= 1'b0; data_resp_rd <= '0; data_resp_data <= '0;
+            inst_miss_resp_valid <= 1'b0;
+            inst_miss_resp_data  <= 64'h0;
+            inst_pending         <= 1'b0;
+            inst_req_addr_q      <= 32'h0;
+
+            dcache_mem_resp_valid <= 1'b0;
+            dcache_mem_resp_data  <= 64'h0;
+            dcache_mem_resp_id    <= 8'h0;
+            dcache_tx_active      <= 1'b0;
+            dcache_tx_rw          <= 1'b0;
+            dcache_tx_addr        <= 32'h0;
+            dcache_tx_id_q        <= 8'h0;
+            dcache_tx_beat        <= 3'd0;
+            dcache_tx_wdata       <= '0;
+            dcache_tx_wstrb       <= '0;
+
             frame_seen <= 0; pending_dump_valid <= 1'b0; pending_dump_frame <= 0;
             fb_write_total <= 0; fb_write_nonzero <= 0; fb_write_rgb_nonzero <= 0;
             dbg_store_count <= 0;
@@ -1200,78 +1401,88 @@ module gfx_console_tb;
             dbg_arb_resp_count <= 0;
             dbg_load_after_count <= 0;
             dbg_after_tri_store <= 1'b0;
-            for (int j = 0; j < RESP_DEPTH; j++) begin resp_valid[j] <= 1'b0; resp_rd_q[j] <= '0; resp_data_q[j] <= '0; end
+            last_done_word <= 0;
         end else begin
-            data_resp_valid <= 1'b0;
-            if (data_req_valid) begin
-                int idx; idx = mem_index(data_req_addr);
-                if (data_req_is_load) begin
-                    if (dbg_color_en && (dbg_load_count < 200)) begin
-                        $display("dbg: LOAD addr=%h rd=x%0d data=%h is_vec=%b", data_req_addr, data_req_rd, mem[idx], dut.u_lsu.lsu_internal_req_is_vector);
-                        dbg_load_count <= dbg_load_count + 1;
+            // I-cache miss response (1-cycle latency)
+            inst_miss_resp_valid <= 1'b0;
+            if (inst_miss_req_valid && inst_miss_req_ready && !inst_pending) begin
+                inst_pending    <= 1'b1;
+                inst_req_addr_q <= {inst_miss_req_addr[31:3], 3'b000};
+            end
+            if (inst_pending) begin
+                int widx;
+                widx = int'(inst_req_addr_q >> 2);
+                if ((widx < 0) || (widx + 1 >= ROM_WORDS)) begin
+                    $display("TB: OOB IROM access addr=%08h", inst_req_addr_q);
+                    $fatal(1);
+                end
+                inst_miss_resp_valid <= 1'b1;
+                inst_miss_resp_data  <= {rom[widx + 1], rom[widx]};
+                inst_pending <= 1'b0;
+            end
+
+            // D-cache responder (64B line, 8 beats)
+            dcache_mem_resp_valid <= 1'b0;
+            if (dcache_tx_active) begin
+                if (!dcache_tx_rw) begin
+                    dcache_mem_resp_valid <= 1'b1;
+                    dcache_mem_resp_data  <= dcache_read_beat(dcache_tx_addr, dcache_tx_beat);
+                    dcache_mem_resp_id    <= dcache_tx_id_q;
+                    if (dcache_tx_beat == (DCACHE_BEATS - 1)) begin
+                        dcache_tx_active <= 1'b0;
+                        dcache_tx_beat   <= 3'd0;
+                    end else begin
+                        dcache_tx_beat <= dcache_tx_beat + 1'b1;
                     end
-                    if (dbg_color_en && (dbg_tri_load_count < 12)
-                        && (data_req_addr >= (BASE_ADDR + CUBE_TRI_OFF))
-                        && (data_req_addr < (BASE_ADDR + CUBE_TRI_OFF + 32'h400))) begin
-                        $display("dbg: TRI load addr=%h rd=x%0d data=%h", data_req_addr, data_req_rd, mem[idx]);
-                        dbg_tri_load_count <= dbg_tri_load_count + 1;
-                    end
-                    if (dbg_color_en && (dbg_vtx_load_count < 12)
-                        && (data_req_addr >= (BASE_ADDR + CUBE_VERT_OFF))
-                        && (data_req_addr < (BASE_ADDR + CUBE_VERT_OFF + 32'h400))) begin
-                        $display("dbg: VTX load addr=%h rd=x%0d data=%h", data_req_addr, data_req_rd, mem[idx]);
-                        dbg_vtx_load_count <= dbg_vtx_load_count + 1;
-                    end
-                    if (dbg_color_en && dbg_after_tri_store && (dbg_vtx_after_count < 40)
-                        && (data_req_addr >= (BASE_ADDR + CUBE_VERT_OFF))
-                        && (data_req_addr < (BASE_ADDR + CUBE_VERT_OFF + 32'h400))) begin
-                        $display("dbg: VTX2 t=%0t addr=%h rd=x%0d data=%h", $time, data_req_addr, data_req_rd, mem[idx]);
-                        dbg_vtx_after_count <= dbg_vtx_after_count + 1;
-                    end
-                    if (dbg_color_en && dbg_after_tri_store && (dbg_load_after_count < 40)) begin
-                        $display("dbg: LOAD2 t=%0t addr=%h rd=x%0d data=%h", $time, data_req_addr, data_req_rd, mem[idx]);
-                        dbg_load_after_count <= dbg_load_after_count + 1;
-                    end
-                    resp_valid[resp_wp] <= 1'b1; resp_rd_q[resp_wp] <= data_req_rd; resp_data_q[resp_wp] <= mem[idx]; resp_wp <= resp_wp + 1'b1;
                 end else begin
-                    mem[idx] <= data_req_wdata;
-                    if (dbg_color_en && (dbg_tri_store_count < 120)
-                        && (data_req_addr >= (BASE_ADDR + TRI_BUF_OFF))
-                        && (data_req_addr < (BASE_ADDR + TRI_BUF_OFF + 32'h1000))) begin
-                        $display("dbg: TRI store t=%0t addr=%h wdata=%h rf30=%h rf26=%h rf27=%h rf28=%h rf29=%h rf6=%h", $time, data_req_addr, data_req_wdata,
-                                 dut.u_regfile_scalar.mem[30], dut.u_regfile_scalar.mem[26], dut.u_regfile_scalar.mem[27], dut.u_regfile_scalar.mem[28], dut.u_regfile_scalar.mem[29],
-                                 dut.u_regfile_scalar.mem[6]);
-                        dbg_tri_store_count <= dbg_tri_store_count + 1;
-                        if (!dbg_after_tri_store) dbg_after_tri_store <= 1'b1;
-                    end
-                    if ((data_req_addr >= FB_BASE_ADDR) && (data_req_addr < FB_END_ADDR)) begin
-                        fb_write_total <= fb_write_total + 1;
-                        if (data_req_wdata != 32'h0) fb_write_nonzero <= fb_write_nonzero + 1;
-                        if ((data_req_wdata & 32'h00FF_FFFF) != 32'h0) fb_write_rgb_nonzero <= fb_write_rgb_nonzero + 1;
-                        if (dbg_color_en && ((data_req_wdata & 32'h00FF_FFFF) != 32'h0)) begin
-                            $display("dbg: FB store addr=%h wdata=%h tex_en=%b const=%h", data_req_addr, data_req_wdata,
-                                     dut.u_graphics_pipeline.u_rop.quad_tex_enable,
-                                     dut.u_graphics_pipeline.u_rop.quad_const_color_argb);
-                        end
-                    end
-                    if (data_req_addr == (BASE_ADDR + DONE_OFF)) begin
-                        pending_dump_valid <= 1'b1; pending_dump_frame <= $signed(data_req_wdata);
-                    end
+                    dcache_mem_resp_valid <= 1'b1;
+                    dcache_mem_resp_data  <= 64'h0;
+                    dcache_mem_resp_id    <= dcache_tx_id_q;
+                    dcache_tx_active <= 1'b0;
+                    dcache_tx_beat   <= 3'd0;
+
+                    dcache_write_line(dcache_tx_addr, dcache_tx_wdata, dcache_tx_wstrb);
+                end
+            end else if (dcache_mem_req_valid && dcache_mem_req_ready) begin
+                dcache_tx_active <= 1'b1;
+                dcache_tx_rw     <= dcache_mem_req_rw;
+                dcache_tx_addr   <= {dcache_mem_req_addr[31:6], 6'b0};
+                dcache_tx_id_q   <= dcache_mem_req_id;
+                dcache_tx_beat   <= 3'd0;
+                dcache_tx_wdata  <= dcache_mem_req_wdata;
+                dcache_tx_wstrb  <= dcache_mem_req_wstrb;
+            end
+
+            // Capture DONE stores directly from LSU requests (write-through may be delayed)
+            if (dut.lsu0_req_valid && (dut.lsu0_req_type == 2'b01)
+                && (dut.lsu0_req_addr == (BASE_ADDR + DONE_OFF))) begin
+                logic [31:0] done_w;
+                done_w = dut.lsu0_req_wdata[31:0];
+                $display("TB: DONE store (lsu0) value=%0d t=%0t", done_w, $time);
+                mem[mem_index(BASE_ADDR + DONE_OFF)] <= done_w;
+                if (done_w != last_done_word) begin
+                    last_done_word <= done_w;
+                    pending_dump_valid <= 1'b1;
+                    pending_dump_frame <= $signed(done_w);
                 end
             end
-            if (resp_valid[resp_rp]) begin
-                data_resp_valid <= 1'b1; data_resp_rd <= resp_rd_q[resp_rp]; data_resp_data <= resp_data_q[resp_rp]; resp_valid[resp_rp] <= 1'b0; resp_rp <= resp_rp + 1'b1;
+            if (dut.lsu1c_req_valid && (dut.lsu1c_req_type == 2'b01)
+                && (dut.lsu1c_req_addr == (BASE_ADDR + DONE_OFF))) begin
+                logic [31:0] done_w1;
+                done_w1 = dut.lsu1c_req_wdata[31:0];
+                $display("TB: DONE store (lsu1) value=%0d t=%0t", done_w1, $time);
+                mem[mem_index(BASE_ADDR + DONE_OFF)] <= done_w1;
+                if (done_w1 != last_done_word) begin
+                    last_done_word <= done_w1;
+                    pending_dump_valid <= 1'b1;
+                    pending_dump_frame <= $signed(done_w1);
+                end
             end
+
             if (dbg_color_en && dbg_after_tri_store && data_resp_valid && (dbg_resp_count < 40)
                 && ((data_resp_rd == 5'd27) || (data_resp_rd == 5'd28) || (data_resp_rd == 5'd29))) begin
                 $display("dbg: RESP t=%0t rd=x%0d data=%h rf=%h", $time, data_resp_rd, data_resp_data, dut.u_regfile_scalar.mem[data_resp_rd]);
                 dbg_resp_count <= dbg_resp_count + 1;
-            end
-            if (dbg_color_en && dbg_after_tri_store && dut.u_lsu.arb_resp_valid && (dbg_arb_resp_count < 40)
-                && ((dut.u_lsu.arb_resp_rd == 5'd27) || (dut.u_lsu.arb_resp_rd == 5'd28) || (dut.u_lsu.arb_resp_rd == 5'd29))) begin
-                $display("dbg: ARB_RESP t=%0t rd=x%0d data=%h is_vec=%b is_rmw=%b", $time, dut.u_lsu.arb_resp_rd, dut.u_lsu.arb_resp_data_scalar,
-                         dut.u_lsu.arb_resp_is_vector, dut.u_lsu.arb_resp_is_rmw);
-                dbg_arb_resp_count <= dbg_arb_resp_count + 1;
             end
             if (dbg_color_en && dbg_after_tri_store && dut.s_we && (dbg_wb_count < 80)
                 && ((dut.s_waddr == 5'd27) || (dut.s_waddr == 5'd28) || (dut.s_waddr == 5'd29))) begin
@@ -1305,15 +1516,15 @@ module gfx_console_tb;
             if (dut.u_graphics_pipeline.raster_busy) raster_busy_seen <= 1'b1;
             if (dut.u_graphics_pipeline.rop_busy)    rop_busy_seen <= 1'b1;
             if (pending_dump_valid) begin
-                if ((dut.u_graphics_pipeline.raster_busy == 1'b0) && (dut.u_graphics_pipeline.rop_busy == 1'b0) && (dut.u_lsu.u_wmb.busy == 1'b0)) begin
+                if ((dut.u_graphics_pipeline.raster_busy == 1'b0) && (dut.u_graphics_pipeline.rop_busy == 1'b0)) begin
                     dump_fb_ppm(pending_dump_frame);
                     if (dump_ascii_frames) dump_fb_ascii(pending_dump_frame);
                     $display("TB: frame %0d raster_busy_seen=%0b rop_busy_seen=%0b fb_writes=%0d fb_nonzero=%0d fb_rgb_nonzero=%0d", pending_dump_frame, raster_busy_seen, rop_busy_seen, fb_write_total, fb_write_nonzero, fb_write_rgb_nonzero);
                     frame_seen <= frame_seen + 1; pending_dump_valid <= 1'b0;
                     raster_busy_seen <= 1'b0; rop_busy_seen <= 1'b0;
                     fb_write_total <= 0; fb_write_nonzero <= 0; fb_write_rgb_nonzero <= 0;
-                    if (frame_seen + 1 >= FRAMES) begin
-                        $display("gfx_console_tb: finished %0d frames", FRAMES);
+                    if (frame_seen + 1 >= frames_cfg) begin
+                        $display("gfx_console_tb: finished %0d frames", frames_cfg);
                         $finish;
                     end
                 end
@@ -1324,7 +1535,7 @@ module gfx_console_tb;
     // Safety timeout
     initial begin
         int cyc; cyc = 0;
-        while (cyc < 50_000_000) begin
+        while (cyc < timeout_cycles) begin
             @(posedge clk); cyc++;
         end
         $fatal(1, "gfx_console_tb: timeout");
@@ -1363,8 +1574,8 @@ module gfx_console_tb;
         if (dbg_en) begin
             repeat (40) begin
                 @(posedge clk);
-                $display("dbg: cyc=%0t if_pc=%h inst_addr=%h if_valid=%b if_inst0=%h accept0=%b accept1=%b stall_issue=%b pc_adv=%0d rr_valid=%b ex_valid=%b mem_valid=%b mem_pc=%h",
-                         $time, dut.if_pc, dut.inst_addr, dut.if_valid, dut.if_inst0, dut.accept0, dut.accept1, dut.stall_issue, dut.pc_advance_bytes, dut.rr_valid, dut.ex_valid, dut.mem_valid, dut.mem_pc);
+                $display("dbg: cyc=%0t if_pc=%h if_valid=%b if_inst0=%h accept0=%b accept1=%b stall_issue=%b pc_adv=%0d rr_valid=%b ex_valid=%b mem_valid=%b mem_pc=%h",
+                         $time, dut.if_pc, dut.if_valid, dut.if_inst0, dut.accept0, dut.accept1, dut.stall_issue, dut.pc_advance_bytes, dut.rr_valid, dut.ex_valid, dut.mem_valid, dut.mem_pc);
             end
         end
     end
@@ -1425,6 +1636,12 @@ module gfx_console_tb;
     // Init
     // ------------------------------------------------------------------
     initial begin
+        frames_cfg = FRAMES;
+        timeout_cycles = 50_000_000;
+        void'($value$plusargs("frames=%d", frames_cfg));
+        void'($value$plusargs("timeout=%d", timeout_cycles));
+        if (frames_cfg < 1) frames_cfg = 1;
+        if (timeout_cycles < 1) timeout_cycles = 1;
         init_memory();
         init_rom();
     end

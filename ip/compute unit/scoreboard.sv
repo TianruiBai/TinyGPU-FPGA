@@ -36,13 +36,29 @@ module scoreboard (
     input  logic [1:0] flush_rr_rd_class,
     input  logic       flush_rr_rd_valid,
     input  logic [4:0] flush_rr_rd,
+    input  logic       flush_rr1,
+    input  logic [1:0] flush_rr1_rd_class,
+    input  logic       flush_rr1_rd_valid,
+    input  logic [4:0] flush_rr1_rd,
+    input  logic       flush_ex1,
+    input  logic [1:0] flush_ex1_rd_class,
+    input  logic       flush_ex1_rd_valid,
+    input  logic [4:0] flush_ex1_rd,
     // Writeback interface
-    input  logic       wb_scalar_valid,
-    input  logic [4:0] wb_scalar_rd,
-    input  logic       wb_fp_valid,
-    input  logic [4:0] wb_fp_rd,
-    input  logic       wb_vec_valid,
-    input  logic [4:0] wb_vec_rd,
+    input  logic       wb_scalar_valid0,
+    input  logic [4:0] wb_scalar_rd0,
+    input  logic       wb_scalar_valid1,
+    input  logic [4:0] wb_scalar_rd1,
+    input  logic       wb_scalar_valid2,
+    input  logic [4:0] wb_scalar_rd2,
+    input  logic       wb_fp_valid0,
+    input  logic [4:0] wb_fp_rd0,
+    input  logic       wb_fp_valid1,
+    input  logic [4:0] wb_fp_rd1,
+    input  logic       wb_vec_valid0,
+    input  logic [4:0] wb_vec_rd0,
+    input  logic       wb_vec_valid1,
+    input  logic [4:0] wb_vec_rd1,
     // Global flush (e.g., branch taken) clears all busy bits
     input  logic       flush_all
 );
@@ -72,25 +88,49 @@ module scoreboard (
         issue1_rd_busy  = 1'b0;
 
         // Precompute same-cycle writeback matches (used to relax stalls when WB happens now)
-        wb_match_s_rs1_0 = wb_scalar_valid && (wb_scalar_rd == issue0_rs1);
-        wb_match_s_rs2_0 = wb_scalar_valid && (wb_scalar_rd == issue0_rs2);
-        wb_match_s_rd_0  = wb_scalar_valid && (wb_scalar_rd == issue0_rd);
-        wb_match_f_rs1_0 = wb_fp_valid     && (wb_fp_rd     == issue0_rs1);
-        wb_match_f_rs2_0 = wb_fp_valid     && (wb_fp_rd     == issue0_rs2);
-        wb_match_f_rd_0  = wb_fp_valid     && (wb_fp_rd     == issue0_rd);
-        wb_match_v_rs1_0 = wb_vec_valid    && (wb_vec_rd    == issue0_rs1);
-        wb_match_v_rs2_0 = wb_vec_valid    && (wb_vec_rd    == issue0_rs2);
-        wb_match_v_rd_0  = wb_vec_valid    && (wb_vec_rd    == issue0_rd);
+        wb_match_s_rs1_0 = (wb_scalar_valid0 && (wb_scalar_rd0 == issue0_rs1))
+                || (wb_scalar_valid1 && (wb_scalar_rd1 == issue0_rs1))
+                || (wb_scalar_valid2 && (wb_scalar_rd2 == issue0_rs1));
+        wb_match_s_rs2_0 = (wb_scalar_valid0 && (wb_scalar_rd0 == issue0_rs2))
+                || (wb_scalar_valid1 && (wb_scalar_rd1 == issue0_rs2))
+                || (wb_scalar_valid2 && (wb_scalar_rd2 == issue0_rs2));
+        wb_match_s_rd_0  = (wb_scalar_valid0 && (wb_scalar_rd0 == issue0_rd))
+                || (wb_scalar_valid1 && (wb_scalar_rd1 == issue0_rd))
+                || (wb_scalar_valid2 && (wb_scalar_rd2 == issue0_rd));
+        wb_match_f_rs1_0 = (wb_fp_valid0 && (wb_fp_rd0 == issue0_rs1))
+                || (wb_fp_valid1 && (wb_fp_rd1 == issue0_rs1));
+        wb_match_f_rs2_0 = (wb_fp_valid0 && (wb_fp_rd0 == issue0_rs2))
+                || (wb_fp_valid1 && (wb_fp_rd1 == issue0_rs2));
+        wb_match_f_rd_0  = (wb_fp_valid0 && (wb_fp_rd0 == issue0_rd))
+                || (wb_fp_valid1 && (wb_fp_rd1 == issue0_rd));
+        wb_match_v_rs1_0 = (wb_vec_valid0 && (wb_vec_rd0 == issue0_rs1))
+                || (wb_vec_valid1 && (wb_vec_rd1 == issue0_rs1));
+        wb_match_v_rs2_0 = (wb_vec_valid0 && (wb_vec_rd0 == issue0_rs2))
+                || (wb_vec_valid1 && (wb_vec_rd1 == issue0_rs2));
+        wb_match_v_rd_0  = (wb_vec_valid0 && (wb_vec_rd0 == issue0_rd))
+                || (wb_vec_valid1 && (wb_vec_rd1 == issue0_rd));
 
-        wb_match_s_rs1_1 = wb_scalar_valid && (wb_scalar_rd == issue1_rs1);
-        wb_match_s_rs2_1 = wb_scalar_valid && (wb_scalar_rd == issue1_rs2);
-        wb_match_s_rd_1  = wb_scalar_valid && (wb_scalar_rd == issue1_rd);
-        wb_match_f_rs1_1 = wb_fp_valid     && (wb_fp_rd     == issue1_rs1);
-        wb_match_f_rs2_1 = wb_fp_valid     && (wb_fp_rd     == issue1_rs2);
-        wb_match_f_rd_1  = wb_fp_valid     && (wb_fp_rd     == issue1_rd);
-        wb_match_v_rs1_1 = wb_vec_valid    && (wb_vec_rd    == issue1_rs1);
-        wb_match_v_rs2_1 = wb_vec_valid    && (wb_vec_rd    == issue1_rs2);
-        wb_match_v_rd_1  = wb_vec_valid    && (wb_vec_rd    == issue1_rd);
+        wb_match_s_rs1_1 = (wb_scalar_valid0 && (wb_scalar_rd0 == issue1_rs1))
+                || (wb_scalar_valid1 && (wb_scalar_rd1 == issue1_rs1))
+                || (wb_scalar_valid2 && (wb_scalar_rd2 == issue1_rs1));
+        wb_match_s_rs2_1 = (wb_scalar_valid0 && (wb_scalar_rd0 == issue1_rs2))
+                || (wb_scalar_valid1 && (wb_scalar_rd1 == issue1_rs2))
+                || (wb_scalar_valid2 && (wb_scalar_rd2 == issue1_rs2));
+        wb_match_s_rd_1  = (wb_scalar_valid0 && (wb_scalar_rd0 == issue1_rd))
+                || (wb_scalar_valid1 && (wb_scalar_rd1 == issue1_rd))
+                || (wb_scalar_valid2 && (wb_scalar_rd2 == issue1_rd));
+        wb_match_f_rs1_1 = (wb_fp_valid0 && (wb_fp_rd0 == issue1_rs1))
+                || (wb_fp_valid1 && (wb_fp_rd1 == issue1_rs1));
+        wb_match_f_rs2_1 = (wb_fp_valid0 && (wb_fp_rd0 == issue1_rs2))
+                || (wb_fp_valid1 && (wb_fp_rd1 == issue1_rs2));
+        wb_match_f_rd_1  = (wb_fp_valid0 && (wb_fp_rd0 == issue1_rd))
+                || (wb_fp_valid1 && (wb_fp_rd1 == issue1_rd));
+        wb_match_v_rs1_1 = (wb_vec_valid0 && (wb_vec_rd0 == issue1_rs1))
+                || (wb_vec_valid1 && (wb_vec_rd1 == issue1_rs1));
+        wb_match_v_rs2_1 = (wb_vec_valid0 && (wb_vec_rd0 == issue1_rs2))
+                || (wb_vec_valid1 && (wb_vec_rd1 == issue1_rs2));
+        wb_match_v_rd_1  = (wb_vec_valid0 && (wb_vec_rd0 == issue1_rd))
+                || (wb_vec_valid1 && (wb_vec_rd1 == issue1_rd));
 
         // Slot0 src/dest busy selects
         if (issue0_rs1_valid) begin
@@ -157,9 +197,13 @@ module scoreboard (
             busy_f <= '0;
             busy_v <= '0;
         end else begin
-            if (wb_scalar_valid) busy_s[wb_scalar_rd] <= 1'b0;
-            if (wb_fp_valid)     busy_f[wb_fp_rd]    <= 1'b0;
-            if (wb_vec_valid)    busy_v[wb_vec_rd]   <= 1'b0;
+            if (wb_scalar_valid0) busy_s[wb_scalar_rd0] <= 1'b0;
+            if (wb_scalar_valid1) busy_s[wb_scalar_rd1] <= 1'b0;
+            if (wb_scalar_valid2) busy_s[wb_scalar_rd2] <= 1'b0;
+            if (wb_fp_valid0)    busy_f[wb_fp_rd0]    <= 1'b0;
+            if (wb_fp_valid1)    busy_f[wb_fp_rd1]    <= 1'b0;
+            if (wb_vec_valid0)   busy_v[wb_vec_rd0]   <= 1'b0;
+            if (wb_vec_valid1)   busy_v[wb_vec_rd1]   <= 1'b0;
 
             // Flush logic: clear busy bit set by the instruction currently in RR
             if (flush_rr && flush_rr_rd_valid) begin
@@ -167,6 +211,20 @@ module scoreboard (
                     2'b00: busy_s[flush_rr_rd] <= 1'b0;
                     2'b01: busy_f[flush_rr_rd] <= 1'b0;
                     default: busy_v[flush_rr_rd] <= 1'b0;
+                endcase
+            end
+            if (flush_rr1 && flush_rr1_rd_valid) begin
+                case (flush_rr1_rd_class)
+                    2'b00: busy_s[flush_rr1_rd] <= 1'b0;
+                    2'b01: busy_f[flush_rr1_rd] <= 1'b0;
+                    default: busy_v[flush_rr1_rd] <= 1'b0;
+                endcase
+            end
+            if (flush_ex1 && flush_ex1_rd_valid) begin
+                case (flush_ex1_rd_class)
+                    2'b00: busy_s[flush_ex1_rd] <= 1'b0;
+                    2'b01: busy_f[flush_ex1_rd] <= 1'b0;
+                    default: busy_v[flush_ex1_rd] <= 1'b0;
                 endcase
             end
 

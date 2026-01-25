@@ -8,24 +8,28 @@ ISA assumptions (implemented): 32 scalar regs (`x0..x31`), 32 FP regs (`f0..f31`
 ```
 compute_unit_top.sv
 ├── fetch_unit.sv
-│   └── icache.sv
+│   └── icache.sv (l1_inst_cache.sv integration via inst_miss_*)
 ├── decoder.sv
 ├── csr_file.sv
-├── scoreboard.sv
+├── scoreboard.sv (now accepts dual FP/vec writeback ports)
 ├── regfile_scalar.sv
-├── regfile_fp.sv
+├── regfile_fp.sv (dual FP write ports driven by two fp_alu instances)
 ├── regfile_vector.sv
 ├── alu_scalar.sv
-├── fp_alu.sv
-├── alu_vector.sv
+├── fp_alu.sv (two instances: u_fp_alu0, u_fp_alu1)
+├── alu_vector.sv (two instances: u_alu_vector0, u_alu_vector1)
 ├── lsu.sv
 │   ├── local_mem_banked.sv
 │   └── write_merge_buf.sv
+├── l1_inst_cache.sv
+├── l1_data_cache.sv (connected to top-level dcache_mem_* interface)
 ├── graphics_pipeline.sv
 │   ├── texture_cache.sv
 │   ├── raster_unit.sv
 │   └── rop_unit.sv
 └── scalar_wb_arb_pending2.sv
+
+Note: The top-level now exposes explicit instruction miss and D-cache memory interfaces (`inst_miss_*`, `dcache_mem_*`) which are modelled in testbenches instead of the legacy `data_req_*` signals.
 ```
 
 ## Step 1: Minimal Scalar Core
@@ -45,11 +49,14 @@ Goal: Stall only when sources/dests are busy; allow latency hiding (vmask-aware)
 - Unit test: drive sequences that check RAW/WAW stalls clear on wb.
 
 ## Step 3: Vector Unit (data path)
-Goal: Execute `VADD v1, v2, v3` with BRAM-backed VRF and respect `vm`/`vmask` predication.
-- `regfile_vector.sv`: As-built uses combinational reads (`regfile_vector.sv` presents combinational mem reads), providing data in the same cycle. Synthesis may infer BRAM and therefore introduce target-dependent read latency; the RTL includes forwarding and scoreboard mechanisms to handle these timing variations. If an architectural 1-cycle VRF read latency is desired, consider changing the VRF to synchronous reads and updating scoreboard/issue timing accordingly. `vmask` sits in `csr_file.sv`; V ops gate per-lane behavior when `vm` is enabled.
-- `alu_vector.sv`: 4 parallel 32-bit adders (or FP32 adders) for basic VADD; later extend to VCMP/VSEL/VDOT/VCROSS, VPACK/VUNPACK and sat mode.
-- Pipeline: Fetch -> Decode -> RegRead (combinational in current RTL; forwarding/scoreboard handle timing variations) -> Execute -> WB; scoreboard covers regread hazards and forwarding.
-- Testbench: feed VLD-like preloads or direct writes, then VADD, check result matches lane-wise add.
+Goal: Execute `VADD v1, v2, v3` with BRAM-backed VRF and respect `vm`/`vmask` predication. The design now supports dual-issue VALU (two concurrent vector ALUs) to increase throughput.
+- `regfile_vector.sv`: As-built uses combinational reads, providing data in the same cycle. Forwarding and scoreboard mechanisms handle timing variations from BRAM inference. If a synchronous VRF is used in the future, update scoreboard/issue timing as needed.
+- `alu_vector.sv`: Two VALU instances (u_alu_vector0/u_alu_vector1) are instantiated and can issue two vector ops per cycle (subject to VQ space and resource availability).
+- Vector Issue Queue (VQ): a small 2-entry decoupling queue (`VQ_DEPTH=2`) supports up to two enqueues per cycle and two issues. VALU results that cannot commit immediately (LSU/gp ordering or busy writeback ports) are buffered in the Vector Writeback Buffer Queue (VWBQ) implemented in `compute_unit_top.sv` (configurable depth, default 32 entries).
+- Vector writeback arbitration: two vector writeback ports (`v_we0/v_we1`) arbitrate results across LSU, pending FIFO, graphics writebacks, and available VALU outputs; deterministic priorities are designed to avoid live-lock and ensure correctness.
+- Legacy debug signals: top-level exposes backward-compatible signals (e.g., `valuv_wb_valid`, `valuv_wb_rd`, `fp_scalar_wb_*`) for testbench visibility; these select from active ALU outputs when both are present.
+- Pipeline: Fetch -> Decode -> RegRead -> (VQ enqueue) -> VALU issue -> VWBQ/LSU/GFX commit; scoreboard handles hazardous interactions and same-cycle forwarding from VALU/LSU/GP.
+- Testbench: feed VLD-like preloads or direct writes, then dual VADD sequences, check both single and dual-issue results and vwbq arbitration.
 
 ## Step 4: LSU + Local Memory
 Goal: Handle `VLD`/`VST` and shared-memory access.

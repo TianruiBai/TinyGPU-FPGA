@@ -138,6 +138,31 @@ module compute_unit_top #(
     logic        lsu1_resp_err;
     logic        lsu1_busy;
 
+    // Shared LSU1 port arbitration (scalar lane1 vs gfx)
+    logic        lsu1c_req_valid;
+    logic [1:0]  lsu1c_req_type;
+    logic [2:0]  lsu1c_req_atomic_op;
+    logic [31:0] lsu1c_req_addr;
+    logic [127:0] lsu1c_req_wdata;
+    logic [7:0]  lsu1c_req_wstrb;
+    logic        lsu1c_req_is_vector;
+    logic [3:0]  lsu1c_req_vec_wmask;
+    logic [7:0]  lsu1c_req_id;
+    logic        lsu1c_req_ready;
+    logic        lsu1c_dc_req_ready;
+    logic        lsu1c_resp_valid;
+    logic [127:0] lsu1c_resp_data;
+    logic [7:0]  lsu1c_resp_id;
+    logic        lsu1c_resp_err;
+
+    logic        gfx_req_valid;
+    logic [1:0]  gfx_req_type;
+    logic [31:0] gfx_req_addr;
+    logic [127:0] gfx_req_wdata;
+    logic [7:0]  gfx_req_wstrb;
+    logic [7:0]  gfx_req_id;
+    logic        gfx_req_ready;
+
     logic        lsu_tex_req_valid;
     logic [1:0]  lsu_tex_req_type;
     logic [31:0] lsu_tex_req_addr;
@@ -178,6 +203,7 @@ module compute_unit_top #(
     // RR lane 1 (dual issue: vector-ALU or gfx only)
     decode_ctrl_t rr1_ctrl;
     logic         rr1_valid;
+    logic [31:0]  rr1_pc;
 
     logic [4:0]   rr1_scalar_raddr;
 
@@ -185,6 +211,9 @@ module compute_unit_top #(
     logic rr_is_gfx;
     logic rr1_is_vec_alu;
     logic rr1_is_gfx;
+    logic rr1_is_scalar_pipe;
+    logic rr1_is_scalar_lsu;
+    logic rr1_is_scalar_fp;
 
     // Vector issue queue (decoupled from scalar/fp/lsu pipe)
     typedef struct packed {
@@ -361,10 +390,19 @@ module compute_unit_top #(
     logic [31:0]  ex_pc;
     logic [31:0]  ex_op_a;
     logic [31:0]  ex_op_b;
+    logic         ex1_valid;
+    decode_ctrl_t ex1_ctrl;
+    logic [31:0]  ex1_op_a;
+    logic [31:0]  ex1_op_b;
+    logic [31:0]  ex1_scalar_res;
+    logic [31:0]  ex1_alu_res;
+    logic [31:0]  ex1_addr;
     logic [31:0]  mem_pc;
     logic [31:0]  ex_mask_scalar;
     logic [15:0]  ex_fp_a;
     logic [15:0]  ex_fp_b;
+    logic [15:0]  ex1_fp_a;
+    logic [15:0]  ex1_fp_b;
     logic [31:0]  ex_fp_scalar;
     logic [127:0] ex_vec_a;
     logic [127:0] ex_vec_b;
@@ -380,12 +418,20 @@ module compute_unit_top #(
     logic [31:0]  mem_addr;
     logic [127:0] mem_vec_wdata;
     logic [31:0]  mem_scalar_wdata;
+    decode_ctrl_t mem1_ctrl;
+    logic         mem1_valid;
+    logic [31:0]  mem1_scalar_res;
+    logic [31:0]  mem1_addr;
+    logic [31:0]  mem1_scalar_wdata;
 
     // WB stage
     decode_ctrl_t wb_ctrl;
     logic         wb_valid;
     logic [31:0]  wb_scalar_res;
     logic [15:0]  wb_fp_res;
+    decode_ctrl_t wb1_ctrl;
+    logic         wb1_valid;
+    logic [31:0]  wb1_scalar_res;
 
     // Scoreboard / pipeline stall
     logic stall_scoreboard;
@@ -399,50 +445,94 @@ module compute_unit_top #(
     logic stall_any;
 
     // Register files
-    logic [31:0]  s_rdata_a, s_rdata_b, s_rdata_c;
-    logic [31:0]  s_rdata_a_raw, s_rdata_b_raw, s_rdata_c_raw;
+    logic [31:0]  s_rdata_a, s_rdata_b, s_rdata_c, s_rdata_d, s_rdata_e;
+    logic [31:0]  s_rdata_a_raw, s_rdata_b_raw, s_rdata_c_raw, s_rdata_d_raw, s_rdata_e_raw;
     logic [31:0]  s_rdata_a_gfx, s_rdata_b_gfx, s_rdata_c_gfx;
     logic [31:0]  s_rdata_b_vec, s_rdata_c_vec;
     logic [31:0]  s_wdata;
     logic         s_we;
     logic [4:0]   s_waddr;
+    logic [31:0]  s_wdata0, s_wdata1, s_wdata2;
+    logic         s_we0, s_we1, s_we2;
+    logic [4:0]   s_waddr0, s_waddr1, s_waddr2;
 
-    logic [15:0]  f_rdata_a, f_rdata_b;
-    logic [15:0]  f_rdata_a_raw, f_rdata_b_raw;
+    logic [15:0]  f_rdata_a0, f_rdata_b0;
+    logic [15:0]  f_rdata_a1, f_rdata_b1;
+    logic [15:0]  f_rdata_a0_raw, f_rdata_b0_raw;
+    logic [15:0]  f_rdata_a1_raw, f_rdata_b1_raw;
     logic [15:0]  f_wdata;
     logic         f_we;
     logic [4:0]   f_waddr;
+    logic         f_we0, f_we1;
+    logic [4:0]   f_waddr0, f_waddr1;
+    logic [15:0]  f_wdata0, f_wdata1;
 
-    logic [127:0] v_rdata_a, v_rdata_b;
-    logic [127:0] v_rdata_a_raw, v_rdata_b_raw;
+    logic [127:0] v_rdata_a, v_rdata_b, v_rdata_c, v_rdata_d;
+    logic [127:0] v_rdata_a_raw, v_rdata_b_raw, v_rdata_c_raw, v_rdata_d_raw;
     logic [127:0] v_wdata;
     logic         v_we;
     logic [4:0]   v_waddr;
+    logic         v_we0, v_we1;
+    logic [4:0]   v_waddr0, v_waddr1;
+    logic [127:0] v_wdata0, v_wdata1;
 
-    // Vector ALU
-    logic         valuv_ready;
+    // Vector ALU (dual instances)
+    logic         valuv0_ready;
+    logic         valuv0_wb_valid;
+    logic [4:0]   valuv0_wb_rd;
+    logic [127:0] valuv0_wb_data;
+    logic         valuv0_wb_is_scalar;
+    logic         valuv0_err_overflow;
+    logic         valuv0_err_invalid;
+
+    logic         valuv1_ready;
+    logic         valuv1_wb_valid;
+    logic [4:0]   valuv1_wb_rd;
+    logic [127:0] valuv1_wb_data;
+    logic         valuv1_wb_is_scalar;
+    logic         valuv1_err_overflow;
+    logic         valuv1_err_invalid;
+    // Legacy VALU debug signals (for testbench visibility)
     logic         valuv_wb_valid;
     logic [4:0]   valuv_wb_rd;
-    logic [127:0] valuv_wb_data;
     logic         valuv_wb_is_scalar;
-    logic         valuv_err_overflow;
-    logic         valuv_err_invalid;
+    logic [127:0] valuv_wb_data;
+    logic         valuv_ready;
+    logic         valuv_issue_valid;
     logic         valuv_inflight_valid;
     logic [4:0]   valuv_inflight_rd;
+    logic         valuv_inflight_valid1;
+    logic [4:0]   valuv_inflight_rd1;
 
-    // FP ALU
-    logic         fp_wb_valid;
-    logic [4:0]   fp_wb_rd;
-    logic [15:0]  fp_alu_wb_data;
+    // FP ALU (dual instances)
+    logic         fp0_wb_valid;
+    logic [4:0]   fp0_wb_rd;
+    logic [15:0]  fp0_alu_wb_data;
+    logic         fp0_scalar_wb_valid;
+    logic [4:0]   fp0_scalar_wb_rd;
+    logic [31:0]  fp0_scalar_wb_data;
+    logic         fp0_wb_err_overflow;
+    logic         fp0_wb_err_invalid;
+    logic         fp0_in_ready;
+
+    logic         fp1_wb_valid;
+    logic [4:0]   fp1_wb_rd;
+    logic [15:0]  fp1_alu_wb_data;
+    logic         fp1_scalar_wb_valid;
+    logic [4:0]   fp1_scalar_wb_rd;
+    logic [31:0]  fp1_scalar_wb_data;
+    logic         fp1_wb_err_overflow;
+    logic         fp1_wb_err_invalid;
+    logic         fp1_in_ready;
+    // Legacy FP debug signals (for testbench visibility)
     logic         fp_scalar_wb_valid;
     logic [4:0]   fp_scalar_wb_rd;
     logic [31:0]  fp_scalar_wb_data;
-    logic         fp_wb_err_overflow;
-    logic         fp_wb_err_invalid;
-    logic         fp_in_ready;
 
     // Scalar WB backpressure + commit metadata (for CSR-aligned error pulses)
     logic         fp_scalar_ready;
+    logic         fp0_scalar_ready;
+    logic         fp1_scalar_ready;
     logic         valuv_scalar_ready;
     logic         alu_scalar_ready;
     logic         s_commit_from_fp;
@@ -460,13 +550,16 @@ module compute_unit_top #(
     logic         lsu_wb_is_vector;
     logic [4:0]   lsu_wb_rd;
     logic [127:0] lsu_wb_data;
+    logic         lsu1_wb_valid;
+    logic         lsu1_wb_is_vector;
+    logic [4:0]   lsu1_wb_rd;
+    logic [127:0] lsu1_wb_data;
 
     // Writeback-classification helpers (declared early so stall_pipe can reference them)
     logic         lsu_scalar_wb;
     logic         lsu_vector_wb;
     logic         alu_scalar_wb;
     logic         fp_scalar_wb;
-    logic         valuv_wb_valid_masked;
     logic         valuv_scalar_wb;
 
     // Vector writeback pending queue (buffers non-LSU vector writebacks)
@@ -514,8 +607,11 @@ module compute_unit_top #(
     wire ex_is_membar  = ex_valid  && ex_ctrl.is_system && (ex_ctrl.funct3 == 3'b000);
     wire mem_is_membar = mem_valid && mem_ctrl.is_system && (mem_ctrl.funct3 == 3'b000);
 
-    assign stall_membar      = mem_is_membar && lsu_busy;
+    wire lsu_any_busy        = lsu_busy || lsu1_busy;
+    assign stall_membar      = mem_is_membar && lsu_any_busy;
     wire vector_queue_full   = (vq_count == VQ_DEPTH);
+    wire vector_queue_has1   = (vq_count < VQ_DEPTH);
+    wire vector_queue_has2   = (vq_count < (VQ_DEPTH-1));
 
     // Backpressure for graphics/texture macro-ops:
     // GFX/TEX ops enqueue into the graphics pipeline issue queue without a per-op ready/ack.
@@ -528,8 +624,10 @@ module compute_unit_top #(
                         : 1'b0;
 
     // FP conversions to scalar regs can be backpressured by scalar WB arbitration.
-    // When fp_alu is holding an unaccepted result, stall the core if an FP op is in EX.
-    wire stall_fp_ex = ex_valid && ex_ctrl.is_scalar_fp && !fp_in_ready;
+    // When either FP ALU is holding an unaccepted result, stall a new FP op in that lane.
+    wire fp0_issue_valid = ex_valid && ex_ctrl.is_scalar_fp;
+    wire fp1_issue_valid = ex1_valid && ex1_ctrl.is_scalar_fp;
+    wire stall_fp_ex = (fp0_issue_valid && !fp0_in_ready) || (fp1_issue_valid && !fp1_in_ready);
 
     // Scalar WB arbitration provides ready/backpressure signals to prevent dropping results.
     wire stall_scalar_wb = (fp_scalar_wb && !fp_scalar_ready)
@@ -538,8 +636,13 @@ module compute_unit_top #(
 
     // Load-use interlock (scalar + vector ALU). Uses registered EX/MEM state to avoid long comb paths.
     wire rr_is_scalar_pipe = rr_valid && !rr_is_vec_alu && !rr_is_gfx;
+    wire rr1_is_scalar_alu = rr1_is_scalar_pipe && !rr1_ctrl.is_load && !rr1_ctrl.is_store
+                          && !rr1_ctrl.is_atomic && !rr1_ctrl.is_branch && !rr1_ctrl.is_system
+                          && !rr1_ctrl.is_scalar_fp;
     wire rr_uses_scalar_rs1 = rr_is_scalar_pipe && rr_ctrl.uses_rs1 && (rr_ctrl.rs1_class == CLASS_SCALAR) && (rr_ctrl.rs1 != 5'd0);
     wire rr_uses_scalar_rs2 = rr_is_scalar_pipe && rr_ctrl.uses_rs2 && (rr_ctrl.rs2_class == CLASS_SCALAR) && (rr_ctrl.rs2 != 5'd0);
+    wire rr1_uses_scalar_rs1 = rr1_is_scalar_pipe && rr1_ctrl.uses_rs1 && (rr1_ctrl.rs1_class == CLASS_SCALAR) && (rr1_ctrl.rs1 != 5'd0);
+    wire rr1_uses_scalar_rs2 = rr1_is_scalar_pipe && rr1_ctrl.uses_rs2 && (rr1_ctrl.rs2_class == CLASS_SCALAR) && (rr1_ctrl.rs2 != 5'd0);
 
     wire rr0_uses_vec_rs1 = rr_is_vec_alu && rr_ctrl.uses_rs1 && (rr_ctrl.rs1_class == CLASS_VEC) && (rr_ctrl.rs1 != 5'd0);
     wire rr0_uses_vec_rs2 = rr_is_vec_alu && rr_ctrl.uses_rs2 && (rr_ctrl.rs2_class == CLASS_VEC) && (rr_ctrl.rs2 != 5'd0);
@@ -548,17 +651,33 @@ module compute_unit_top #(
 
     wire ex_is_scalar_load = ex_valid && ex_ctrl.is_load && !ex_ctrl.is_vector && ex_ctrl.uses_rd && (ex_ctrl.rd != 5'd0);
     wire mem_is_scalar_load = mem_valid && mem_ctrl.is_load && !mem_ctrl.is_vector && mem_ctrl.uses_rd && (mem_ctrl.rd != 5'd0);
+    wire ex1_is_scalar_load = ex1_valid && ex1_ctrl.is_load && !ex1_ctrl.is_vector && ex1_ctrl.uses_rd && (ex1_ctrl.rd != 5'd0);
+    wire mem1_is_scalar_load = mem1_valid && mem1_ctrl.is_load && !mem1_ctrl.is_vector && mem1_ctrl.uses_rd && (mem1_ctrl.rd != 5'd0);
 
     wire ex_is_vec_load  = ex_valid && ex_ctrl.is_load && ex_ctrl.is_vector && ex_ctrl.uses_rd && (ex_ctrl.rd != 5'd0);
     wire mem_is_vec_load = mem_valid && mem_ctrl.is_load && mem_ctrl.is_vector && mem_ctrl.uses_rd && (mem_ctrl.rd != 5'd0);
 
     wire hazard_ex_load = ex_is_scalar_load && ((rr_uses_scalar_rs1 && (rr_ctrl.rs1 == ex_ctrl.rd))
-                                             || (rr_uses_scalar_rs2 && (rr_ctrl.rs2 == ex_ctrl.rd)));
+                                             || (rr_uses_scalar_rs2 && (rr_ctrl.rs2 == ex_ctrl.rd))
+                                             || (rr1_uses_scalar_rs1 && (rr1_ctrl.rs1 == ex_ctrl.rd))
+                                             || (rr1_uses_scalar_rs2 && (rr1_ctrl.rs2 == ex_ctrl.rd)));
+    wire hazard_ex1_load = ex1_is_scalar_load && ((rr_uses_scalar_rs1 && (rr_ctrl.rs1 == ex1_ctrl.rd))
+                                               || (rr_uses_scalar_rs2 && (rr_ctrl.rs2 == ex1_ctrl.rd))
+                                               || (rr1_uses_scalar_rs1 && (rr1_ctrl.rs1 == ex1_ctrl.rd))
+                                               || (rr1_uses_scalar_rs2 && (rr1_ctrl.rs2 == ex1_ctrl.rd)));
 
     wire mem_load_data_ready = lsu_wb_valid && !lsu_wb_is_vector && (lsu_wb_rd == mem_ctrl.rd);
     wire hazard_mem_load = mem_is_scalar_load && !mem_load_data_ready
                         && ((rr_uses_scalar_rs1 && (rr_ctrl.rs1 == mem_ctrl.rd))
-                         || (rr_uses_scalar_rs2 && (rr_ctrl.rs2 == mem_ctrl.rd)));
+                         || (rr_uses_scalar_rs2 && (rr_ctrl.rs2 == mem_ctrl.rd))
+                         || (rr1_uses_scalar_rs1 && (rr1_ctrl.rs1 == mem_ctrl.rd))
+                         || (rr1_uses_scalar_rs2 && (rr1_ctrl.rs2 == mem_ctrl.rd)));
+    wire mem1_load_data_ready = lsu1_wb_valid && !lsu1_wb_is_vector && (lsu1_wb_rd == mem1_ctrl.rd);
+    wire hazard_mem1_load = mem1_is_scalar_load && !mem1_load_data_ready
+                         && ((rr_uses_scalar_rs1 && (rr_ctrl.rs1 == mem1_ctrl.rd))
+                          || (rr_uses_scalar_rs2 && (rr_ctrl.rs2 == mem1_ctrl.rd))
+                          || (rr1_uses_scalar_rs1 && (rr1_ctrl.rs1 == mem1_ctrl.rd))
+                          || (rr1_uses_scalar_rs2 && (rr1_ctrl.rs2 == mem1_ctrl.rd)));
 
     wire hazard_ex_vload = ex_is_vec_load && ((rr0_uses_vec_rs1 && (rr_ctrl.rs1 == ex_ctrl.rd))
                                            || (rr0_uses_vec_rs2 && (rr_ctrl.rs2 == ex_ctrl.rd))
@@ -572,7 +691,8 @@ module compute_unit_top #(
                              || (rr1_uses_vec_rs1 && (rr1_ctrl.rs1 == mem_ctrl.rd))
                              || (rr1_uses_vec_rs2 && (rr1_ctrl.rs2 == mem_ctrl.rd)));
 
-    wire stall_load_use = hazard_ex_load || hazard_mem_load || hazard_ex_vload || hazard_mem_vload;
+    wire stall_load_use = hazard_ex_load || hazard_mem_load || hazard_ex1_load || hazard_mem1_load
+                       || hazard_ex_vload || hazard_mem_vload;
 
     logic vwbq_rs2_match;
     logic vwbq_rs2_head_match;
@@ -601,9 +721,14 @@ module compute_unit_top #(
     wire hazard_vec_store = rr_valid && rr_ctrl.is_store && rr_ctrl.is_vector
                             && (vec_pending_rd_hit(rr_ctrl.rs2)
                                 || (valuv_inflight_valid && (valuv_inflight_rd == rr_ctrl.rs2))
-                                || (valuv_vector_wb_issue && (valuv_wb_rd == rr_ctrl.rs2))
+                                || (valuv_inflight_valid1 && (valuv_inflight_rd1 == rr_ctrl.rs2))
+                                || (valuv0_vector_wb_issue && (valuv0_wb_rd == rr_ctrl.rs2))
+                                || (valuv1_vector_wb_issue && (valuv1_wb_rd == rr_ctrl.rs2))
                                 || (vwbq_rs2_match && !vwbq_rs2_head_match));
 
+    wire lsu1_hold           = mem1_valid && (mem1_ctrl.is_load || mem1_ctrl.is_store || mem1_ctrl.is_atomic)
+                               && !lsu1c_req_ready;
+    wire lane1_hold          = lsu1_hold;
     wire stall_pipe          = lsu_stall || stall_membar || stall_gfxq_rr || stall_fp_ex || stall_scalar_wb
                                || stall_load_use || hazard_vec_store;
     // Frontend stalls when it cannot accept slot0.
@@ -614,7 +739,8 @@ module compute_unit_top #(
     // ---------------------------------------------------------------------
     // RR forwarding availability (vector + gfx/tex scalar operands)
     // ---------------------------------------------------------------------
-    wire valuv_vector_wb_issue = (valuv_wb_valid === 1'b1) && !valuv_wb_is_scalar;
+    wire valuv0_vector_wb_issue = (valuv0_wb_valid === 1'b1) && !valuv0_wb_is_scalar;
+    wire valuv1_vector_wb_issue = (valuv1_wb_valid === 1'b1) && !valuv1_wb_is_scalar;
     function automatic logic vec_pending_rd_hit(input logic [4:0] r);
         begin
             vec_pending_rd_hit = 1'b0;
@@ -627,12 +753,14 @@ module compute_unit_top #(
         begin
             vec_fwd_hit = 1'b0;
             if (vec_pending_rd_hit(r)) begin
-                if (valuv_vector_wb_issue && (valuv_wb_rd == r)) vec_fwd_hit = 1'b1;
+                if (valuv0_vector_wb_issue && (valuv0_wb_rd == r)) vec_fwd_hit = 1'b1;
+                else if (valuv1_vector_wb_issue && (valuv1_wb_rd == r)) vec_fwd_hit = 1'b1;
             end else begin
                 if (lsu_wb_valid && lsu_wb_is_vector && (lsu_wb_rd == r)) vec_fwd_hit = 1'b1;
                 else if ((vwbq_count != '0) && (vwbq_rd[vwbq_head] == r)) vec_fwd_hit = 1'b1;
                 else if (gp_wb_valid && (gp_wb_rd == r)) vec_fwd_hit = 1'b1;
-                else if (valuv_vector_wb_issue && (valuv_wb_rd == r)) vec_fwd_hit = 1'b1;
+                else if (valuv0_vector_wb_issue && (valuv0_wb_rd == r)) vec_fwd_hit = 1'b1;
+                else if (valuv1_vector_wb_issue && (valuv1_wb_rd == r)) vec_fwd_hit = 1'b1;
             end
         end
     endfunction
@@ -651,16 +779,12 @@ module compute_unit_top #(
         end
     endfunction
 
-    wire issue0_rs1_fwd = (d0_ctrl.uses_rs1 && (d0_ctrl.rs1_class == CLASS_VEC) && vec_fwd_hit(d0_ctrl.rs1))
-                       || (d0_ctrl.uses_rs1 && (d0_ctrl.rs1_class == CLASS_SCALAR) && scalar_fwd_hit(d0_ctrl.rs1));
+    wire issue0_rs1_fwd = (d0_ctrl.uses_rs1 && (d0_ctrl.rs1_class == CLASS_VEC) && vec_fwd_hit(d0_ctrl.rs1));
     wire issue0_rs2_fwd = (d0_ctrl.uses_rs2 && (d0_ctrl.rs2_class == CLASS_VEC)
-                           && vec_fwd_hit(d0_ctrl.rs2) && !d0_ctrl.is_store && !d0_ctrl.is_atomic)
-                       || (d0_ctrl.uses_rs2 && (d0_ctrl.rs2_class == CLASS_SCALAR) && scalar_fwd_hit(d0_ctrl.rs2));
-    wire issue1_rs1_fwd = (d1_ctrl.uses_rs1 && (d1_ctrl.rs1_class == CLASS_VEC) && vec_fwd_hit(d1_ctrl.rs1))
-                       || (d1_ctrl.uses_rs1 && (d1_ctrl.rs1_class == CLASS_SCALAR) && scalar_fwd_hit(d1_ctrl.rs1));
+                           && vec_fwd_hit(d0_ctrl.rs2) && !d0_ctrl.is_store && !d0_ctrl.is_atomic);
+    wire issue1_rs1_fwd = (d1_ctrl.uses_rs1 && (d1_ctrl.rs1_class == CLASS_VEC) && vec_fwd_hit(d1_ctrl.rs1));
     wire issue1_rs2_fwd = (d1_ctrl.uses_rs2 && (d1_ctrl.rs2_class == CLASS_VEC)
-                           && vec_fwd_hit(d1_ctrl.rs2) && !d1_ctrl.is_store && !d1_ctrl.is_atomic)
-                       || (d1_ctrl.uses_rs2 && (d1_ctrl.rs2_class == CLASS_SCALAR) && scalar_fwd_hit(d1_ctrl.rs2));
+                           && vec_fwd_hit(d1_ctrl.rs2) && !d1_ctrl.is_store && !d1_ctrl.is_atomic);
 
     // ---------------------------------------------------------------------
     // Graphics issue select + texture wiring (must appear after stall_pipe is defined)
@@ -676,8 +800,8 @@ module compute_unit_top #(
 
         gp_issue1_valid = rr1_is_gfx && !stall_pipe && !ex_redirect_valid;
         gp_issue1_ctrl  = rr1_ctrl;
-        gp_issue1_vec_a = v_rdata_a;
-        gp_issue1_vec_b = v_rdata_b;
+        gp_issue1_vec_a = v_rdata_c;
+        gp_issue1_vec_b = v_rdata_d;
         // Only one scalar operand is supported on lane1.
         // Route it to the field the engine expects:
         // - GFX ops consume the descriptor pointer from op_a
@@ -885,12 +1009,28 @@ module compute_unit_top #(
         .flush_rr_rd_class(rr_ctrl.rd_class),
         .flush_rr_rd_valid(rr_valid && rr_ctrl.uses_rd),
         .flush_rr_rd(rr_ctrl.rd),
-        .wb_scalar_valid(s_we),
-        .wb_scalar_rd(s_waddr),
-        .wb_fp_valid(f_we),
-        .wb_fp_rd(f_waddr),
-        .wb_vec_valid(v_we),
-        .wb_vec_rd(v_waddr),
+        .flush_rr1(ex_redirect_valid),
+        .flush_rr1_rd_class(rr1_ctrl.rd_class),
+        .flush_rr1_rd_valid(rr1_valid && rr1_ctrl.uses_rd),
+        .flush_rr1_rd(rr1_ctrl.rd),
+        .flush_ex1(ex_redirect_valid),
+        .flush_ex1_rd_class(ex1_ctrl.rd_class),
+        .flush_ex1_rd_valid(ex1_valid && ex1_ctrl.uses_rd),
+        .flush_ex1_rd(ex1_ctrl.rd),
+        .wb_scalar_valid0(s_we0),
+        .wb_scalar_rd0(s_waddr0),
+        .wb_scalar_valid1(s_we1),
+        .wb_scalar_rd1(s_waddr1),
+        .wb_scalar_valid2(s_we2),
+        .wb_scalar_rd2(s_waddr2),
+        .wb_fp_valid0(f_we0),
+        .wb_fp_rd0(f_waddr0),
+        .wb_fp_valid1(f_we1),
+        .wb_fp_rd1(f_waddr1),
+        .wb_vec_valid0(v_we0),
+        .wb_vec_rd0(v_waddr0),
+        .wb_vec_valid1(v_we1),
+        .wb_vec_rd1(v_waddr1),
         // Do not clear all busy bits on redirect: older in-flight ops must complete.
         .flush_all(1'b0)
     );
@@ -902,21 +1042,34 @@ module compute_unit_top #(
 
     wire d1_is_vec_alu = if_inst1_valid && d1_ctrl.is_vector && !d1_ctrl.is_load && !d1_ctrl.is_store && !d1_ctrl.is_tex && !d1_ctrl.is_atomic;
     wire d1_is_gfx     = if_inst1_valid && (d1_ctrl.is_tex || d1_ctrl.is_gfx);
+    wire d1_is_scalar_alu = if_inst1_valid && !d1_ctrl.is_vector && !d1_ctrl.is_tex && !d1_ctrl.is_gfx
+                         && !d1_ctrl.is_load && !d1_ctrl.is_store && !d1_ctrl.is_atomic
+                         && !d1_ctrl.is_branch && !d1_ctrl.is_system && !d1_ctrl.is_scalar_fp;
+    wire d1_is_scalar_lsu = if_inst1_valid && !d1_ctrl.is_vector && !d1_ctrl.is_tex && !d1_ctrl.is_gfx
+                         && (d1_ctrl.is_load || d1_ctrl.is_store || d1_ctrl.is_atomic)
+                         && !d1_ctrl.is_branch && !d1_ctrl.is_system && !d1_ctrl.is_scalar_fp;
+    wire d1_is_scalar_fp  = if_inst1_valid && d1_ctrl.is_scalar_fp;
 
-    // Slot0 can be a scalar-pipe op (including vector loads/stores/atomics), and slot1 can be vec-ALU/gfx.
-    // However, vector stores/atomics in slot0 need the vector regfile read ports, which would conflict with
-    // slot1 vec-ALU/gfx operand reads (we only have one 2R port set). Disallow that dual-issue case.
-    wire d0_needs_vrf = if_inst0_valid && d0_ctrl.is_vector && (d0_ctrl.is_store || d0_ctrl.is_atomic);
     // Do not dual-issue behind control-flow: gfx/tex work is not flushed on redirects.
-    wire can_dual_raw = if_inst0_valid && if_inst1_valid && d0_is_scalar_pipe && !d0_ctrl.is_branch && !d0_ctrl.is_system && !d0_needs_vrf && (d1_is_vec_alu || d1_is_gfx);
+    wire can_dual_raw = if_inst0_valid && if_inst1_valid && !d0_ctrl.is_branch && !d0_ctrl.is_system
+                     && (d1_is_vec_alu || d1_is_gfx || d1_is_scalar_alu || d1_is_scalar_lsu || d1_is_scalar_fp);
     wire can_dual = can_dual_raw;
 
+    wire d0_vec_issue = d0_is_vec_alu;
+    wire d1_vec_issue = d1_is_vec_alu;
+    wire d1_vec_ok    = d1_vec_issue ? (d0_vec_issue ? vector_queue_has2 : vector_queue_has1) : 1'b1;
+
     assign issue0_valid = if_valid && if_inst0_valid && !stall_pipe && !ex_redirect_valid
-                      && !(d0_is_vec_alu && vector_queue_full)
+                      && !(d0_is_vec_alu && !vector_queue_has1)
                       && !(d0_is_gfx && gfx_queue_full);
 
-    assign issue1_valid = if_valid && can_dual && !stall_pipe && !ex_redirect_valid
-                      && ((d1_is_vec_alu && !vector_queue_full) || (d1_is_gfx && !gfx_queue_full));
+    assign issue1_valid = if_valid && can_dual && !stall_pipe && !ex_redirect_valid && !lane1_hold
+                      && d1_vec_ok
+                      && ((d1_is_vec_alu && vector_queue_has1)
+                          || (d1_is_gfx && !gfx_queue_full)
+                          || d1_is_scalar_alu
+                          || d1_is_scalar_lsu
+                          || d1_is_scalar_fp);
 
     always_comb begin
         accept0 = issue0_valid && !stall_sb0;
@@ -940,6 +1093,7 @@ module compute_unit_top #(
             rr1_valid <= 1'b0;
             rr1_ctrl  <= '0;
             rr_pc    <= 32'h0;
+            rr1_pc   <= 32'h0;
             rr_pred_taken  <= 1'b0;
             rr_pred_target <= 32'h0;
         end else if (ex_redirect_valid) begin
@@ -949,6 +1103,7 @@ module compute_unit_top #(
              rr1_valid <= 1'b0;
              rr1_ctrl  <= '0;
              rr_pc    <= 32'h0;
+             rr1_pc   <= 32'h0;
              rr_pred_taken  <= 1'b0;
              rr_pred_target <= 32'h0;
         end else if (!stall_pipe) begin
@@ -957,6 +1112,7 @@ module compute_unit_top #(
             rr1_valid <= accept1;
             rr1_ctrl  <= d1_ctrl;
             rr_pc     <= accept0 ? if_pc : 32'h0;
+            rr1_pc    <= accept1 ? (if_pc + 32'd4) : 32'h0;
             rr_pred_taken  <= accept0 ? if_pred_taken : 1'b0;
             rr_pred_target <= accept0 ? if_pred_target : 32'h0;
         end
@@ -969,84 +1125,144 @@ module compute_unit_top #(
         .raddr_a(rr_ctrl.rs1),
         .raddr_b(rr_ctrl.rs2),
         .raddr_c(rr1_scalar_raddr),
-        .raddr_d(5'd0),
-        .raddr_e(5'd0),
+        .raddr_d(rr1_ctrl.rs1),
+        .raddr_e(rr1_ctrl.rs2),
         .rdata_a(s_rdata_a_raw),
         .rdata_b(s_rdata_b_raw),
         .rdata_c(s_rdata_c_raw),
-        .rdata_d(),
-        .rdata_e(),
-        .we0(s_we),
-        .waddr0(s_waddr),
-        .wdata0(s_wdata),
-        .we1(1'b0),
-        .waddr1(5'd0),
-        .wdata1(32'h0),
-        .we2(1'b0),
-        .waddr2(5'd0),
-        .wdata2(32'h0)
+        .rdata_d(s_rdata_d_raw),
+        .rdata_e(s_rdata_e_raw),
+        .we0(s_we0),
+        .waddr0(s_waddr0),
+        .wdata0(s_wdata0),
+        .we1(s_we1),
+        .waddr1(s_waddr1),
+        .wdata1(s_wdata1),
+        .we2(s_we2),
+        .waddr2(s_waddr2),
+        .wdata2(s_wdata2)
     );
+
+    function automatic logic [31:0] scalar_bypass(
+        input logic [4:0] raddr,
+        input logic [31:0] rdata_raw
+    );
+        logic [31:0] d;
+        begin
+            d = rdata_raw;
+            if (s_we2 && (s_waddr2 != 5'd0) && (s_waddr2 == raddr)) d = s_wdata2;
+            else if (s_we1 && (s_waddr1 != 5'd0) && (s_waddr1 == raddr)) d = s_wdata1;
+            else if (s_we0 && (s_waddr0 != 5'd0) && (s_waddr0 == raddr)) d = s_wdata0;
+            scalar_bypass = d;
+        end
+    endfunction
 
     // Scalar writeback bypass: prefer same-cycle WB data over regfile read.
     always_comb begin
-        s_rdata_a = (s_we && (s_waddr != 5'd0) && (s_waddr == rr_ctrl.rs1)) ? s_wdata : s_rdata_a_raw;
-        s_rdata_b = (s_we && (s_waddr != 5'd0) && (s_waddr == rr_ctrl.rs2)) ? s_wdata : s_rdata_b_raw;
-        s_rdata_c = (s_we && (s_waddr != 5'd0) && (s_waddr == rr1_scalar_raddr)) ? s_wdata : s_rdata_c_raw;
+        s_rdata_a = scalar_bypass(rr_ctrl.rs1, s_rdata_a_raw);
+        s_rdata_b = scalar_bypass(rr_ctrl.rs2, s_rdata_b_raw);
+        s_rdata_c = scalar_bypass(rr1_scalar_raddr, s_rdata_c_raw);
+        s_rdata_d = scalar_bypass(rr1_ctrl.rs1, s_rdata_d_raw);
+        s_rdata_e = scalar_bypass(rr1_ctrl.rs2, s_rdata_e_raw);
     end
+
+    wire [4:0] fp_raddr_a0 = rr_ctrl.rs1;
+    wire [4:0] fp_raddr_b0 = rr_ctrl.rs2;
+    wire [4:0] fp_raddr_a1 = rr1_ctrl.rs1;
+    wire [4:0] fp_raddr_b1 = rr1_ctrl.rs2;
 
     regfile_fp u_regfile_fp (
         .clk(clk),
         .rst_n(rst_n),
-        .raddr_a(rr_ctrl.rs1),
-        .raddr_b(rr_ctrl.rs2),
-        .rdata_a(f_rdata_a_raw),
-        .rdata_b(f_rdata_b_raw),
-        .we(f_we),
-        .waddr(f_waddr),
-        .wdata(f_wdata)
+        .raddr_a(fp_raddr_a0),
+        .raddr_b(fp_raddr_b0),
+        .raddr_c(fp_raddr_a1),
+        .raddr_d(fp_raddr_b1),
+        .rdata_a(f_rdata_a0_raw),
+        .rdata_b(f_rdata_b0_raw),
+        .rdata_c(f_rdata_a1_raw),
+        .rdata_d(f_rdata_b1_raw),
+        .we0(f_we0),
+        .waddr0(f_waddr0),
+        .wdata0(f_wdata0),
+        .we1(f_we1),
+        .waddr1(f_waddr1),
+        .wdata1(f_wdata1)
     );
+
+    function automatic logic [15:0] fp_bypass(
+        input logic [4:0]  raddr,
+        input logic [15:0] rdata_raw
+    );
+        logic [15:0] d;
+        begin
+            d = rdata_raw;
+            if (f_we1 && (f_waddr1 != 5'd0) && (f_waddr1 == raddr)) d = f_wdata1;
+            else if (f_we0 && (f_waddr0 != 5'd0) && (f_waddr0 == raddr)) d = f_wdata0;
+            fp_bypass = d;
+        end
+    endfunction
 
     // Same-cycle writeback bypass for FP reads (to match scoreboard WB relaxation).
     always_comb begin
-        f_rdata_a = (f_we && (f_waddr == rr_ctrl.rs1)) ? f_wdata : f_rdata_a_raw;
-        f_rdata_b = (f_we && (f_waddr == rr_ctrl.rs2)) ? f_wdata : f_rdata_b_raw;
+        f_rdata_a0 = fp_bypass(fp_raddr_a0, f_rdata_a0_raw);
+        f_rdata_b0 = fp_bypass(fp_raddr_b0, f_rdata_b0_raw);
+        f_rdata_a1 = fp_bypass(fp_raddr_a1, f_rdata_a1_raw);
+        f_rdata_b1 = fp_bypass(fp_raddr_b1, f_rdata_b1_raw);
     end
 
     // NOTE: Scalar has same-cycle writeback bypass; FP/Vector RAW hazards rely on scoreboard stalls
     // plus same-cycle WB bypass when available.
 
-    // Vector operands are only needed for rr (vector/gfx) and rr1 (dual-issued vector/gfx).
-    wire vrf_use_rr1 = rr1_valid && (rr1_is_vec_alu || rr1_is_gfx);
-    wire [4:0] vrf_raddr_a = vrf_use_rr1 ? rr1_ctrl.rs1 : rr_ctrl.rs1;
-    wire [4:0] vrf_raddr_b = vrf_use_rr1 ? rr1_ctrl.rs2 : rr_ctrl.rs2;
+    // Vector operands are needed for rr (slot0) and rr1 (slot1) independently.
+    wire [4:0] vrf_raddr_a = rr_ctrl.rs1;
+    wire [4:0] vrf_raddr_b = rr_ctrl.rs2;
+    wire [4:0] vrf_raddr_c = rr1_ctrl.rs1;
+    wire [4:0] vrf_raddr_d = rr1_ctrl.rs2;
 
     regfile_vector u_regfile_vector (
         .clk(clk),
         .rst_n(rst_n),
         .raddr_a(vrf_raddr_a),
         .raddr_b(vrf_raddr_b),
+        .raddr_c(vrf_raddr_c),
+        .raddr_d(vrf_raddr_d),
         .rdata_a(v_rdata_a_raw),
         .rdata_b(v_rdata_b_raw),
-        .we(v_we),
-        .waddr(v_waddr),
-        .wdata(v_wdata)
+        .rdata_c(v_rdata_c_raw),
+        .rdata_d(v_rdata_d_raw),
+        .we0(v_we0),
+        .waddr0(v_waddr0),
+        .wdata0(v_wdata0),
+        .we1(v_we1),
+        .waddr1(v_waddr1),
+        .wdata1(v_wdata1)
     );
+
+    function automatic logic [127:0] vec_bypass(
+        input logic [4:0]    raddr,
+        input logic [127:0]  rdata_raw
+    );
+        logic [127:0] d;
+        begin
+            d = rdata_raw;
+            if (v_we1 && (v_waddr1 == raddr)) d = v_wdata1;
+            else if (v_we0 && (v_waddr0 == raddr)) d = v_wdata0;
+            else if (lsu_wb_valid && lsu_wb_is_vector && (lsu_wb_rd == raddr)) d = lsu_wb_data;
+            else if ((vwbq_count != '0) && (vwbq_rd[vwbq_head] == raddr)) d = vwbq_data[vwbq_head];
+            else if (gp_wb_valid && (gp_wb_rd == raddr)) d = gp_wb_data;
+            else if ((valuv0_wb_valid === 1'b1) && !valuv0_wb_is_scalar && (valuv0_wb_rd == raddr)) d = valuv0_wb_data;
+            else if ((valuv1_wb_valid === 1'b1) && !valuv1_wb_is_scalar && (valuv1_wb_rd == raddr)) d = valuv1_wb_data;
+            vec_bypass = d;
+        end
+    endfunction
 
     // Vector RR forwarding: allow consuming results from LSU/GP/VALU or pending queue.
     always_comb begin
-        v_rdata_a = v_rdata_a_raw;
-        if (v_we && (v_waddr == vrf_raddr_a)) v_rdata_a = v_wdata;
-        else if (lsu_wb_valid && lsu_wb_is_vector && (lsu_wb_rd == vrf_raddr_a)) v_rdata_a = lsu_wb_data;
-        else if ((vwbq_count != '0) && (vwbq_rd[vwbq_head] == vrf_raddr_a)) v_rdata_a = vwbq_data[vwbq_head];
-        else if (gp_wb_valid && (gp_wb_rd == vrf_raddr_a)) v_rdata_a = gp_wb_data;
-        else if ((valuv_wb_valid === 1'b1) && !valuv_wb_is_scalar && (valuv_wb_rd == vrf_raddr_a)) v_rdata_a = valuv_wb_data;
-
-        v_rdata_b = v_rdata_b_raw;
-        if (v_we && (v_waddr == vrf_raddr_b)) v_rdata_b = v_wdata;
-        else if (lsu_wb_valid && lsu_wb_is_vector && (lsu_wb_rd == vrf_raddr_b)) v_rdata_b = lsu_wb_data;
-        else if ((vwbq_count != '0) && (vwbq_rd[vwbq_head] == vrf_raddr_b)) v_rdata_b = vwbq_data[vwbq_head];
-        else if (gp_wb_valid && (gp_wb_rd == vrf_raddr_b)) v_rdata_b = gp_wb_data;
-        else if ((valuv_wb_valid === 1'b1) && !valuv_wb_is_scalar && (valuv_wb_rd == vrf_raddr_b)) v_rdata_b = valuv_wb_data;
+        v_rdata_a = vec_bypass(vrf_raddr_a, v_rdata_a_raw);
+        v_rdata_b = vec_bypass(vrf_raddr_b, v_rdata_b_raw);
+        v_rdata_c = vec_bypass(vrf_raddr_c, v_rdata_c_raw);
+        v_rdata_d = vec_bypass(vrf_raddr_d, v_rdata_d_raw);
     end
 
     always_comb begin
@@ -1054,6 +1270,10 @@ module compute_unit_top #(
         rr_is_gfx      = rr_valid  && (rr_ctrl.is_tex || rr_ctrl.is_gfx);
         rr1_is_vec_alu = rr1_valid && rr1_ctrl.is_vector && !rr1_ctrl.is_load && !rr1_ctrl.is_store && !rr1_ctrl.is_tex && !rr1_ctrl.is_atomic;
         rr1_is_gfx     = rr1_valid && (rr1_ctrl.is_tex || rr1_ctrl.is_gfx);
+        rr1_is_scalar_pipe = rr1_valid && !rr1_is_vec_alu && !rr1_is_gfx;
+        rr1_is_scalar_fp   = rr1_valid && rr1_ctrl.is_scalar_fp;
+        rr1_is_scalar_lsu  = rr1_is_scalar_pipe && (rr1_ctrl.is_load || rr1_ctrl.is_store || rr1_ctrl.is_atomic)
+                  && !rr1_ctrl.is_scalar_fp;
     end
 
     // Slot1 scalar operand capture: only one scalar operand is supported in the dual-issue lane.
@@ -1104,12 +1324,38 @@ module compute_unit_top #(
             ex_op_b         <= (rr_is_vec_alu || rr_is_gfx) ? 32'h0 : s_rdata_b;
             ex_fp_scalar    <= (rr_is_vec_alu || rr_is_gfx) ? 32'h0 : s_rdata_b;
             ex_mask_scalar  <= (rr_is_vec_alu || rr_is_gfx) ? 32'h0 : s_rdata_b;
-            ex_fp_a         <= (rr_is_vec_alu || rr_is_gfx) ? 16'h0 : f_rdata_a;
-            ex_fp_b         <= (rr_is_vec_alu || rr_is_gfx) ? 16'h0 : f_rdata_b;
+            ex_fp_a         <= (rr_is_vec_alu || rr_is_gfx) ? 16'h0 : f_rdata_a0;
+            ex_fp_b         <= (rr_is_vec_alu || rr_is_gfx) ? 16'h0 : f_rdata_b0;
             ex_vec_a        <= (rr_is_vec_alu || rr_is_gfx) ? '0 : v_rdata_a;
             ex_vec_b        <= (rr_is_vec_alu || rr_is_gfx) ? '0 : v_rdata_b;
             ex_pred_taken   <= (rr_is_vec_alu || rr_is_gfx) ? 1'b0 : rr_pred_taken;
             ex_pred_target  <= (rr_is_vec_alu || rr_is_gfx) ? 32'h0 : rr_pred_target;
+        end
+    end
+
+    // EX1 stage registers (lane1 scalar ALU only)
+    always_ff @(posedge clk) begin
+        if (!rst_n) begin
+            ex1_valid <= 1'b0;
+            ex1_ctrl  <= '0;
+            ex1_op_a  <= 32'h0;
+            ex1_op_b  <= 32'h0;
+            ex1_fp_a  <= 16'h0;
+            ex1_fp_b  <= 16'h0;
+        end else if (ex_redirect_valid) begin
+            ex1_valid <= 1'b0;
+            ex1_ctrl  <= '0;
+            ex1_op_a  <= 32'h0;
+            ex1_op_b  <= 32'h0;
+            ex1_fp_a  <= 16'h0;
+            ex1_fp_b  <= 16'h0;
+        end else if (!stall_pipe && !lane1_hold) begin
+            ex1_valid <= rr1_is_scalar_alu || rr1_is_scalar_lsu || rr1_is_scalar_fp;
+            ex1_ctrl  <= (rr1_is_scalar_alu || rr1_is_scalar_lsu || rr1_is_scalar_fp) ? rr1_ctrl : '0;
+            ex1_op_a  <= (rr1_is_scalar_alu || rr1_is_scalar_lsu || rr1_is_scalar_fp) ? s_rdata_d : 32'h0;
+            ex1_op_b  <= (rr1_is_scalar_alu || rr1_is_scalar_lsu || rr1_is_scalar_fp) ? s_rdata_e : 32'h0;
+            ex1_fp_a  <= rr1_is_scalar_fp ? f_rdata_a1 : 16'h0;
+            ex1_fp_b  <= rr1_is_scalar_fp ? f_rdata_b1 : 16'h0;
         end
     end
 
@@ -1122,11 +1368,23 @@ module compute_unit_top #(
     wire [4:0]  fwd_ex_rd   = ex_ctrl.rd;
     wire [31:0] fwd_ex_data = ex_scalar_res;
 
+    wire fwd_ex1_valid = ex1_valid && ex1_ctrl.uses_rd && !ex1_ctrl.is_load && !ex1_ctrl.is_vector
+                      && !ex1_ctrl.rd_is_vec && !ex1_ctrl.rd_is_fp && !ex1_ctrl.is_scalar_fp
+                      && !ex1_ctrl.is_system && (ex1_ctrl.rd != 5'd0);
+    wire [4:0]  fwd_ex1_rd   = ex1_ctrl.rd;
+    wire [31:0] fwd_ex1_data = ex1_scalar_res;
+
     wire fwd_mem_valid = mem_valid && mem_ctrl.uses_rd && !mem_ctrl.is_load && !mem_ctrl.is_vector
                       && !mem_ctrl.rd_is_vec && !mem_ctrl.rd_is_fp && !mem_ctrl.is_scalar_fp
                       && (mem_ctrl.rd != 5'd0);
     wire [4:0]  fwd_mem_rd   = mem_ctrl.rd;
     wire [31:0] fwd_mem_data = mem_scalar_res;
+
+    wire fwd_mem1_valid = mem1_valid && mem1_ctrl.uses_rd && !mem1_ctrl.is_load && !mem1_ctrl.is_vector
+                       && !mem1_ctrl.rd_is_vec && !mem1_ctrl.rd_is_fp && !mem1_ctrl.is_scalar_fp
+                       && (mem1_ctrl.rd != 5'd0);
+    wire [4:0]  fwd_mem1_rd   = mem1_ctrl.rd;
+    wire [31:0] fwd_mem1_data = mem1_scalar_res;
 
     wire fwd_wb_valid = wb_valid && wb_ctrl.uses_rd && !wb_ctrl.is_load && !wb_ctrl.is_vector
                      && !wb_ctrl.rd_is_vec && !wb_ctrl.rd_is_fp && !wb_ctrl.is_scalar_fp
@@ -1134,26 +1392,63 @@ module compute_unit_top #(
     wire [4:0]  fwd_wb_rd   = wb_ctrl.rd;
     wire [31:0] fwd_wb_data = wb_scalar_res;
 
+    wire fwd_wb1_valid = wb1_valid && wb1_ctrl.uses_rd && !wb1_ctrl.is_load && !wb1_ctrl.is_vector
+                      && !wb1_ctrl.rd_is_vec && !wb1_ctrl.rd_is_fp && !wb1_ctrl.is_scalar_fp
+                      && (wb1_ctrl.rd != 5'd0);
+    wire [4:0]  fwd_wb1_rd   = wb1_ctrl.rd;
+    wire [31:0] fwd_wb1_data = wb1_scalar_res;
+
     wire fwd_lsu_valid = lsu_wb_valid && !lsu_wb_is_vector && (lsu_wb_rd != 5'd0);
     wire [4:0]  fwd_lsu_rd   = lsu_wb_rd;
     wire [31:0] fwd_lsu_data = lsu_wb_data[31:0];
+    wire fwd_lsu1_valid = lsu1_wb_valid && !lsu1_wb_is_vector && (lsu1_wb_rd != 5'd0);
+    wire [4:0]  fwd_lsu1_rd   = lsu1_wb_rd;
+    wire [31:0] fwd_lsu1_data = lsu1_wb_data[31:0];
 
     logic [31:0] ex_op_a_fwd;
     logic [31:0] ex_op_b_fwd;
+    logic [31:0] ex1_op_a_fwd;
+    logic [31:0] ex1_op_b_fwd;
 
     always_comb begin
         ex_op_a_fwd = ex_op_a;
         if (ex_ctrl.uses_rs1 && (ex_ctrl.rs1_class == CLASS_SCALAR) && (ex_ctrl.rs1 != 5'd0)) begin
             if (fwd_lsu_valid && (fwd_lsu_rd == ex_ctrl.rs1)) ex_op_a_fwd = fwd_lsu_data;
+            else if (fwd_lsu1_valid && (fwd_lsu1_rd == ex_ctrl.rs1)) ex_op_a_fwd = fwd_lsu1_data;
             else if (fwd_mem_valid && (fwd_mem_rd == ex_ctrl.rs1)) ex_op_a_fwd = fwd_mem_data;
+            else if (fwd_mem1_valid && (fwd_mem1_rd == ex_ctrl.rs1)) ex_op_a_fwd = fwd_mem1_data;
             else if (fwd_wb_valid && (fwd_wb_rd == ex_ctrl.rs1)) ex_op_a_fwd = fwd_wb_data;
+            else if (fwd_wb1_valid && (fwd_wb1_rd == ex_ctrl.rs1)) ex_op_a_fwd = fwd_wb1_data;
         end
 
         ex_op_b_fwd = ex_op_b;
         if (ex_ctrl.uses_rs2 && (ex_ctrl.rs2_class == CLASS_SCALAR) && (ex_ctrl.rs2 != 5'd0)) begin
             if (fwd_lsu_valid && (fwd_lsu_rd == ex_ctrl.rs2)) ex_op_b_fwd = fwd_lsu_data;
+            else if (fwd_lsu1_valid && (fwd_lsu1_rd == ex_ctrl.rs2)) ex_op_b_fwd = fwd_lsu1_data;
             else if (fwd_mem_valid && (fwd_mem_rd == ex_ctrl.rs2)) ex_op_b_fwd = fwd_mem_data;
+            else if (fwd_mem1_valid && (fwd_mem1_rd == ex_ctrl.rs2)) ex_op_b_fwd = fwd_mem1_data;
             else if (fwd_wb_valid && (fwd_wb_rd == ex_ctrl.rs2)) ex_op_b_fwd = fwd_wb_data;
+            else if (fwd_wb1_valid && (fwd_wb1_rd == ex_ctrl.rs2)) ex_op_b_fwd = fwd_wb1_data;
+        end
+
+        ex1_op_a_fwd = ex1_op_a;
+        if (ex1_ctrl.uses_rs1 && (ex1_ctrl.rs1_class == CLASS_SCALAR) && (ex1_ctrl.rs1 != 5'd0)) begin
+            if (fwd_lsu_valid && (fwd_lsu_rd == ex1_ctrl.rs1)) ex1_op_a_fwd = fwd_lsu_data;
+            else if (fwd_lsu1_valid && (fwd_lsu1_rd == ex1_ctrl.rs1)) ex1_op_a_fwd = fwd_lsu1_data;
+            else if (fwd_mem_valid && (fwd_mem_rd == ex1_ctrl.rs1)) ex1_op_a_fwd = fwd_mem_data;
+            else if (fwd_mem1_valid && (fwd_mem1_rd == ex1_ctrl.rs1)) ex1_op_a_fwd = fwd_mem1_data;
+            else if (fwd_wb_valid && (fwd_wb_rd == ex1_ctrl.rs1)) ex1_op_a_fwd = fwd_wb_data;
+            else if (fwd_wb1_valid && (fwd_wb1_rd == ex1_ctrl.rs1)) ex1_op_a_fwd = fwd_wb1_data;
+        end
+
+        ex1_op_b_fwd = ex1_op_b;
+        if (ex1_ctrl.uses_rs2 && (ex1_ctrl.rs2_class == CLASS_SCALAR) && (ex1_ctrl.rs2 != 5'd0)) begin
+            if (fwd_lsu_valid && (fwd_lsu_rd == ex1_ctrl.rs2)) ex1_op_b_fwd = fwd_lsu_data;
+            else if (fwd_lsu1_valid && (fwd_lsu1_rd == ex1_ctrl.rs2)) ex1_op_b_fwd = fwd_lsu1_data;
+            else if (fwd_mem_valid && (fwd_mem_rd == ex1_ctrl.rs2)) ex1_op_b_fwd = fwd_mem_data;
+            else if (fwd_mem1_valid && (fwd_mem1_rd == ex1_ctrl.rs2)) ex1_op_b_fwd = fwd_mem1_data;
+            else if (fwd_wb_valid && (fwd_wb_rd == ex1_ctrl.rs2)) ex1_op_b_fwd = fwd_wb_data;
+            else if (fwd_wb1_valid && (fwd_wb1_rd == ex1_ctrl.rs2)) ex1_op_b_fwd = fwd_wb1_data;
         end
     end
 
@@ -1162,9 +1457,13 @@ module compute_unit_top #(
         begin
             d = rf_val;
             if (fwd_ex_valid && (fwd_ex_rd == r)) d = fwd_ex_data;
+            else if (fwd_ex1_valid && (fwd_ex1_rd == r)) d = fwd_ex1_data;
             else if (fwd_lsu_valid && (fwd_lsu_rd == r)) d = fwd_lsu_data;
+            else if (fwd_lsu1_valid && (fwd_lsu1_rd == r)) d = fwd_lsu1_data;
             else if (fwd_mem_valid && (fwd_mem_rd == r)) d = fwd_mem_data;
+            else if (fwd_mem1_valid && (fwd_mem1_rd == r)) d = fwd_mem1_data;
             else if (fwd_wb_valid && (fwd_wb_rd == r)) d = fwd_wb_data;
+            else if (fwd_wb1_valid && (fwd_wb1_rd == r)) d = fwd_wb1_data;
             scalar_fwd_data = d;
         end
     endfunction
@@ -1207,6 +1506,12 @@ module compute_unit_top #(
         .effective_addr(ex_addr)
     );
 
+    agu u_agu1 (
+        .base_addr(ex1_op_a_fwd),
+        .offset(ex1_ctrl.imm),
+        .effective_addr(ex1_addr)
+    );
+
     logic [31:0] ex_alu_res;
     logic        ex_alu_branch_taken_unused;
 
@@ -1223,6 +1528,18 @@ module compute_unit_top #(
         .opcode(OP_INT),
         .result(ex_alu_res),
         .branch_taken(ex_alu_branch_taken_unused)
+    );
+
+    // Lane1 integer ALU result path (scalar ALU only)
+    alu_scalar u_alu_scalar_int1 (
+        .op_a(ex1_op_a_fwd),
+        .op_b((ex1_ctrl.is_load || ex1_ctrl.is_store || !ex1_ctrl.uses_rs2) ? ex1_ctrl.imm : ex1_op_b_fwd),
+        .funct3(ex1_ctrl.funct3),
+        .is_sub(ex1_ctrl.funct7 == 7'b0100000),
+        .funct7(ex1_ctrl.funct7),
+        .opcode(OP_INT),
+        .result(ex1_alu_res),
+        .branch_taken()
     );
 
     // Centralized branch/jump decision + target + link value
@@ -1268,14 +1585,22 @@ module compute_unit_top #(
         else ex_scalar_res = ex_alu_res;
     end
 
-    // FP writeback is always ready for FP-reg writes. FP->scalar conversions can be backpressured.
-    wire fp_wb_ready = (!fp_scalar_wb_valid) || fp_scalar_ready;
+    // Lane1 scalar writeback value (no branch/jump in lane1)
+    always_comb begin
+        if (ex1_ctrl.is_lui) ex1_scalar_res = ex1_ctrl.imm;
+        else ex1_scalar_res = ex1_alu_res;
+    end
 
-    fp_alu u_fp_alu (
+    // FP writeback is always ready for FP-reg writes. FP->scalar conversions can be backpressured.
+    // Arbitration between FP scalar conversions is handled below; each FP ALU sees its own ready.
+    wire fp0_wb_ready = (!fp0_scalar_wb_valid) || fp0_scalar_ready;
+    wire fp1_wb_ready = (!fp1_scalar_wb_valid) || fp1_scalar_ready;
+
+    fp_alu u_fp_alu0 (
         .clk(clk),
         .rst_n(rst_n),
-        .valid(ex_valid && ex_ctrl.is_scalar_fp && !stall_any),
-        .in_ready(fp_in_ready),
+        .valid(fp0_issue_valid && !stall_any),
+        .in_ready(fp0_in_ready),
         .funct3(ex_ctrl.funct3),
         .src_a(ex_fp_a),
         .src_b(ex_fp_b),
@@ -1283,53 +1608,99 @@ module compute_unit_top #(
         .scalar_src_is_x0(ex_ctrl.uses_rs1 && (ex_ctrl.rs1 == 5'd0)),
         .src_c(ex_op_b_fwd[15:0]),
         .rd_idx(ex_ctrl.rd),
-        .wb_ready(fp_wb_ready),
-        .wb_valid(fp_wb_valid),
-        .wb_rd(fp_wb_rd),
-        .wb_data(fp_alu_wb_data),
-        .wb_scalar_valid(fp_scalar_wb_valid),
-        .wb_scalar_rd(fp_scalar_wb_rd),
-        .wb_scalar_data(fp_scalar_wb_data),
-        .wb_err_overflow(fp_wb_err_overflow),
-        .wb_err_invalid(fp_wb_err_invalid)
+        .wb_ready(fp0_wb_ready),
+        .wb_valid(fp0_wb_valid),
+        .wb_rd(fp0_wb_rd),
+        .wb_data(fp0_alu_wb_data),
+        .wb_scalar_valid(fp0_scalar_wb_valid),
+        .wb_scalar_rd(fp0_scalar_wb_rd),
+        .wb_scalar_data(fp0_scalar_wb_data),
+        .wb_err_overflow(fp0_wb_err_overflow),
+        .wb_err_invalid(fp0_wb_err_invalid)
+    );
+
+    fp_alu u_fp_alu1 (
+        .clk(clk),
+        .rst_n(rst_n),
+        .valid(fp1_issue_valid && !stall_any),
+        .in_ready(fp1_in_ready),
+        .funct3(ex1_ctrl.funct3),
+        .src_a(ex1_fp_a),
+        .src_b(ex1_fp_b),
+        .scalar_src(ex1_op_a_fwd),
+        .scalar_src_is_x0(ex1_ctrl.uses_rs1 && (ex1_ctrl.rs1 == 5'd0)),
+        .src_c(ex1_op_b_fwd[15:0]),
+        .rd_idx(ex1_ctrl.rd),
+        .wb_ready(fp1_wb_ready),
+        .wb_valid(fp1_wb_valid),
+        .wb_rd(fp1_wb_rd),
+        .wb_data(fp1_alu_wb_data),
+        .wb_scalar_valid(fp1_scalar_wb_valid),
+        .wb_scalar_rd(fp1_scalar_wb_rd),
+        .wb_scalar_data(fp1_scalar_wb_data),
+        .wb_err_overflow(fp1_wb_err_overflow),
+        .wb_err_invalid(fp1_wb_err_invalid)
     );
 
     // Vector issue queue management (2-entry skid). Allows scalar+vector overlap.
     // VALU results may need to be buffered when the vector WB port is busy (pending/LSU/TEX).
     // Prevent issuing VALU vector-producing ops when the vwbq FIFO can't accept the result.
-    wire valuv_dest_is_scalar = (vq[vq_head].ctrl.rd_class == CLASS_SCALAR);
-    wire vwbq_can_accept_one  = (vwbq_count < VWBQ_DEPTH);
-    wire vwbq_can_accept_two  = (vwbq_count < (VWBQ_DEPTH-1));
-    wire valuv_issue_allow    = valuv_dest_is_scalar ? 1'b1 : (gp_wb_valid ? vwbq_can_accept_two : vwbq_can_accept_one);
+    wire vwbq_can_accept_one   = (vwbq_count < VWBQ_DEPTH);
+    wire vwbq_can_accept_two   = (vwbq_count < (VWBQ_DEPTH-1));
+    wire vwbq_can_accept_three = (vwbq_count < (VWBQ_DEPTH-2));
 
-    wire valuv_issue_valid = vq_valid[vq_head] && !stall_any && valuv_issue_allow;
-    wire valuv_fire        = valuv_issue_valid && valuv_ready;
+    wire [$clog2(VQ_DEPTH)-1:0] vq_head_next = vq_head + 1'b1;
+    wire valuv0_dest_is_scalar = (vq[vq_head].ctrl.rd_class == CLASS_SCALAR);
+    wire valuv1_dest_is_scalar = (vq[vq_head_next].ctrl.rd_class == CLASS_SCALAR);
 
-    // Track one in-flight VALU destination (one-cycle latency) to block dependent stores.
+    wire valuv0_issue_allow = valuv0_dest_is_scalar ? 1'b1
+                            : (gp_wb_valid ? vwbq_can_accept_two : vwbq_can_accept_one);
+    wire valuv1_issue_allow = (!valuv1_dest_is_scalar)
+                            && (gp_wb_valid ? vwbq_can_accept_three : vwbq_can_accept_two);
+
+    wire valuv_issue_valid0 = vq_valid[vq_head] && !stall_any && valuv0_issue_allow;
+    wire valuv_issue_valid1 = vq_valid[vq_head_next] && !stall_any && valuv_issue_valid0 && valuv1_issue_allow;
+    wire valuv_fire0        = valuv_issue_valid0 && valuv0_ready;
+    wire valuv_fire1        = valuv_issue_valid1 && valuv1_ready;
+
+    // Legacy debug visibility for VALU
+    assign valuv_issue_valid = valuv_issue_valid0 || valuv_issue_valid1;
+
+    // Track in-flight VALU destinations (one-cycle latency) to block dependent stores.
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            valuv_inflight_valid <= 1'b0;
-            valuv_inflight_rd    <= 5'd0;
+            valuv_inflight_valid  <= 1'b0;
+            valuv_inflight_rd     <= 5'd0;
+            valuv_inflight_valid1 <= 1'b0;
+            valuv_inflight_rd1    <= 5'd0;
         end else begin
-            if (valuv_wb_valid_masked && !valuv_wb_is_scalar) begin
+            if (valuv0_wb_valid_masked && !valuv0_wb_is_scalar) begin
                 valuv_inflight_valid <= 1'b0;
             end
-            if (valuv_fire && !valuv_dest_is_scalar) begin
+            if (valuv1_wb_valid_masked && !valuv1_wb_is_scalar) begin
+                valuv_inflight_valid1 <= 1'b0;
+            end
+            if (valuv_fire0 && !valuv0_dest_is_scalar) begin
                 valuv_inflight_valid <= 1'b1;
                 valuv_inflight_rd    <= vq[vq_head].ctrl.rd;
+            end
+            if (valuv_fire1) begin
+                valuv_inflight_valid1 <= 1'b1;
+                valuv_inflight_rd1    <= vq[vq_head_next].ctrl.rd;
             end
         end
     end
 
-    wire push_vec_alu0     = rr_is_vec_alu  && !stall_pipe && !vector_queue_full;
-    wire push_vec_alu1     = rr1_is_vec_alu && !stall_pipe && !vector_queue_full;
-    wire push_vec_alu      = push_vec_alu0 || push_vec_alu1;
+    wire push_vec_alu0     = rr_is_vec_alu  && !stall_pipe && vector_queue_has1;
+    wire push_vec_alu1     = rr1_is_vec_alu && !stall_pipe && (push_vec_alu0 ? vector_queue_has2 : vector_queue_has1);
 
-    wire [127:0] push_vec_src_a = push_vec_alu1 ? v_rdata_a : v_rdata_a;
-    wire [127:0] push_vec_src_b = push_vec_alu1 ? v_rdata_b : v_rdata_b;
-    wire [31:0]  push_vec_scalar = push_vec_alu1 ? s_rdata_c_vec : s_rdata_b_vec;
-    decode_ctrl_t push_vec_ctrl;
-    assign push_vec_ctrl = push_vec_alu1 ? rr1_ctrl : rr_ctrl;
+    wire [127:0] push0_vec_src_a = v_rdata_a;
+    wire [127:0] push0_vec_src_b = v_rdata_b;
+    wire [31:0]  push0_vec_scalar = s_rdata_b_vec;
+
+    wire [127:0] push1_vec_src_a = v_rdata_c;
+    wire [127:0] push1_vec_src_b = v_rdata_d;
+    wire [31:0]  push1_vec_scalar = s_rdata_c_vec;
 
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -1343,34 +1714,58 @@ module compute_unit_top #(
             vq_tail  <= '0;
             vq_count <= '0;
         end else begin
+            logic [$clog2(VQ_DEPTH+1)-1:0] cnt;
+            logic [$clog2(VQ_DEPTH)-1:0]   head;
+            logic [$clog2(VQ_DEPTH)-1:0]   tail;
+
+            cnt  = vq_count;
+            head = vq_head;
+            tail = vq_tail;
+
             // Pop first to free slot
-            if (valuv_fire && vq_valid[vq_head]) begin
-                vq_valid[vq_head] <= 1'b0;
-                vq_head           <= vq_head + 1'b1;
+            if (valuv_fire0 && vq_valid[head]) begin
+                vq_valid[head] <= 1'b0;
+                head = head + 1'b1;
+                cnt  = cnt - 1'b1;
             end
 
-            // Push RR VALU op into queue when space available
-            if (push_vec_alu) begin
-                vq[vq_tail].ctrl        <= push_vec_ctrl;
-                vq[vq_tail].src_a       <= push_vec_src_a;
-                vq[vq_tail].src_b       <= push_vec_src_b;
-                vq[vq_tail].scalar_mask <= push_vec_scalar;
-                vq_valid[vq_tail]       <= 1'b1;
-                vq_tail                 <= vq_tail + 1'b1;
+            if (valuv_fire1 && vq_valid[head]) begin
+                vq_valid[head] <= 1'b0;
+                head = head + 1'b1;
+                cnt  = cnt - 1'b1;
             end
 
-            case ({push_vec_alu, (valuv_fire && vq_count != 0)})
-                2'b10: vq_count <= vq_count + 1'b1;
-                2'b01: vq_count <= vq_count - 1'b1;
-                default: vq_count <= vq_count;
-            endcase
+            // Push RR VALU ops into queue when space available (up to two per cycle)
+            if (push_vec_alu0) begin
+                vq[tail].ctrl        <= rr_ctrl;
+                vq[tail].src_a       <= push0_vec_src_a;
+                vq[tail].src_b       <= push0_vec_src_b;
+                vq[tail].scalar_mask <= push0_vec_scalar;
+                vq_valid[tail]       <= 1'b1;
+                tail = tail + 1'b1;
+                cnt  = cnt + 1'b1;
+            end
+
+            if (push_vec_alu1) begin
+                vq[tail].ctrl        <= rr1_ctrl;
+                vq[tail].src_a       <= push1_vec_src_a;
+                vq[tail].src_b       <= push1_vec_src_b;
+                vq[tail].scalar_mask <= push1_vec_scalar;
+                vq_valid[tail]       <= 1'b1;
+                tail = tail + 1'b1;
+                cnt  = cnt + 1'b1;
+            end
+
+            vq_head  <= head;
+            vq_tail  <= tail;
+            vq_count <= cnt;
         end
     end
 
-    alu_vector u_alu_vector (
+    alu_vector u_alu_vector0 (
         .clk(clk),
         .rst_n(rst_n),
-        .valid(valuv_issue_valid),
+        .valid(valuv_issue_valid0),
         .funct6(vq[vq_head].ctrl.funct7[6:1]),
         .funct3(vq[vq_head].ctrl.funct3),
         .vm_enable(vq[vq_head].ctrl.vm_enable),
@@ -1380,14 +1775,43 @@ module compute_unit_top #(
         .src_a(vq[vq_head].src_a),
         .src_b(vq[vq_head].src_b),
         .scalar_mask(vq[vq_head].scalar_mask),
-        .ready(valuv_ready),
-        .wb_valid(valuv_wb_valid),
-        .wb_rd(valuv_wb_rd),
-        .wb_is_scalar(valuv_wb_is_scalar),
-        .wb_data(valuv_wb_data),
-        .wb_err_overflow(valuv_err_overflow),
-        .wb_err_invalid(valuv_err_invalid)
+        .ready(valuv0_ready),
+        .wb_valid(valuv0_wb_valid),
+        .wb_rd(valuv0_wb_rd),
+        .wb_is_scalar(valuv0_wb_is_scalar),
+        .wb_data(valuv0_wb_data),
+        .wb_err_overflow(valuv0_err_overflow),
+        .wb_err_invalid(valuv0_err_invalid)
     );
+
+    alu_vector u_alu_vector1 (
+        .clk(clk),
+        .rst_n(rst_n),
+        .valid(valuv_issue_valid1),
+        .funct6(vq[vq_head_next].ctrl.funct7[6:1]),
+        .funct3(vq[vq_head_next].ctrl.funct3),
+        .vm_enable(vq[vq_head_next].ctrl.vm_enable),
+        .vmask(csr_vmask),
+        .rd_idx(vq[vq_head_next].ctrl.rd),
+        .dest_is_scalar(vq[vq_head_next].ctrl.rd_class == CLASS_SCALAR),
+        .src_a(vq[vq_head_next].src_a),
+        .src_b(vq[vq_head_next].src_b),
+        .scalar_mask(vq[vq_head_next].scalar_mask),
+        .ready(valuv1_ready),
+        .wb_valid(valuv1_wb_valid),
+        .wb_rd(valuv1_wb_rd),
+        .wb_is_scalar(valuv1_wb_is_scalar),
+        .wb_data(valuv1_wb_data),
+        .wb_err_overflow(valuv1_err_overflow),
+        .wb_err_invalid(valuv1_err_invalid)
+    );
+
+    // Legacy VALU debug signals (prefer slot0 when both valid)
+    assign valuv_wb_valid     = valuv0_wb_valid || valuv1_wb_valid;
+    assign valuv_wb_rd        = valuv0_wb_valid ? valuv0_wb_rd : valuv1_wb_rd;
+    assign valuv_wb_is_scalar = valuv0_wb_valid ? valuv0_wb_is_scalar : valuv1_wb_is_scalar;
+    assign valuv_wb_data      = valuv0_wb_valid ? valuv0_wb_data : valuv1_wb_data;
+    assign valuv_ready        = valuv0_ready;
 
     // Texture/descriptor requests now share the L1 TEX port (see arbiter above)
 
@@ -1497,6 +1921,17 @@ module compute_unit_top #(
         endcase
     end
 
+    // Scalar LSU lane1 byte-enables
+    logic [7:0] lsu1_scalar_wstrb;
+    always_comb begin
+        case (mem1_ctrl.funct3)
+            3'b000: lsu1_scalar_wstrb = 8'b0000_0001 << mem1_addr[2:0];
+            3'b001: lsu1_scalar_wstrb = 8'b0000_0011 << {mem1_addr[2:1], 1'b0};
+            3'b010: lsu1_scalar_wstrb = 8'b0000_1111 << {mem1_addr[2], 2'b00};
+            default: lsu1_scalar_wstrb = 8'hFF;
+        endcase
+    end
+
     lsu_core #(
         .MAILBOX_ENABLE(MAILBOX_ENABLE)
     ) u_lsu_core (
@@ -1554,6 +1989,64 @@ module compute_unit_top #(
         .mailbox_rd_resp_data(lsu_mailbox_rd_resp_data)
     );
 
+    // Scalar LSU lane1 core (shares LSU1 port with gfx via arb)
+    lsu_core #(
+        .MAILBOX_ENABLE(1'b0)
+    ) u_lsu_core1 (
+        .clk(clk),
+        .rst_n(rst_n),
+        .req_valid(mem1_valid && (mem1_ctrl.is_load || mem1_ctrl.is_store || mem1_ctrl.is_atomic)),
+        .req_is_store(mem1_ctrl.is_store),
+        .req_is_vector(mem1_ctrl.is_vector),
+        .req_is_atomic(mem1_ctrl.is_atomic),
+        .req_funct3(mem1_ctrl.funct3),
+        .req_vec_mode(mem1_ctrl.funct3[1:0]),
+        .req_addr(mem1_addr),
+        .req_wdata(mem1_ctrl.is_vector ? {96'h0, mem1_scalar_wdata} : {96'h0, mem1_scalar_wdata}),
+        .req_wstrb(mem1_ctrl.is_vector ? 8'hFF : lsu1_scalar_wstrb),
+        .req_vec_wmask(mem1_ctrl.is_vector ? 4'hF : 4'h0),
+        .req_rd(mem1_ctrl.rd),
+        .req_ready(lsu1c_req_ready),
+
+        .dc_req_valid(lsu1c_req_valid),
+        .dc_req_type(lsu1c_req_type),
+        .dc_req_atomic_op(lsu1c_req_atomic_op),
+        .dc_req_addr(lsu1c_req_addr),
+        .dc_req_wdata(lsu1c_req_wdata),
+        .dc_req_wstrb(lsu1c_req_wstrb),
+        .dc_req_is_vector(lsu1c_req_is_vector),
+        .dc_req_vec_wmask(lsu1c_req_vec_wmask),
+        .dc_req_id(lsu1c_req_id),
+        .dc_req_ready(lsu1c_dc_req_ready),
+
+        .dc_resp_valid(lsu1c_resp_valid),
+        .dc_resp_data(lsu1c_resp_data),
+        .dc_resp_id(lsu1c_resp_id),
+        .dc_resp_err(lsu1c_resp_err),
+
+        .wb_valid(lsu1_wb_valid),
+        .wb_is_vector(lsu1_wb_is_vector),
+        .wb_rd(lsu1_wb_rd),
+        .wb_data(lsu1_wb_data),
+        .busy(lsu1_busy),
+
+        .mailbox_tx_valid(),
+        .mailbox_tx_dest(),
+        .mailbox_tx_data(),
+        .mailbox_tx_prio(),
+        .mailbox_tx_eop(),
+        .mailbox_tx_opcode(),
+        .mailbox_tx_ready(1'b1),
+        .mailbox_rd_valid(),
+        .mailbox_rd_ready(1'b1),
+        .mailbox_rd_dest(),
+        .mailbox_rd_prio(),
+        .mailbox_rd_opcode(),
+        .mailbox_rd_resp_valid(1'b0),
+        .mailbox_rd_resp_data(32'h0),
+        .mailbox_rd_resp_ready()
+    );
+
     // Graphics LSU drives D-cache slot1 (framebuffer AXI remains tied off)
     lsu_gfx u_lsu_gfx (
         .clk(clk),
@@ -1563,13 +2056,13 @@ module compute_unit_top #(
         .st_data(gp_st_wdata),
         .st_strb(gp_st_wstrb),
         .st_ready(gp_st_ready),
-        .dc_req_valid(lsu1_req_valid),
-        .dc_req_type(lsu1_req_type),
-        .dc_req_addr(lsu1_req_addr),
-        .dc_req_wdata(lsu1_req_wdata),
-        .dc_req_wstrb(lsu1_req_wstrb),
-        .dc_req_id(lsu1_req_id),
-        .dc_req_ready(lsu1_req_ready),
+        .dc_req_valid(gfx_req_valid),
+        .dc_req_type(gfx_req_type),
+        .dc_req_addr(gfx_req_addr),
+        .dc_req_wdata(gfx_req_wdata),
+        .dc_req_wstrb(gfx_req_wstrb),
+        .dc_req_id(gfx_req_id),
+        .dc_req_ready(gfx_req_ready),
         .dc_resp_valid(lsu1_resp_valid),
         .dc_resp_data(lsu1_resp_data),
         .dc_resp_id(lsu1_resp_id),
@@ -1589,15 +2082,34 @@ module compute_unit_top #(
         .fb_b_ready(fb_b_ready)
     );
 
-    // GFX path uses scalar-width stores; keep vector metadata clear
-    assign lsu1_req_atomic_op = 3'b000;
-    assign lsu1_req_is_vector = 1'b0;
-    assign lsu1_req_vec_wmask = 4'h0;
+    // Shared LSU1 port arbitration: lane1 scalar LSU has priority; gfx uses spare cycles.
+    wire lsu1_sel_scalar = lsu1c_req_valid;
+    wire lsu1_sel_gfx    = !lsu1c_req_valid && !lsu1_busy && gfx_req_valid;
+
+    assign lsu1_req_valid     = lsu1_sel_scalar ? lsu1c_req_valid : (lsu1_sel_gfx ? gfx_req_valid : 1'b0);
+    assign lsu1_req_type      = lsu1_sel_scalar ? lsu1c_req_type  : gfx_req_type;
+    assign lsu1_req_atomic_op = lsu1_sel_scalar ? lsu1c_req_atomic_op : 3'b000;
+    assign lsu1_req_addr      = lsu1_sel_scalar ? lsu1c_req_addr  : gfx_req_addr;
+    assign lsu1_req_wdata     = lsu1_sel_scalar ? lsu1c_req_wdata : gfx_req_wdata;
+    assign lsu1_req_wstrb     = lsu1_sel_scalar ? lsu1c_req_wstrb : gfx_req_wstrb;
+    assign lsu1_req_is_vector = lsu1_sel_scalar ? lsu1c_req_is_vector : 1'b0;
+    assign lsu1_req_vec_wmask = lsu1_sel_scalar ? lsu1c_req_vec_wmask : 4'h0;
+    assign lsu1_req_id        = lsu1_sel_scalar ? lsu1c_req_id : gfx_req_id;
+
+    assign lsu1c_dc_req_ready = lsu1_req_ready && lsu1_sel_scalar;
+    assign gfx_req_ready      = lsu1_req_ready && lsu1_sel_gfx;
+
+    // Route cache responses only to scalar LSU1 core; gfx ignores responses.
+    assign lsu1c_resp_valid = lsu1_resp_valid && lsu1_busy;
+    assign lsu1c_resp_data  = lsu1_resp_data;
+    assign lsu1c_resp_id    = lsu1_resp_id;
+    assign lsu1c_resp_err   = lsu1_resp_err;
+
     assign lsu0_busy          = lsu_busy;
-    assign lsu1_busy          = 1'b0;
 
     // LSU stall feeds pipeline control
-    assign lsu_stall = mem_valid && (mem_ctrl.is_load || mem_ctrl.is_store || mem_ctrl.is_atomic) && !lsu0_req_ready;
+    wire lsu0_stall = mem_valid && (mem_ctrl.is_load || mem_ctrl.is_store || mem_ctrl.is_atomic) && !lsu0_req_ready;
+    assign lsu_stall = lsu0_stall;
 
     // Local memory currently unused; tie off requests
     assign local_req_valid     = 1'b0;
@@ -1790,6 +2302,35 @@ module compute_unit_top #(
         end
     end
 
+    // MEM1 stage registers (lane1 scalar ALU only)
+    always_ff @(posedge clk) begin
+        if (!rst_n) begin
+            mem1_valid      <= 1'b0;
+            mem1_ctrl       <= '0;
+            mem1_scalar_res <= 32'h0;
+            mem1_addr       <= 32'h0;
+            mem1_scalar_wdata <= 32'h0;
+        end else if (ex_redirect_valid) begin
+            mem1_valid      <= 1'b0;
+            mem1_ctrl       <= '0;
+            mem1_scalar_res <= 32'h0;
+            mem1_addr       <= 32'h0;
+            mem1_scalar_wdata <= 32'h0;
+        end else if (!stall_pipe && !lane1_hold) begin
+            mem1_valid      <= ex1_valid;
+            mem1_ctrl       <= ex1_ctrl;
+            mem1_scalar_res <= ex1_scalar_res;
+            mem1_addr       <= ex1_addr;
+            mem1_scalar_wdata <= ex1_op_b_fwd;
+        end else if (lsu1_wb_valid && mem1_valid && mem1_ctrl.is_load && !mem1_ctrl.is_vector) begin
+            mem1_valid      <= 1'b0;
+            mem1_ctrl       <= '0;
+            mem1_scalar_res <= 32'h0;
+            mem1_addr       <= 32'h0;
+            mem1_scalar_wdata <= 32'h0;
+        end
+    end
+
     // WB stage registers
     always_ff @(posedge clk) begin
         if (!rst_n) begin
@@ -1805,14 +2346,53 @@ module compute_unit_top #(
         end
     end
 
+    // WB1 stage registers (lane1 scalar ALU only)
+    always_ff @(posedge clk) begin
+        if (!rst_n) begin
+            wb1_valid      <= 1'b0;
+            wb1_ctrl       <= '0;
+            wb1_scalar_res <= 32'h0;
+        end else if (ex_redirect_valid) begin
+            wb1_valid      <= 1'b0;
+            wb1_ctrl       <= '0;
+            wb1_scalar_res <= 32'h0;
+        end else if (!stall_pipe && !lane1_hold) begin
+            wb1_valid      <= mem1_valid;
+            wb1_ctrl       <= mem1_ctrl;
+            wb1_scalar_res <= mem1_scalar_res;
+        end
+    end
+
     // Writeback selection with simple arbitration (LSU priority, ALU buffered)
     assign lsu_scalar_wb = lsu_wb_valid && !lsu_wb_is_vector;
     assign lsu_vector_wb = lsu_wb_valid && lsu_wb_is_vector;
     assign alu_scalar_wb = wb_valid && wb_ctrl.uses_rd && !wb_ctrl.rd_is_vec && !wb_ctrl.rd_is_fp && !wb_ctrl.is_load && !wb_ctrl.is_vector && !wb_ctrl.is_scalar_fp;
-    assign fp_scalar_wb  = fp_scalar_wb_valid;      // FP path now 1-cycle registered
+    wire  alu1_scalar_wb = wb1_valid && wb1_ctrl.uses_rd && !wb1_ctrl.rd_is_vec && !wb1_ctrl.rd_is_fp && !wb1_ctrl.is_load && !wb1_ctrl.is_vector && !wb1_ctrl.is_scalar_fp;
+    wire fp_scalar_sel0 = fp0_scalar_wb_valid;
+    wire fp_scalar_sel1 = fp1_scalar_wb_valid && !fp0_scalar_wb_valid;
+    wire fp_scalar_wb_valid_sel = fp_scalar_sel0 || fp_scalar_sel1;
+    wire [4:0]  fp_scalar_wb_rd_sel   = fp_scalar_sel0 ? fp0_scalar_wb_rd   : fp1_scalar_wb_rd;
+    wire [31:0] fp_scalar_wb_data_sel = fp_scalar_sel0 ? fp0_scalar_wb_data : fp1_scalar_wb_data;
+    wire        fp_scalar_wb_ovf_sel  = fp_scalar_sel0 ? fp0_wb_err_overflow : fp1_wb_err_overflow;
+    wire        fp_scalar_wb_inv_sel  = fp_scalar_sel0 ? fp0_wb_err_invalid  : fp1_wb_err_invalid;
+
+    assign fp_scalar_wb  = fp_scalar_wb_valid_sel;      // FP path now 1-cycle registered
+    assign fp_scalar_wb_valid = fp_scalar_wb_valid_sel;
+    assign fp_scalar_wb_rd    = fp_scalar_wb_rd_sel;
+    assign fp_scalar_wb_data  = fp_scalar_wb_data_sel;
     // Mask X on VALU valid to avoid stalling early scalar writebacks
-    assign valuv_wb_valid_masked = (valuv_wb_valid === 1'b1);
-    assign valuv_scalar_wb = valuv_wb_valid_masked && valuv_wb_is_scalar;
+    wire valuv0_wb_valid_masked = (valuv0_wb_valid === 1'b1);
+    wire valuv1_wb_valid_masked = (valuv1_wb_valid === 1'b1);
+    wire valuv0_scalar_wb = valuv0_wb_valid_masked && valuv0_wb_is_scalar;
+    wire valuv1_scalar_wb = valuv1_wb_valid_masked && valuv1_wb_is_scalar;
+
+    wire valuv_scalar_sel0 = valuv0_scalar_wb;
+    wire valuv_scalar_sel1 = valuv1_scalar_wb && !valuv0_scalar_wb;
+    assign valuv_scalar_wb = valuv_scalar_sel0 || valuv_scalar_sel1;
+    wire [4:0]  valuv_scalar_rd_sel   = valuv_scalar_sel0 ? valuv0_wb_rd   : valuv1_wb_rd;
+    wire [31:0] valuv_scalar_data_sel = valuv_scalar_sel0 ? valuv0_wb_data[31:0] : valuv1_wb_data[31:0];
+    wire        valuv_scalar_ovf_sel  = valuv_scalar_sel0 ? valuv0_err_overflow : valuv1_err_overflow;
+    wire        valuv_scalar_inv_sel  = valuv_scalar_sel0 ? valuv0_err_invalid  : valuv1_err_invalid;
 
     // Deterministic scalar writeback priority: LSU > Pending > FP scalar > VALU scalar > ALU scalar
     logic scalar_wb_from_pending;
@@ -1828,18 +2408,18 @@ module compute_unit_top #(
         .lsu_rd(lsu_wb_rd),
         .lsu_data(lsu_wb_data[31:0]),
 
-        .fp_valid(fp_scalar_wb),
-        .fp_rd(fp_scalar_wb_rd),
-        .fp_data(fp_scalar_wb_data),
-        .fp_err_overflow(fp_wb_err_overflow),
-        .fp_err_invalid(fp_wb_err_invalid),
+        .fp_valid(fp_scalar_wb_valid_sel),
+        .fp_rd(fp_scalar_wb_rd_sel),
+        .fp_data(fp_scalar_wb_data_sel),
+        .fp_err_overflow(fp_scalar_wb_ovf_sel),
+        .fp_err_invalid(fp_scalar_wb_inv_sel),
         .fp_ready(fp_scalar_ready),
 
         .valuv_valid(valuv_scalar_wb),
-        .valuv_rd(valuv_wb_rd),
-        .valuv_data(valuv_wb_data[31:0]),
-        .valuv_err_overflow(valuv_err_overflow),
-        .valuv_err_invalid(valuv_err_invalid),
+        .valuv_rd(valuv_scalar_rd_sel),
+        .valuv_data(valuv_scalar_data_sel),
+        .valuv_err_overflow(valuv_scalar_ovf_sel),
+        .valuv_err_invalid(valuv_scalar_inv_sel),
         .valuv_ready(valuv_scalar_ready),
 
         .alu_valid(alu_scalar_wb),
@@ -1863,46 +2443,110 @@ module compute_unit_top #(
         .dbg_from_alu(scalar_wb_from_alu)
     );
 
-    // FP ALU is 1-cycle latency (registered), separate write port:
-    wire fp_wb_fp = fp_wb_valid && !fp_scalar_wb_valid;
-    assign f_we    = fp_wb_fp;
-    assign f_waddr = fp_wb_rd;
-    assign f_wdata = fp_alu_wb_data;
+    assign fp0_scalar_ready = fp_scalar_ready && fp_scalar_sel0;
+    assign fp1_scalar_ready = fp_scalar_ready && fp_scalar_sel1;
+
+    // Map scalar write ports: primary arb to port0, lane1 ALU to port1, port2 unused (reserved).
+    assign s_we0    = s_we;
+    assign s_waddr0 = s_waddr;
+    assign s_wdata0 = s_wdata;
+
+    assign s_we1    = alu1_scalar_wb;
+    assign s_waddr1 = wb1_ctrl.rd;
+    assign s_wdata1 = wb1_scalar_res;
+
+    assign s_we2    = lsu1_wb_valid && !lsu1_wb_is_vector;
+    assign s_waddr2 = lsu1_wb_rd;
+    assign s_wdata2 = lsu1_wb_data[31:0];
+
+    // FP ALU is 1-cycle latency (registered), dual write ports
+    wire fp0_wb_fp = fp0_wb_valid && !fp0_scalar_wb_valid;
+    wire fp1_wb_fp = fp1_wb_valid && !fp1_scalar_wb_valid;
+
+    assign f_we0    = fp0_wb_fp;
+    assign f_waddr0 = fp0_wb_rd;
+    assign f_wdata0 = fp0_alu_wb_data;
+
+    assign f_we1    = fp1_wb_fp;
+    assign f_waddr1 = fp1_wb_rd;
+    assign f_wdata1 = fp1_alu_wb_data;
+
+    // Preserve legacy single-port signals for scoreboard/debug
+    assign f_we    = f_we0;
+    assign f_waddr = f_waddr0;
+    assign f_wdata = f_wdata0;
 
     // Error flags are pulsed with the committing writeback beat (not merely "produced" valid).
     // FP ops that write FP regs commit with f_we. FP->scalar conversions commit with s_we when sourced from FP.
-    assign err_fp_overflow = (f_we && fp_wb_err_overflow) || (s_we && s_commit_from_fp && s_commit_err_overflow);
-    assign err_fp_invalid  = (f_we && fp_wb_err_invalid)  || (s_we && s_commit_from_fp && s_commit_err_invalid);
+    assign err_fp_overflow = (f_we0 && fp0_wb_err_overflow)
+                          || (f_we1 && fp1_wb_err_overflow)
+                          || (s_we0 && s_commit_from_fp && s_commit_err_overflow);
+    assign err_fp_invalid  = (f_we0 && fp0_wb_err_invalid)
+                          || (f_we1 && fp1_wb_err_invalid)
+                          || (s_we0 && s_commit_from_fp && s_commit_err_invalid);
     // Vector errors are only meaningful for VALU vector ops; pulse when that result actually commits to vfile.
-    assign err_vec_overflow = v_we && v_commit_from_valuv && v_commit_err_overflow;
-    assign err_vec_invalid  = v_we && v_commit_from_valuv && v_commit_err_invalid;
+    wire valuv0_vector_wb = valuv0_wb_valid_masked && !valuv0_wb_is_scalar;
+    wire valuv1_vector_wb = valuv1_wb_valid_masked && !valuv1_wb_is_scalar;
 
-    wire valuv_vector_wb = valuv_wb_valid_masked && !valuv_wb_is_scalar;
+    // Vector writeback arbitration (port0): Pending FIFO > LSU > TEX > VALU
+    wire v_take0_lsu     = lsu_vector_wb;
+    wire v_take0_pending = (!v_take0_lsu) && (vwbq_count != '0);
+    wire v_take0_gp      = (!v_take0_lsu) && (vwbq_count == '0) && gp_wb_valid;
+    wire v_take0_valuv0  = (!v_take0_lsu) && (vwbq_count == '0) && !gp_wb_valid && valuv0_vector_wb;
+    wire v_take0_valuv1  = (!v_take0_lsu) && (vwbq_count == '0) && !gp_wb_valid && !valuv0_vector_wb && valuv1_vector_wb;
 
-    // Vector writeback arbitration: Pending FIFO > LSU > TEX > VALU
-    wire v_take_lsu     = lsu_vector_wb;
-    wire v_take_pending = (!lsu_vector_wb) && (vwbq_count != '0);
-    wire v_take_gp      = (!lsu_vector_wb) && (vwbq_count == '0) && gp_wb_valid;
-    wire v_take_valuv   = (!lsu_vector_wb) && (vwbq_count == '0) && !gp_wb_valid && valuv_vector_wb;
+    // Vector writeback arbitration (port1): only VALU results not taken on port0
+    wire v_take1_valuv0 = valuv0_vector_wb && !v_take0_valuv0 && !v_take0_valuv1;
+    wire v_take1_valuv1 = valuv1_vector_wb && !v_take0_valuv0 && !v_take0_valuv1 && !v_take1_valuv0;
 
-    assign v_we    = v_take_lsu || v_take_pending || v_take_gp || v_take_valuv;
-    assign v_waddr = v_take_lsu     ? lsu_wb_rd :
-                     v_take_pending ? vwbq_rd[vwbq_head] :
-                     v_take_gp      ? gp_wb_rd :
-                                      valuv_wb_rd;
-    assign v_wdata = v_take_lsu     ? lsu_wb_data :
-                     v_take_pending ? vwbq_data[vwbq_head] :
-                     v_take_gp      ? gp_wb_data :
-                                      valuv_wb_data;
+    assign v_we0    = v_take0_lsu || v_take0_pending || v_take0_gp || v_take0_valuv0 || v_take0_valuv1;
+    assign v_waddr0 = v_take0_lsu     ? lsu_wb_rd :
+                      v_take0_pending ? vwbq_rd[vwbq_head] :
+                      v_take0_gp      ? gp_wb_rd :
+                      v_take0_valuv0  ? valuv0_wb_rd :
+                                        valuv1_wb_rd;
+    assign v_wdata0 = v_take0_lsu     ? lsu_wb_data :
+                      v_take0_pending ? vwbq_data[vwbq_head] :
+                      v_take0_gp      ? gp_wb_data :
+                      v_take0_valuv0  ? valuv0_wb_data :
+                                        valuv1_wb_data;
+
+    assign v_we1    = v_take1_valuv0 || v_take1_valuv1;
+    assign v_waddr1 = v_take1_valuv0 ? valuv0_wb_rd : valuv1_wb_rd;
+    assign v_wdata1 = v_take1_valuv0 ? valuv0_wb_data : valuv1_wb_data;
+
+    // Preserve legacy single-port signals for scoreboard/debug
+    assign v_we     = v_we0;
+    assign v_waddr  = v_waddr0;
+    assign v_wdata  = v_wdata0;
 
     // Commit-beat metadata for CSR error capture (only VALU vector ops produce FP-ish errors).
-    assign v_commit_from_valuv   = v_take_valuv ? 1'b1 : (v_take_pending ? vwbq_from_valuv[vwbq_head] : 1'b0);
-    assign v_commit_err_overflow = v_take_valuv ? valuv_err_overflow : (v_take_pending ? vwbq_err_ovf[vwbq_head] : 1'b0);
-    assign v_commit_err_invalid  = v_take_valuv ? valuv_err_invalid  : (v_take_pending ? vwbq_err_inv[vwbq_head] : 1'b0);
+    wire v_commit0_from_valuv = v_take0_valuv0 || v_take0_valuv1;
+    wire v_commit1_from_valuv = v_take1_valuv0 || v_take1_valuv1;
+    wire v_commit0_err_overflow = v_take0_valuv0 ? valuv0_err_overflow :
+                                  v_take0_valuv1 ? valuv1_err_overflow :
+                                  v_take0_pending ? vwbq_err_ovf[vwbq_head] : 1'b0;
+    wire v_commit0_err_invalid  = v_take0_valuv0 ? valuv0_err_invalid :
+                                  v_take0_valuv1 ? valuv1_err_invalid :
+                                  v_take0_pending ? vwbq_err_inv[vwbq_head] : 1'b0;
+    wire v_commit1_err_overflow = v_take1_valuv0 ? valuv0_err_overflow :
+                                  v_take1_valuv1 ? valuv1_err_overflow : 1'b0;
+    wire v_commit1_err_invalid  = v_take1_valuv0 ? valuv0_err_invalid :
+                                  v_take1_valuv1 ? valuv1_err_invalid : 1'b0;
+
+    assign v_commit_from_valuv   = v_commit0_from_valuv;
+    assign v_commit_err_overflow = v_commit0_err_overflow;
+    assign v_commit_err_invalid  = v_commit0_err_invalid;
+
+    assign err_vec_overflow = (v_we0 && v_commit0_from_valuv && v_commit0_err_overflow)
+                           || (v_we1 && v_commit1_from_valuv && v_commit1_err_overflow);
+    assign err_vec_invalid  = (v_we0 && v_commit0_from_valuv && v_commit0_err_invalid)
+                           || (v_we1 && v_commit1_from_valuv && v_commit1_err_invalid);
 
     // Enqueue non-selected vector writebacks (TEX preferred over VALU ordering in the FIFO)
-    wire v_push_gp    = gp_wb_valid    && !(v_take_gp);
-    wire v_push_valuv = valuv_vector_wb && !(v_take_valuv);
+    wire v_push_gp     = gp_wb_valid    && !(v_take0_gp);
+    wire v_push_valuv0 = valuv0_vector_wb && !(v_take0_valuv0 || v_take1_valuv0);
+    wire v_push_valuv1 = valuv1_vector_wb && !(v_take0_valuv1 || v_take1_valuv1);
 
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -1919,7 +2563,7 @@ module compute_unit_top #(
             tail = vwbq_tail;
 
             // Pop when pending is selected
-            if (v_take_pending) begin
+            if (v_take0_pending) begin
                 head = head + 1'b1;
                 cnt  = cnt - 1'b1;
             end
@@ -1935,13 +2579,24 @@ module compute_unit_top #(
                 cnt  = cnt + 1'b1;
             end
 
-            // Push VALU (if not selected)
-            if (v_push_valuv && (cnt < VWBQ_DEPTH)) begin
-                vwbq_rd[tail]   <= valuv_wb_rd;
-                vwbq_data[tail] <= valuv_wb_data;
+            // Push VALU0 (if not selected)
+            if (v_push_valuv0 && (cnt < VWBQ_DEPTH)) begin
+                vwbq_rd[tail]   <= valuv0_wb_rd;
+                vwbq_data[tail] <= valuv0_wb_data;
                 vwbq_from_valuv[tail] <= 1'b1;
-                vwbq_err_ovf[tail]    <= valuv_err_overflow;
-                vwbq_err_inv[tail]    <= valuv_err_invalid;
+                vwbq_err_ovf[tail]    <= valuv0_err_overflow;
+                vwbq_err_inv[tail]    <= valuv0_err_invalid;
+                tail = tail + 1'b1;
+                cnt  = cnt + 1'b1;
+            end
+
+            // Push VALU1 (if not selected)
+            if (v_push_valuv1 && (cnt < VWBQ_DEPTH)) begin
+                vwbq_rd[tail]   <= valuv1_wb_rd;
+                vwbq_data[tail] <= valuv1_wb_data;
+                vwbq_from_valuv[tail] <= 1'b1;
+                vwbq_err_ovf[tail]    <= valuv1_err_overflow;
+                vwbq_err_inv[tail]    <= valuv1_err_invalid;
                 tail = tail + 1'b1;
                 cnt  = cnt + 1'b1;
             end

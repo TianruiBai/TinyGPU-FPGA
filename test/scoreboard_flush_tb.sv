@@ -20,8 +20,20 @@ module scoreboard_flush_tb;
     reg [1:0] flush_rr_rd_class;
     reg flush_rr_rd_valid;
     reg [4:0] flush_rr_rd;
-    reg wb_scalar_valid;
-    reg [4:0] wb_scalar_rd;
+    reg flush_rr1;
+    reg [1:0] flush_rr1_rd_class;
+    reg flush_rr1_rd_valid;
+    reg [4:0] flush_rr1_rd;
+    reg flush_ex1;
+    reg [1:0] flush_ex1_rd_class;
+    reg flush_ex1_rd_valid;
+    reg [4:0] flush_ex1_rd;
+    reg wb_scalar_valid0;
+    reg [4:0] wb_scalar_rd0;
+    reg wb_scalar_valid1;
+    reg [4:0] wb_scalar_rd1;
+    reg wb_scalar_valid2;
+    reg [4:0] wb_scalar_rd2;
     reg wb_fp_valid;
     reg [4:0] wb_fp_rd;
     reg wb_vec_valid;
@@ -31,23 +43,53 @@ module scoreboard_flush_tb;
     scoreboard dut (
         .clk(clk),
         .rst_n(rst_n),
-        .issue_valid(issue_valid),
-        .issue_rs1_valid(issue_rs1_valid),
-        .issue_rs2_valid(issue_rs2_valid),
-        .issue_rs1_class(issue_rs1_class),
-        .issue_rs2_class(issue_rs2_class),
-        .issue_rs1(issue_rs1),
-        .issue_rs2(issue_rs2),
-        .issue_rd_valid(issue_rd_valid),
-        .issue_rd_class(issue_rd_class),
-        .issue_rd(issue_rd),
-        .stall(stall),
+        .issue0_valid(issue_valid),
+        .issue0_rs1_valid(issue_rs1_valid),
+        .issue0_rs2_valid(issue_rs2_valid),
+        .issue0_rs1_class(issue_rs1_class),
+        .issue0_rs2_class(issue_rs2_class),
+        .issue0_rs1(issue_rs1),
+        .issue0_rs2(issue_rs2),
+        .issue0_rs1_fwd(1'b0),
+        .issue0_rs2_fwd(1'b0),
+        .issue0_rd_valid(issue_rd_valid),
+        .issue0_rd_class(issue_rd_class),
+        .issue0_rd(issue_rd),
+        .accept0(issue_valid),
+        .stall0(stall),
+
+        .issue1_valid(1'b0),
+        .issue1_rs1_valid(1'b0),
+        .issue1_rs2_valid(1'b0),
+        .issue1_rs1_class(2'b00),
+        .issue1_rs2_class(2'b00),
+        .issue1_rs1(5'd0),
+        .issue1_rs2(5'd0),
+        .issue1_rs1_fwd(1'b0),
+        .issue1_rs2_fwd(1'b0),
+        .issue1_rd_valid(1'b0),
+        .issue1_rd_class(2'b00),
+        .issue1_rd(5'd0),
+        .accept1(1'b0),
+        .stall1(),
         .flush_rr(flush_rr),
         .flush_rr_rd_class(flush_rr_rd_class),
         .flush_rr_rd_valid(flush_rr_rd_valid),
         .flush_rr_rd(flush_rr_rd),
-        .wb_scalar_valid(wb_scalar_valid),
-        .wb_scalar_rd(wb_scalar_rd),
+        .flush_rr1(flush_rr1),
+        .flush_rr1_rd_class(flush_rr1_rd_class),
+        .flush_rr1_rd_valid(flush_rr1_rd_valid),
+        .flush_rr1_rd(flush_rr1_rd),
+        .flush_ex1(flush_ex1),
+        .flush_ex1_rd_class(flush_ex1_rd_class),
+        .flush_ex1_rd_valid(flush_ex1_rd_valid),
+        .flush_ex1_rd(flush_ex1_rd),
+        .wb_scalar_valid0(wb_scalar_valid0),
+        .wb_scalar_rd0(wb_scalar_rd0),
+        .wb_scalar_valid1(wb_scalar_valid1),
+        .wb_scalar_rd1(wb_scalar_rd1),
+        .wb_scalar_valid2(wb_scalar_valid2),
+        .wb_scalar_rd2(wb_scalar_rd2),
         .wb_fp_valid(wb_fp_valid),
         .wb_fp_rd(wb_fp_rd),
         .wb_vec_valid(wb_vec_valid),
@@ -70,8 +112,20 @@ module scoreboard_flush_tb;
         flush_rr_rd_class = 2'b00;
         flush_rr_rd_valid = 0;
         flush_rr_rd = 5'd0;
-        wb_scalar_valid = 0;
-        wb_scalar_rd = 5'd0;
+        flush_rr1 = 0;
+        flush_rr1_rd_class = 2'b00;
+        flush_rr1_rd_valid = 0;
+        flush_rr1_rd = 5'd0;
+        flush_ex1 = 0;
+        flush_ex1_rd_class = 2'b00;
+        flush_ex1_rd_valid = 0;
+        flush_ex1_rd = 5'd0;
+        wb_scalar_valid0 = 0;
+        wb_scalar_rd0 = 5'd0;
+        wb_scalar_valid1 = 0;
+        wb_scalar_rd1 = 5'd0;
+        wb_scalar_valid2 = 0;
+        wb_scalar_rd2 = 5'd0;
         wb_fp_valid = 0;
         wb_fp_rd = 5'd0;
         wb_vec_valid = 0;

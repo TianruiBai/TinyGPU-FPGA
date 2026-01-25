@@ -28,10 +28,14 @@ Implemented storage:
 
 ## 4. Execution Units
 - **Scalar integer**: `alu_scalar.sv`
-- **FP16 scalar**: `fp_alu.sv` (also produces scalar conversions via `wb_scalar_*`)
-- **Vector**: `alu_vector.sv` (128-bit; INT32/INT16/INT8 and FP32/FP16/FP8(E4M3) lanes)
+- **FP16 scalar**: `fp_alu.sv` — the RTL now instantiates two FP ALU instances to support dual-issue FP operations and scalar conversions.
+- **Vector**: `alu_vector.sv` — two VALU instances are instantiated (u_alu_vector0/u_alu_vector1) to support dual VALU issue and improve vector throughput (subject to VQ/VWBQ capacity).
 
-Vector ops are fed from a small decoupling queue in `compute_unit_top.sv` (`VQ_DEPTH=2`) so lane1 issue can enqueue vector work without directly consuming the scalar pipeline.
+Dual FP/Vector specifics:
+- Dual FP ALUs: two independent FP pipelines produce either FP register writes or scalar conversions. Scalar FP conversions arbitration is deterministic and backpressured by the scalar WB arb (`scalar_wb_arb_pending2.sv`).
+- Dual VALUs: VALU dual-issue issues from a 2-entry Vector Issue Queue (`VQ_DEPTH=2`). Each VALU has independent ready/valid handshakes and produces WB results (`valuv0_wb_*`, `valuv1_wb_*`).
+- Vector Writeback Buffer Queue (VWBQ): non-committed VALU vector results, texture/gfx writebacks, and LSU vector results can be buffered in a VWBQ FIFO (default depth = 32). Two vector writeback ports (`v_we0` and `v_we1`) arbitrate LSU > pending FIFO > graphics > VALU in a deterministic order to commit vector register updates.
+- Legacy testbench signals: for backwards compatibility the top-level exposes single-port legacy probes (e.g., `valuv_wb_valid`, `valuv_wb_rd`, `fp_scalar_wb_*`) which select and expose the active ALU that would be used by older testbenches.
 
 ## 5. LSU + Memory System
 `lsu.sv` handles:

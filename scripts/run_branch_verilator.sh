@@ -5,6 +5,7 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
 
 rtl_dir="ip/compute unit"
+cache_dir="ip/cache"
 mailbox_dir="ip/mailbox"
 mailbox_pkg="ip/mailbox/mailbox_pkg.sv"
 
@@ -17,6 +18,10 @@ done
 
 for f in "$mailbox_dir"/*.sv; do
   [[ "$f" == "$mailbox_dir/mailbox_pkg.sv" ]] && continue
+  rtl_files+=("$f")
+done
+
+for f in "$cache_dir"/*.sv; do
   rtl_files+=("$f")
 done
 
