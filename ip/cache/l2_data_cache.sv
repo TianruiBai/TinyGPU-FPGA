@@ -172,7 +172,7 @@ module l2_data_cache #(
         end
 
         for (p_sel = 0; p_sel < NUM_PORTS; p_sel = p_sel + 1) begin
-            idx_sel = (rr_ptr + p_sel) % NUM_PORTS;
+            idx_sel = (int'(rr_ptr) + p_sel) % NUM_PORTS;
             if (!sel_valid && l1_req_valid[idx_sel] && (l1_req_qos[idx_sel] == best_qos)) begin
                 sel_valid = 1'b1;
                 sel_port  = idx_sel[$clog2(NUM_PORTS)-1:0];
@@ -266,18 +266,21 @@ module l2_data_cache #(
         end
     endfunction
 
-    function automatic int select_victim_way(
+    function automatic logic [$clog2(ASSOCIATIVITY)-1:0] select_victim_way(
         input int port,
         input int set_idx
     );
         int base;
-        int way;
+        int tmp;
+        logic [$clog2(ASSOCIATIVITY)-1:0] way;
         begin
             if (PARTITION_ACTIVE) begin
                 base = port * WAYS_PER_PORT;
-                way = base + rr_way[set_idx][port];
+                tmp = base + int'(rr_way[set_idx][port]);
+                way = tmp[$clog2(ASSOCIATIVITY)-1:0];
             end else begin
-                way = rr_way[set_idx][0];
+                tmp = int'(rr_way[set_idx][0]);
+                way = tmp[$clog2(ASSOCIATIVITY)-1:0];
             end
             select_victim_way = way;
         end
@@ -436,7 +439,7 @@ module l2_data_cache #(
                         sel_addr = l1_req_addr[sel_port];
                         sel_set  = sel_addr[OFFSET_BITS +: INDEX_BITS];
                         sel_tag  = sel_addr[31 -: TAG_BITS];
-                        sel_way_mask = way_mask_for_port(sel_port);
+                        sel_way_mask = way_mask_for_port(int'(sel_port));
                         hit = 1'b0;
                         hit_way = '0;
 
@@ -481,7 +484,7 @@ module l2_data_cache #(
                             end
                         end else begin
                             cnt_misses <= cnt_misses + 1'b1;
-                            pend_way <= select_victim_way(sel_port, sel_set);
+                            pend_way <= select_victim_way(int'(sel_port), int'(sel_set));
                             if (WRITEBACK && tag_ram[sel_set][pend_way].valid && tag_ram[sel_set][pend_way].dirty) begin
                                 axi_line_buf <= data_ram[sel_set][pend_way];
                                 axi_addr     <= {tag_ram[sel_set][pend_way].tag, sel_set, {OFFSET_BITS{1'b0}}};
@@ -550,9 +553,9 @@ module l2_data_cache #(
                 end
 
                 ST_FLUSH_ADV: begin
-                    if (flush_way == (ASSOCIATIVITY-1)) begin
+                    if (int'(flush_way) == (ASSOCIATIVITY-1)) begin
                         flush_way <= '0;
-                        if (flush_set == (NUM_SETS-1)) begin
+                        if (int'(flush_set) == (NUM_SETS-1)) begin
                             flush_set <= '0;
                             flush_active <= 1'b0;
                             state <= ST_IDLE;

@@ -1,3 +1,4 @@
+/* verilator lint_off MULTITOP */
 // L1 Instruction Cache (direct-mapped, single-miss outstanding)
 // Shared by compute unit and control processor via small wrappers.
 
@@ -83,7 +84,7 @@ module l1_inst_cache #(
     always_comb begin
         integer base_bit;
         resp_data = '0;
-        base_bit = (hit ? (offset_in_q >> FETCH_SHIFT) : (miss_offset >> FETCH_SHIFT)) * FETCH_DATA_BITS;
+        base_bit = (hit ? (int'(offset_in_q) >> FETCH_SHIFT) : (int'(miss_offset) >> FETCH_SHIFT)) * FETCH_DATA_BITS;
         if (hit) begin
             resp_data = line_rd[base_bit +: FETCH_DATA_BITS];
         end else if (miss_pending && miss_resp_valid) begin
@@ -169,3 +170,4 @@ module l1_inst_cache #(
         if (FETCH_BYTES > LINE_BYTES) $error("FETCH_DATA_BITS larger than LINE_BYTES");
     end
 endmodule
+/* verilator lint_on MULTITOP */

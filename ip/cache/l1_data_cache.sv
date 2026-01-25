@@ -965,7 +965,7 @@ module l1_data_cache #(
 
             // Assertions for refill ordering and dirty eviction correctness
             if (mem_resp_valid && (mem_outstanding_src == MEM_SRC_L1_REFILL || mem_outstanding_src == MEM_SRC_TEX_REFILL)) begin
-                assert ((LINE_BEATS == 1) || (refill_cnt < REFILL_CNT_BITS'(LINE_BEATS))) else $error("Refill beat ordering violation");
+                assert ((LINE_BEATS == 1) || (int'(refill_cnt) < LINE_BEATS)) else $error("Refill beat ordering violation");
             end
             if (wb_push) begin
                 assert (^wb_push_addr !== 1'bx) else $error("WB push address X");
