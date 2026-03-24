@@ -148,7 +148,7 @@ module gfx_console_tb;
     endfunction
 
     function automatic [31:0] nop();
-        nop = i_type(12'd0, 5'd0, 3'b000, 5'd0, OP_INT_IMM);
+        nop = i_type(12'd0, 5'd0, 3'b000, 5'd0, OP_IMM);
     endfunction
 
     // ------------------------------------------------------------------
@@ -300,7 +300,7 @@ module gfx_console_tb;
                                 endcase
                                 last_valid = 1'b1; last_rgb = rgb;
                             end
-                            if (console_color_mode == 1) $write("█"); else for (p = 0; p < console_pixel_w; p++) $write(" ");
+                            if (console_color_mode == 1) $write("閳?); else for (p = 0; p < console_pixel_w; p++) $write(" ");
                         end
                     end
                 end
@@ -604,7 +604,7 @@ module gfx_console_tb;
     //   WFI; J frame_loop
     //
     // Notes:
-    // - RSTATE/RRECT/RDRAW/GFLUSH are gfx macro-ops encoded as OP_ATOM_SC with funct7=0.
+    // - RSTATE/RRECT/RDRAW/GFLUSH are gfx macro-ops encoded as OP_CUSTOM0 with funct7=0.
     // - B-type offsets are PC-relative and patched below.
     task automatic init_rom();
         int pc;
@@ -623,44 +623,44 @@ module gfx_console_tb;
 
             // Base pointers (use LUI+ADDI to keep low bits for non-4KB aligned offsets)
             rom[pc>>2] = u_type(BASE_ADDR, 5'd1, OP_LUI); pc += 4;                  // x1 = BASE (0x8000_0000)
-            rom[pc>>2] = i_type(RSTATE_TEX_OFF, 5'd1, 3'b000, 5'd2, OP_INT_IMM); pc += 4; // x2 = RSTATE (textured)
-            rom[pc>>2] = i_type(RRECT_OFF, 5'd1, 3'b000, 5'd3, OP_INT_IMM); pc += 4;  // x3 = RRECT ptr
+            rom[pc>>2] = i_type(RSTATE_TEX_OFF, 5'd1, 3'b000, 5'd2, OP_IMM); pc += 4; // x2 = RSTATE (textured)
+            rom[pc>>2] = i_type(RRECT_OFF, 5'd1, 3'b000, 5'd3, OP_IMM); pc += 4;  // x3 = RRECT ptr
 
             // TRI_BUF cube = BASE + 0x0800 = (LUI 0x8000_1000) + (-0x800)
             rom[pc>>2] = u_type(BASE_ADDR + 32'h0000_1000, 5'd4, OP_LUI); pc += 4;
-            rom[pc>>2] = i_type(32'h800, 5'd4, 3'b000, 5'd4, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(32'h800, 5'd4, 3'b000, 5'd4, OP_IMM); pc += 4;
 
             // TRIG LUT base = BASE + 0x2400 = (LUI 0x8000_2000) + 0x400
             rom[pc>>2] = u_type(BASE_ADDR + 32'h0000_2000, 5'd5, OP_LUI); pc += 4;
-            rom[pc>>2] = i_type(32'h400, 5'd5, 3'b000, 5'd5, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(32'h400, 5'd5, 3'b000, 5'd5, OP_IMM); pc += 4;
 
             // Cube verts/tris/normals (0x2C00/0x2D00/0x2E00)
             rom[pc>>2] = u_type(BASE_ADDR + 32'h0000_3000, 5'd6, OP_LUI); pc += 4; // base 0x8000_3000
-            rom[pc>>2] = i_type(32'hC00, 5'd6, 3'b000, 5'd6, OP_INT_IMM); pc += 4;   // -0x400 -> 0x2C00
+            rom[pc>>2] = i_type(32'hC00, 5'd6, 3'b000, 5'd6, OP_IMM); pc += 4;   // -0x400 -> 0x2C00
             rom[pc>>2] = u_type(BASE_ADDR + 32'h0000_3000, 5'd7, OP_LUI); pc += 4;
-            rom[pc>>2] = i_type(32'hD00, 5'd7, 3'b000, 5'd7, OP_INT_IMM); pc += 4;   // -0x300 -> 0x2D00
+            rom[pc>>2] = i_type(32'hD00, 5'd7, 3'b000, 5'd7, OP_IMM); pc += 4;   // -0x300 -> 0x2D00
             rom[pc>>2] = u_type(BASE_ADDR + 32'h0000_3000, 5'd8, OP_LUI); pc += 4;
-            rom[pc>>2] = i_type(32'hE00, 5'd8, 3'b000, 5'd8, OP_INT_IMM); pc += 4;   // -0x200 -> 0x2E00
+            rom[pc>>2] = i_type(32'hE00, 5'd8, 3'b000, 5'd8, OP_IMM); pc += 4;   // -0x200 -> 0x2E00
 
             // Light vector (0x2100)
             rom[pc>>2] = u_type(BASE_ADDR + 32'h0000_2000, 5'd12, OP_LUI); pc += 4;
-            rom[pc>>2] = i_type(32'h100, 5'd12, 3'b000, 5'd12, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(32'h100, 5'd12, 3'b000, 5'd12, OP_IMM); pc += 4;
             rom[pc>>2] = i_type(0, 5'd12, 3'b010, 5'd9, OP_LOAD); pc += 4;            // x9 = lx
             rom[pc>>2] = i_type(4, 5'd12, 3'b010, 5'd10, OP_LOAD); pc += 4;           // x10 = ly
             rom[pc>>2] = i_type(8, 5'd12, 3'b010, 5'd11, OP_LOAD); pc += 4;           // x11 = lz
 
             // Teapot base pointers staged in x26/x27/x28, tri buf in x18
             rom[pc>>2] = u_type(BASE_ADDR + 32'h0000_1000, 5'd18, OP_LUI); pc += 4; // base 0x8000_1000
-            rom[pc>>2] = i_type(32'hC80, 5'd18, 3'b000, 5'd18, OP_INT_IMM); pc += 4; // -0x380 -> 0x0C80
+            rom[pc>>2] = i_type(32'hC80, 5'd18, 3'b000, 5'd18, OP_IMM); pc += 4; // -0x380 -> 0x0C80
 
             rom[pc>>2] = u_type(BASE_ADDR + 32'h0000_3000, 5'd26, OP_LUI); pc += 4;
-            rom[pc>>2] = i_type(32'h400, 5'd26, 3'b000, 5'd26, OP_INT_IMM); pc += 4; // 0x3400
+            rom[pc>>2] = i_type(32'h400, 5'd26, 3'b000, 5'd26, OP_IMM); pc += 4; // 0x3400
 
             rom[pc>>2] = u_type(BASE_ADDR + 32'h0000_3000, 5'd27, OP_LUI); pc += 4;
-            rom[pc>>2] = i_type(32'h600, 5'd27, 3'b000, 5'd27, OP_INT_IMM); pc += 4; // 0x3600
+            rom[pc>>2] = i_type(32'h600, 5'd27, 3'b000, 5'd27, OP_IMM); pc += 4; // 0x3600
 
             rom[pc>>2] = u_type(BASE_ADDR + 32'h0000_4000, 5'd28, OP_LUI); pc += 4;
-            rom[pc>>2] = i_type(32'hC00, 5'd28, 3'b000, 5'd28, OP_INT_IMM); pc += 4; // -0x400 -> 0x3C00
+            rom[pc>>2] = i_type(32'hC00, 5'd28, 3'b000, 5'd28, OP_IMM); pc += 4; // -0x400 -> 0x3C00
 
             // Save teapot base pointers (x26/x27/x28) to memory for later reload
             rom[pc>>2] = s_type(TEA_BASE_SAVE_OFF + 0, 5'd1, 5'd26, 3'b010, OP_STORE); pc += 4;
@@ -668,54 +668,54 @@ module gfx_console_tb;
             rom[pc>>2] = s_type(TEA_BASE_SAVE_OFF + 8, 5'd1, 5'd28, 3'b010, OP_STORE); pc += 4;
 
             // Pitch sin/cos (lookup index 32 -> 45deg)
-            rom[pc>>2] = i_type(32, 5'd0, 3'b000, 5'd23, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(3, 5'd23, 3'b001, 5'd23, OP_INT_IMM); pc += 4; // <<3 (entry size)
-            rom[pc>>2] = r_type(7'b0000000, 5'd5, 5'd23, 3'b000, 5'd23, OP_INT); pc += 4; // base + offset
+            rom[pc>>2] = i_type(32, 5'd0, 3'b000, 5'd23, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(3, 5'd23, 3'b001, 5'd23, OP_IMM); pc += 4; // <<3 (entry size)
+            rom[pc>>2] = r_type(7'b0000000, 5'd5, 5'd23, 3'b000, 5'd23, OP_REG); pc += 4; // base + offset
             rom[pc>>2] = i_type(0, 5'd23, 3'b010, 5'd24, OP_LOAD); pc += 4; // sin45
             rom[pc>>2] = i_type(4, 5'd23, 3'b010, 5'd25, OP_LOAD); pc += 4; // cos45
 
             // RSTATE once
-            rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd2, 3'b000, 5'd0, OP_ATOM_SC); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd2, 3'b000, 5'd0, OP_CUSTOM0); pc += 4;
 
             // frame = 0
-            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd13, OP_INT_IMM); pc += 4; // x13 = frame
+            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd13, OP_IMM); pc += 4; // x13 = frame
 
             // ---------------- CUBE FRAME LOOP ----------------
             loop_cube_frame_pc = pc;
 
             // angle idx = frame & 0xFF -> sin/cos in x15/x16
-            rom[pc>>2] = i_type(255, 5'd13, 3'b111, 5'd14, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(3, 5'd14, 3'b001, 5'd14, OP_INT_IMM); pc += 4; // *8
-            rom[pc>>2] = r_type(7'b0000000, 5'd5, 5'd14, 3'b000, 5'd14, OP_INT); pc += 4;
+            rom[pc>>2] = i_type(255, 5'd13, 3'b111, 5'd14, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(3, 5'd14, 3'b001, 5'd14, OP_IMM); pc += 4; // *8
+            rom[pc>>2] = r_type(7'b0000000, 5'd5, 5'd14, 3'b000, 5'd14, OP_REG); pc += 4;
             rom[pc>>2] = i_type(0, 5'd14, 3'b010, 5'd15, OP_LOAD); pc += 4; // sin
             rom[pc>>2] = i_type(4, 5'd14, 3'b010, 5'd16, OP_LOAD); pc += 4; // cos
 
             // Clear framebuffer (RRECT descriptor already set)
-            rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd3, 3'b011, 5'd0, OP_ATOM_SC); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd3, 3'b011, 5'd0, OP_CUSTOM0); pc += 4;
 
             // ---------------- CUBE LOOP ----------------
-            rom[pc>>2] = i_type(64, 5'd0, 3'b000, 5'd20, OP_INT_IMM); pc += 4; // cx cube (centered)
-            rom[pc>>2] = i_type(64, 5'd0, 3'b000, 5'd21, OP_INT_IMM); pc += 4; // cy cube (centered)
-            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd17, OP_INT_IMM); pc += 4; // tri_idx
+            rom[pc>>2] = i_type(64, 5'd0, 3'b000, 5'd20, OP_IMM); pc += 4; // cx cube (centered)
+            rom[pc>>2] = i_type(64, 5'd0, 3'b000, 5'd21, OP_IMM); pc += 4; // cy cube (centered)
+            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd17, OP_IMM); pc += 4; // tri_idx
             loop_cube_pc = pc;
 
             // tri_ptr = TRI_BUF_CUBE + tri_idx*96
-            rom[pc>>2] = i_type(6, 5'd17, 3'b001, 5'd18, OP_INT_IMM); pc += 4; // <<6
-            rom[pc>>2] = i_type(5, 5'd17, 3'b001, 5'd19, OP_INT_IMM); pc += 4; // <<5
-            rom[pc>>2] = r_type(7'b0000000, 5'd19, 5'd18, 3'b000, 5'd18, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd4, 5'd18, 3'b000, 5'd18, OP_INT); pc += 4;
+            rom[pc>>2] = i_type(6, 5'd17, 3'b001, 5'd18, OP_IMM); pc += 4; // <<6
+            rom[pc>>2] = i_type(5, 5'd17, 3'b001, 5'd19, OP_IMM); pc += 4; // <<5
+            rom[pc>>2] = r_type(7'b0000000, 5'd19, 5'd18, 3'b000, 5'd18, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd4, 5'd18, 3'b000, 5'd18, OP_REG); pc += 4;
 
             // tri_desc_ptr = CUBE_TRI + tri_idx*12
-            rom[pc>>2] = i_type(3, 5'd17, 3'b001, 5'd19, OP_INT_IMM); pc += 4; // <<3
-            rom[pc>>2] = i_type(2, 5'd17, 3'b001, 5'd30, OP_INT_IMM); pc += 4; // <<2
-            rom[pc>>2] = r_type(7'b0000000, 5'd30, 5'd19, 3'b000, 5'd19, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd7, 5'd19, 3'b000, 5'd19, OP_INT); pc += 4;
+            rom[pc>>2] = i_type(3, 5'd17, 3'b001, 5'd19, OP_IMM); pc += 4; // <<3
+            rom[pc>>2] = i_type(2, 5'd17, 3'b001, 5'd30, OP_IMM); pc += 4; // <<2
+            rom[pc>>2] = r_type(7'b0000000, 5'd30, 5'd19, 3'b000, 5'd19, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd7, 5'd19, 3'b000, 5'd19, OP_REG); pc += 4;
 
             // nrm_ptr = CUBE_NRM + tri_idx*12
-            rom[pc>>2] = i_type(3, 5'd17, 3'b001, 5'd26, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(2, 5'd17, 3'b001, 5'd27, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd27, 5'd26, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd8, 5'd26, 3'b000, 5'd26, OP_INT); pc += 4;
+            rom[pc>>2] = i_type(3, 5'd17, 3'b001, 5'd26, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(2, 5'd17, 3'b001, 5'd27, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd27, 5'd26, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd8, 5'd26, 3'b000, 5'd26, OP_REG); pc += 4;
             rom[pc>>2] = i_type(0, 5'd26, 3'b010, 5'd26, OP_LOAD); pc += 4; // nx
             rom[pc>>2] = i_type(4, 5'd26, 3'b010, 5'd27, OP_LOAD); pc += 4; // ny
             rom[pc>>2] = i_type(8, 5'd26, 3'b010, 5'd28, OP_LOAD); pc += 4; // nz
@@ -727,52 +727,52 @@ module gfx_console_tb;
             rom[pc>>2] = nop(); pc += 4;
 
             // Rotate normal yaw
-            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd26, 3'b000, 5'd29, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd28, 3'b000, 5'd30, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd30, 5'd29, 3'b000, 5'd29, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h40F, 5'd29, 3'b101, 5'd29, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd28, 3'b000, 5'd30, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd26, 3'b000, 5'd31, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0100000, 5'd31, 5'd30, 3'b000, 5'd30, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h40F, 5'd30, 3'b101, 5'd30, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd26, 3'b000, 5'd29, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd28, 3'b000, 5'd30, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd30, 5'd29, 3'b000, 5'd29, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h40F, 5'd29, 3'b101, 5'd29, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd28, 3'b000, 5'd30, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd26, 3'b000, 5'd31, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0100000, 5'd31, 5'd30, 3'b000, 5'd30, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h40F, 5'd30, 3'b101, 5'd30, OP_IMM); pc += 4;
 
             // Pitch normals
-            rom[pc>>2] = r_type(7'b0000001, 5'd25, 5'd27, 3'b000, 5'd31, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd24, 5'd30, 3'b000, 5'd28, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0100000, 5'd28, 5'd31, 3'b000, 5'd31, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h40F, 5'd31, 3'b101, 5'd31, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd25, 5'd27, 3'b000, 5'd31, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd24, 5'd30, 3'b000, 5'd28, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0100000, 5'd28, 5'd31, 3'b000, 5'd31, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h40F, 5'd31, 3'b101, 5'd31, OP_IMM); pc += 4;
 
             // dot = nxr*lx + ny2*ly + nzr*lz
-            rom[pc>>2] = r_type(7'b0000001, 5'd9, 5'd29, 3'b000, 5'd28, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd10, 5'd31, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd26, 5'd28, 3'b000, 5'd28, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd11, 5'd30, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd26, 5'd28, 3'b000, 5'd28, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h40F, 5'd28, 3'b101, 5'd28, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd9, 5'd29, 3'b000, 5'd28, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd10, 5'd31, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd26, 5'd28, 3'b000, 5'd28, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd11, 5'd30, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd26, 5'd28, 3'b000, 5'd28, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h40F, 5'd28, 3'b101, 5'd28, OP_IMM); pc += 4;
 
             // clamp dot >=0
             rom[pc>>2] = b_type(8, 5'd28, 5'd0, 3'b101, OP_BRANCH); pc += 4; rom[pc>>2] = nop(); pc += 4;
-            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd28, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd28, OP_IMM); pc += 4;
 
             // intensity
-            rom[pc>>2] = i_type(255, 5'd0, 3'b000, 5'd26, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd26, 5'd28, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h40F, 5'd26, 3'b101, 5'd26, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(80, 5'd26, 3'b000, 5'd26, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(40, 5'd26, 3'b000, 5'd26, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(255, 5'd0, 3'b000, 5'd26, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd26, 5'd28, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h40F, 5'd26, 3'b101, 5'd26, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(80, 5'd26, 3'b000, 5'd26, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(40, 5'd26, 3'b000, 5'd26, OP_IMM); pc += 4;
 
             // r,g,b
-            rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd26, 3'b000, 5'd27, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd26, 3'b000, 5'd28, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd26, 3'b000, 5'd29, OP_INT); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd26, 3'b000, 5'd27, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd26, 3'b000, 5'd28, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd26, 3'b000, 5'd29, OP_REG); pc += 4;
 
             // color
             rom[pc>>2] = u_type(32'hFF00_0000, 5'd31, OP_LUI); pc += 4;
-            rom[pc>>2] = i_type(16, 5'd29, 3'b001, 5'd30, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd30, 5'd31, 3'b110, 5'd31, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(8, 5'd28, 3'b001, 5'd30, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd30, 5'd31, 3'b110, 5'd31, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd27, 5'd31, 3'b110, 5'd31, OP_INT); pc += 4;
+            rom[pc>>2] = i_type(16, 5'd29, 3'b001, 5'd30, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd30, 5'd31, 3'b110, 5'd31, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(8, 5'd28, 3'b001, 5'd30, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd30, 5'd31, 3'b110, 5'd31, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd27, 5'd31, 3'b110, 5'd31, OP_REG); pc += 4;
 
             // Load indices
             rom[pc>>2] = i_type(0, 5'd19, 3'b010, 5'd27, OP_LOAD); pc += 4;
@@ -780,20 +780,20 @@ module gfx_console_tb;
             rom[pc>>2] = i_type(8, 5'd19, 3'b010, 5'd29, OP_LOAD); pc += 4;
 
             // Preserve indices (x22=i0, x23=i1, x12=i2)
-            rom[pc>>2] = r_type(7'b0000000, 5'd27, 5'd0, 3'b000, 5'd22, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd28, 5'd0, 3'b000, 5'd23, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd29, 5'd0, 3'b000, 5'd12, OP_INT); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd27, 5'd0, 3'b000, 5'd22, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd28, 5'd0, 3'b000, 5'd23, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd29, 5'd0, 3'b000, 5'd12, OP_REG); pc += 4;
 
             // Preserve indices (x22=i0, x23=i1, x12=i2)
-            rom[pc>>2] = r_type(7'b0000000, 5'd27, 5'd0, 3'b000, 5'd22, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd28, 5'd0, 3'b000, 5'd23, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd29, 5'd0, 3'b000, 5'd12, OP_INT); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd27, 5'd0, 3'b000, 5'd22, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd28, 5'd0, 3'b000, 5'd23, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd29, 5'd0, 3'b000, 5'd12, OP_REG); pc += 4;
 
             // Vertex 0
-            rom[pc>>2] = i_type(3, 5'd22, 3'b001, 5'd26, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(2, 5'd22, 3'b001, 5'd27, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd27, 5'd26, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd6, 5'd26, 3'b000, 5'd26, OP_INT); pc += 4;
+            rom[pc>>2] = i_type(3, 5'd22, 3'b001, 5'd26, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(2, 5'd22, 3'b001, 5'd27, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd27, 5'd26, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd6, 5'd26, 3'b000, 5'd26, OP_REG); pc += 4;
             rom[pc>>2] = i_type(0, 5'd26, 3'b010, 5'd27, OP_LOAD); pc += 4;
             rom[pc>>2] = i_type(4, 5'd26, 3'b010, 5'd28, OP_LOAD); pc += 4;
             rom[pc>>2] = i_type(8, 5'd26, 3'b010, 5'd29, OP_LOAD); pc += 4;
@@ -804,22 +804,22 @@ module gfx_console_tb;
             rom[pc>>2] = nop(); pc += 4;
             rom[pc>>2] = nop(); pc += 4;
             rom[pc>>2] = nop(); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd27, 3'b000, 5'd30, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd29, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd26, 5'd30, 3'b000, 5'd30, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h40F, 5'd30, 3'b101, 5'd30, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd29, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd27, 3'b000, 5'd29, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0100000, 5'd29, 5'd26, 3'b000, 5'd29, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h40F, 5'd29, 3'b101, 5'd29, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd25, 5'd28, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd24, 5'd29, 3'b000, 5'd27, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0100000, 5'd27, 5'd26, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h40F, 5'd26, 3'b101, 5'd26, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd20, 5'd30, 3'b000, 5'd30, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd21, 5'd26, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h403, 5'd30, 3'b101, 5'd27, OP_INT_IMM); pc += 4; // u = x >> 3
-            rom[pc>>2] = i_type(12'h403, 5'd26, 3'b101, 5'd28, OP_INT_IMM); pc += 4; // v = y >> 3
+            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd27, 3'b000, 5'd30, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd29, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd26, 5'd30, 3'b000, 5'd30, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h40F, 5'd30, 3'b101, 5'd30, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd29, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd27, 3'b000, 5'd29, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0100000, 5'd29, 5'd26, 3'b000, 5'd29, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h40F, 5'd29, 3'b101, 5'd29, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd25, 5'd28, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd24, 5'd29, 3'b000, 5'd27, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0100000, 5'd27, 5'd26, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h40F, 5'd26, 3'b101, 5'd26, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd20, 5'd30, 3'b000, 5'd30, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd21, 5'd26, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h403, 5'd30, 3'b101, 5'd27, OP_IMM); pc += 4; // u = x >> 3
+            rom[pc>>2] = i_type(12'h403, 5'd26, 3'b101, 5'd28, OP_IMM); pc += 4; // v = y >> 3
             rom[pc>>2] = s_type(16, 5'd18, 5'd27, 3'b010, OP_STORE); pc += 4;
             rom[pc>>2] = s_type(20, 5'd18, 5'd28, 3'b010, OP_STORE); pc += 4;
             rom[pc>>2] = nop(); pc += 4;
@@ -835,10 +835,10 @@ module gfx_console_tb;
             rom[pc>>2] = s_type(24,5'd18, 5'd31,3'b010, OP_STORE); pc += 4;
 
             // Vertex 1
-            rom[pc>>2] = i_type(3, 5'd23, 3'b001, 5'd26, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(2, 5'd23, 3'b001, 5'd27, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd27, 5'd26, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd6, 5'd26, 3'b000, 5'd26, OP_INT); pc += 4;
+            rom[pc>>2] = i_type(3, 5'd23, 3'b001, 5'd26, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(2, 5'd23, 3'b001, 5'd27, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd27, 5'd26, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd6, 5'd26, 3'b000, 5'd26, OP_REG); pc += 4;
             rom[pc>>2] = i_type(0, 5'd26, 3'b010, 5'd27, OP_LOAD); pc += 4;
             rom[pc>>2] = i_type(4, 5'd26, 3'b010, 5'd28, OP_LOAD); pc += 4;
             rom[pc>>2] = i_type(8, 5'd26, 3'b010, 5'd29, OP_LOAD); pc += 4;
@@ -849,22 +849,22 @@ module gfx_console_tb;
             rom[pc>>2] = nop(); pc += 4;
             rom[pc>>2] = nop(); pc += 4;
             rom[pc>>2] = nop(); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd27, 3'b000, 5'd30, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd29, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd26, 5'd30, 3'b000, 5'd30, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h40F, 5'd30, 3'b101, 5'd30, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd29, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd27, 3'b000, 5'd29, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0100000, 5'd29, 5'd26, 3'b000, 5'd29, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h40F, 5'd29, 3'b101, 5'd29, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd25, 5'd28, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd24, 5'd29, 3'b000, 5'd27, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0100000, 5'd27, 5'd26, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h40F, 5'd26, 3'b101, 5'd26, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd20, 5'd30, 3'b000, 5'd30, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd21, 5'd26, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h403, 5'd30, 3'b101, 5'd27, OP_INT_IMM); pc += 4; // u = x >> 3
-            rom[pc>>2] = i_type(12'h403, 5'd26, 3'b101, 5'd28, OP_INT_IMM); pc += 4; // v = y >> 3
+            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd27, 3'b000, 5'd30, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd29, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd26, 5'd30, 3'b000, 5'd30, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h40F, 5'd30, 3'b101, 5'd30, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd29, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd27, 3'b000, 5'd29, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0100000, 5'd29, 5'd26, 3'b000, 5'd29, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h40F, 5'd29, 3'b101, 5'd29, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd25, 5'd28, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd24, 5'd29, 3'b000, 5'd27, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0100000, 5'd27, 5'd26, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h40F, 5'd26, 3'b101, 5'd26, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd20, 5'd30, 3'b000, 5'd30, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd21, 5'd26, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h403, 5'd30, 3'b101, 5'd27, OP_IMM); pc += 4; // u = x >> 3
+            rom[pc>>2] = i_type(12'h403, 5'd26, 3'b101, 5'd28, OP_IMM); pc += 4; // v = y >> 3
             rom[pc>>2] = s_type(48, 5'd18, 5'd27, 3'b010, OP_STORE); pc += 4;
             rom[pc>>2] = s_type(52, 5'd18, 5'd28, 3'b010, OP_STORE); pc += 4;
             rom[pc>>2] = nop(); pc += 4;
@@ -880,10 +880,10 @@ module gfx_console_tb;
             rom[pc>>2] = s_type(56, 5'd18, 5'd31,3'b010, OP_STORE); pc += 4;
 
             // Vertex 2
-            rom[pc>>2] = i_type(3, 5'd12, 3'b001, 5'd26, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(2, 5'd12, 3'b001, 5'd27, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd27, 5'd26, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd6, 5'd26, 3'b000, 5'd26, OP_INT); pc += 4;
+            rom[pc>>2] = i_type(3, 5'd12, 3'b001, 5'd26, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(2, 5'd12, 3'b001, 5'd27, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd27, 5'd26, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd6, 5'd26, 3'b000, 5'd26, OP_REG); pc += 4;
             rom[pc>>2] = i_type(0, 5'd26, 3'b010, 5'd27, OP_LOAD); pc += 4;
             rom[pc>>2] = i_type(4, 5'd26, 3'b010, 5'd28, OP_LOAD); pc += 4;
             rom[pc>>2] = i_type(8, 5'd26, 3'b010, 5'd29, OP_LOAD); pc += 4;
@@ -894,22 +894,22 @@ module gfx_console_tb;
             rom[pc>>2] = nop(); pc += 4;
             rom[pc>>2] = nop(); pc += 4;
             rom[pc>>2] = nop(); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd27, 3'b000, 5'd30, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd29, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd26, 5'd30, 3'b000, 5'd30, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h40F, 5'd30, 3'b101, 5'd30, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd29, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd27, 3'b000, 5'd29, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0100000, 5'd29, 5'd26, 3'b000, 5'd29, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h40F, 5'd29, 3'b101, 5'd29, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd25, 5'd28, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd24, 5'd29, 3'b000, 5'd27, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0100000, 5'd27, 5'd26, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h40F, 5'd26, 3'b101, 5'd26, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd20, 5'd30, 3'b000, 5'd30, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd21, 5'd26, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h403, 5'd30, 3'b101, 5'd27, OP_INT_IMM); pc += 4; // u = x >> 3
-            rom[pc>>2] = i_type(12'h403, 5'd26, 3'b101, 5'd28, OP_INT_IMM); pc += 4; // v = y >> 3
+            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd27, 3'b000, 5'd30, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd29, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd26, 5'd30, 3'b000, 5'd30, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h40F, 5'd30, 3'b101, 5'd30, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd29, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd27, 3'b000, 5'd29, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0100000, 5'd29, 5'd26, 3'b000, 5'd29, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h40F, 5'd29, 3'b101, 5'd29, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd25, 5'd28, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd24, 5'd29, 3'b000, 5'd27, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0100000, 5'd27, 5'd26, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h40F, 5'd26, 3'b101, 5'd26, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd20, 5'd30, 3'b000, 5'd30, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd21, 5'd26, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h403, 5'd30, 3'b101, 5'd27, OP_IMM); pc += 4; // u = x >> 3
+            rom[pc>>2] = i_type(12'h403, 5'd26, 3'b101, 5'd28, OP_IMM); pc += 4; // v = y >> 3
             rom[pc>>2] = s_type(80, 5'd18, 5'd27, 3'b010, OP_STORE); pc += 4;
             rom[pc>>2] = s_type(84, 5'd18, 5'd28, 3'b010, OP_STORE); pc += 4;
             rom[pc>>2] = nop(); pc += 4;
@@ -925,12 +925,12 @@ module gfx_console_tb;
             rom[pc>>2] = s_type(88, 5'd18, 5'd31,3'b010, OP_STORE); pc += 4;
 
             // Draw triangle
-            rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd18, 3'b001, 5'd0, OP_ATOM_SC); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd0, 3'b010, 5'd0, OP_ATOM_SC); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd18, 3'b001, 5'd0, OP_CUSTOM0); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd0, 3'b010, 5'd0, OP_CUSTOM0); pc += 4;
 
             // tri_idx++
-            rom[pc>>2] = i_type(1, 5'd17, 3'b000, 5'd17, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(TRIS_CUBE, 5'd0, 3'b000, 5'd26, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(1, 5'd17, 3'b000, 5'd17, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(TRIS_CUBE, 5'd0, 3'b000, 5'd26, OP_IMM); pc += 4;
             blt_cube_pc = pc;
             rom[pc>>2] = b_type(0, 5'd17, 5'd26, 3'b100, OP_BRANCH); pc += 4; // patched
             rom[pc>>2] = nop(); pc += 4;
@@ -938,58 +938,58 @@ module gfx_console_tb;
             // Frame done (cube)
             rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd0, 3'b000, 5'd0, OP_SYSTEM); pc += 4; // MEMBAR
             rom[pc>>2] = s_type(DONE_OFF, 5'd1, 5'd13, 3'b010, OP_STORE); pc += 4;
-            rom[pc>>2] = i_type(1, 5'd13, 3'b000, 5'd13, OP_INT_IMM); pc += 4; // frame++
-            rom[pc>>2] = i_type(CUBE_FRAMES, 5'd0, 3'b000, 5'd26, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(1, 5'd13, 3'b000, 5'd13, OP_IMM); pc += 4; // frame++
+            rom[pc>>2] = i_type(CUBE_FRAMES, 5'd0, 3'b000, 5'd26, OP_IMM); pc += 4;
             blt_cube_frame_pc = pc;
             rom[pc>>2] = b_type(0, 5'd13, 5'd26, 3'b100, OP_BRANCH); pc += 4; // patched
             rom[pc>>2] = nop(); pc += 4;
 
             // Switch to untextured RSTATE for teapot frames
-            rom[pc>>2] = i_type(RSTATE_OFF, 5'd1, 3'b000, 5'd2, OP_INT_IMM); pc += 4; // x2 = RSTATE (untextured)
-            rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd2, 3'b000, 5'd0, OP_ATOM_SC); pc += 4;
+            rom[pc>>2] = i_type(RSTATE_OFF, 5'd1, 3'b000, 5'd2, OP_IMM); pc += 4; // x2 = RSTATE (untextured)
+            rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd2, 3'b000, 5'd0, OP_CUSTOM0); pc += 4;
 
             // ---------------- TEAPOT FRAME LOOP ----------------
             loop_tea_frame_pc = pc;
 
             // angle idx = frame & 0xFF -> sin/cos in x15/x16
-            rom[pc>>2] = i_type(255, 5'd13, 3'b111, 5'd14, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(3, 5'd14, 3'b001, 5'd14, OP_INT_IMM); pc += 4; // *8
-            rom[pc>>2] = r_type(7'b0000000, 5'd5, 5'd14, 3'b000, 5'd14, OP_INT); pc += 4;
+            rom[pc>>2] = i_type(255, 5'd13, 3'b111, 5'd14, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(3, 5'd14, 3'b001, 5'd14, OP_IMM); pc += 4; // *8
+            rom[pc>>2] = r_type(7'b0000000, 5'd5, 5'd14, 3'b000, 5'd14, OP_REG); pc += 4;
             rom[pc>>2] = i_type(0, 5'd14, 3'b010, 5'd15, OP_LOAD); pc += 4; // sin
             rom[pc>>2] = i_type(4, 5'd14, 3'b010, 5'd16, OP_LOAD); pc += 4; // cos
 
             // Clear framebuffer (RRECT descriptor already set)
-            rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd3, 3'b011, 5'd0, OP_ATOM_SC); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd3, 3'b011, 5'd0, OP_CUSTOM0); pc += 4;
 
             // ---------------- TEAPOT LOOP ----------------
             // TEA tri buf base = BASE + 0x0C80 = (LUI 0x8000_1000) + (-0x380)
             rom[pc>>2] = u_type(BASE_ADDR + 32'h0000_1000, 5'd4, OP_LUI); pc += 4;
-            rom[pc>>2] = i_type(32'hC80, 5'd4, 3'b000, 5'd4, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(32'hC80, 5'd4, 3'b000, 5'd4, OP_IMM); pc += 4;
             rom[pc>>2] = i_type(TEA_BASE_SAVE_OFF + 0, 5'd1, 3'b010, 5'd6, OP_LOAD); pc += 4; // x6 = TEA verts
             rom[pc>>2] = i_type(TEA_BASE_SAVE_OFF + 4, 5'd1, 3'b010, 5'd7, OP_LOAD); pc += 4; // x7 = TEA tris
             rom[pc>>2] = i_type(TEA_BASE_SAVE_OFF + 8, 5'd1, 3'b010, 5'd8, OP_LOAD); pc += 4; // x8 = TEA nrms
-            rom[pc>>2] = i_type(64, 5'd0, 3'b000, 5'd20, OP_INT_IMM); pc += 4; // cx tea (centered)
-            rom[pc>>2] = i_type(64, 5'd0, 3'b000, 5'd21, OP_INT_IMM); pc += 4; // cy tea (centered)
-            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd17, OP_INT_IMM); pc += 4; // tri_idx=0
+            rom[pc>>2] = i_type(64, 5'd0, 3'b000, 5'd20, OP_IMM); pc += 4; // cx tea (centered)
+            rom[pc>>2] = i_type(64, 5'd0, 3'b000, 5'd21, OP_IMM); pc += 4; // cy tea (centered)
+            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd17, OP_IMM); pc += 4; // tri_idx=0
             loop_tea_pc = pc;
 
             // tri_ptr = TRI_BUF_TEA + tri_idx*96
-            rom[pc>>2] = i_type(6, 5'd17, 3'b001, 5'd18, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(5, 5'd17, 3'b001, 5'd19, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd19, 5'd18, 3'b000, 5'd18, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd4, 5'd18, 3'b000, 5'd18, OP_INT); pc += 4;
+            rom[pc>>2] = i_type(6, 5'd17, 3'b001, 5'd18, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(5, 5'd17, 3'b001, 5'd19, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd19, 5'd18, 3'b000, 5'd18, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd4, 5'd18, 3'b000, 5'd18, OP_REG); pc += 4;
 
             // tri_desc_ptr = TEA_TRI + tri_idx*12
-            rom[pc>>2] = i_type(3, 5'd17, 3'b001, 5'd19, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(2, 5'd17, 3'b001, 5'd30, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd30, 5'd19, 3'b000, 5'd19, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd7, 5'd19, 3'b000, 5'd19, OP_INT); pc += 4;
+            rom[pc>>2] = i_type(3, 5'd17, 3'b001, 5'd19, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(2, 5'd17, 3'b001, 5'd30, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd30, 5'd19, 3'b000, 5'd19, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd7, 5'd19, 3'b000, 5'd19, OP_REG); pc += 4;
 
             // nrm_ptr = TEA_NRM + tri_idx*12
-            rom[pc>>2] = i_type(3, 5'd17, 3'b001, 5'd26, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(2, 5'd17, 3'b001, 5'd27, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd27, 5'd26, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd8, 5'd26, 3'b000, 5'd26, OP_INT); pc += 4;
+            rom[pc>>2] = i_type(3, 5'd17, 3'b001, 5'd26, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(2, 5'd17, 3'b001, 5'd27, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd27, 5'd26, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd8, 5'd26, 3'b000, 5'd26, OP_REG); pc += 4;
             rom[pc>>2] = i_type(0, 5'd26, 3'b010, 5'd26, OP_LOAD); pc += 4;
             rom[pc>>2] = i_type(4, 5'd26, 3'b010, 5'd27, OP_LOAD); pc += 4;
             rom[pc>>2] = i_type(8, 5'd26, 3'b010, 5'd28, OP_LOAD); pc += 4;
@@ -1002,55 +1002,55 @@ module gfx_console_tb;
 
             // (Reuse same shading + vertices as cube loop)
             // Rotate normal yaw
-            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd26, 3'b000, 5'd29, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd28, 3'b000, 5'd30, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd30, 5'd29, 3'b000, 5'd29, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h40F, 5'd29, 3'b101, 5'd29, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd28, 3'b000, 5'd30, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd26, 3'b000, 5'd31, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0100000, 5'd31, 5'd30, 3'b000, 5'd30, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h40F, 5'd30, 3'b101, 5'd30, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd25, 5'd27, 3'b000, 5'd31, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd24, 5'd30, 3'b000, 5'd28, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0100000, 5'd28, 5'd31, 3'b000, 5'd31, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h40F, 5'd31, 3'b101, 5'd31, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd9, 5'd29, 3'b000, 5'd28, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd10, 5'd31, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd26, 5'd28, 3'b000, 5'd28, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd11, 5'd30, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd26, 5'd28, 3'b000, 5'd28, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h40F, 5'd28, 3'b101, 5'd28, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd26, 3'b000, 5'd29, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd28, 3'b000, 5'd30, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd30, 5'd29, 3'b000, 5'd29, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h40F, 5'd29, 3'b101, 5'd29, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd28, 3'b000, 5'd30, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd26, 3'b000, 5'd31, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0100000, 5'd31, 5'd30, 3'b000, 5'd30, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h40F, 5'd30, 3'b101, 5'd30, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd25, 5'd27, 3'b000, 5'd31, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd24, 5'd30, 3'b000, 5'd28, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0100000, 5'd28, 5'd31, 3'b000, 5'd31, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h40F, 5'd31, 3'b101, 5'd31, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd9, 5'd29, 3'b000, 5'd28, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd10, 5'd31, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd26, 5'd28, 3'b000, 5'd28, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd11, 5'd30, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd26, 5'd28, 3'b000, 5'd28, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h40F, 5'd28, 3'b101, 5'd28, OP_IMM); pc += 4;
             rom[pc>>2] = b_type(8, 5'd28, 5'd0, 3'b101, OP_BRANCH); pc += 4; rom[pc>>2] = nop(); pc += 4;
-            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd28, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(255, 5'd0, 3'b000, 5'd26, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd26, 5'd28, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h40F, 5'd26, 3'b101, 5'd26, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(80, 5'd26, 3'b000, 5'd26, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(40, 5'd26, 3'b000, 5'd26, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(200, 5'd0, 3'b000, 5'd27, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd27, 5'd26, 3'b000, 5'd27, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(8, 5'd27, 3'b101, 5'd27, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(120, 5'd0, 3'b000, 5'd28, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd28, 5'd26, 3'b000, 5'd28, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(8, 5'd28, 3'b101, 5'd28, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(60, 5'd0, 3'b000, 5'd29, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd29, 5'd26, 3'b000, 5'd29, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(8, 5'd29, 3'b101, 5'd29, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd28, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(255, 5'd0, 3'b000, 5'd26, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd26, 5'd28, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h40F, 5'd26, 3'b101, 5'd26, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(80, 5'd26, 3'b000, 5'd26, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(40, 5'd26, 3'b000, 5'd26, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(200, 5'd0, 3'b000, 5'd27, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd27, 5'd26, 3'b000, 5'd27, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(8, 5'd27, 3'b101, 5'd27, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(120, 5'd0, 3'b000, 5'd28, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd28, 5'd26, 3'b000, 5'd28, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(8, 5'd28, 3'b101, 5'd28, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(60, 5'd0, 3'b000, 5'd29, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd29, 5'd26, 3'b000, 5'd29, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(8, 5'd29, 3'b101, 5'd29, OP_IMM); pc += 4;
             rom[pc>>2] = u_type(32'hFF00_0000, 5'd31, OP_LUI); pc += 4;
-            rom[pc>>2] = i_type(16, 5'd29, 3'b001, 5'd30, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd30, 5'd31, 3'b110, 5'd31, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(8, 5'd28, 3'b001, 5'd30, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd30, 5'd31, 3'b110, 5'd31, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd27, 5'd31, 3'b110, 5'd31, OP_INT); pc += 4;
+            rom[pc>>2] = i_type(16, 5'd29, 3'b001, 5'd30, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd30, 5'd31, 3'b110, 5'd31, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(8, 5'd28, 3'b001, 5'd30, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd30, 5'd31, 3'b110, 5'd31, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd27, 5'd31, 3'b110, 5'd31, OP_REG); pc += 4;
             rom[pc>>2] = i_type(0, 5'd19, 3'b010, 5'd27, OP_LOAD); pc += 4;
             rom[pc>>2] = i_type(4, 5'd19, 3'b010, 5'd28, OP_LOAD); pc += 4;
             rom[pc>>2] = i_type(8, 5'd19, 3'b010, 5'd29, OP_LOAD); pc += 4;
 
             // Vertex 0
-            rom[pc>>2] = i_type(3, 5'd22, 3'b001, 5'd26, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(2, 5'd22, 3'b001, 5'd27, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd27, 5'd26, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd6, 5'd26, 3'b000, 5'd26, OP_INT); pc += 4;
+            rom[pc>>2] = i_type(3, 5'd22, 3'b001, 5'd26, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(2, 5'd22, 3'b001, 5'd27, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd27, 5'd26, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd6, 5'd26, 3'b000, 5'd26, OP_REG); pc += 4;
             rom[pc>>2] = i_type(0, 5'd26, 3'b010, 5'd27, OP_LOAD); pc += 4;
             rom[pc>>2] = i_type(4, 5'd26, 3'b010, 5'd28, OP_LOAD); pc += 4;
             rom[pc>>2] = i_type(8, 5'd26, 3'b010, 5'd29, OP_LOAD); pc += 4;
@@ -1061,20 +1061,20 @@ module gfx_console_tb;
             rom[pc>>2] = nop(); pc += 4;
             rom[pc>>2] = nop(); pc += 4;
             rom[pc>>2] = nop(); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd27, 3'b000, 5'd30, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd29, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd26, 5'd30, 3'b000, 5'd30, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h40F, 5'd30, 3'b101, 5'd30, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd29, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd27, 3'b000, 5'd29, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0100000, 5'd29, 5'd26, 3'b000, 5'd29, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h40F, 5'd29, 3'b101, 5'd29, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd25, 5'd28, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd24, 5'd29, 3'b000, 5'd27, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0100000, 5'd27, 5'd26, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h40F, 5'd26, 3'b101, 5'd26, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd20, 5'd30, 3'b000, 5'd30, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd21, 5'd26, 3'b000, 5'd26, OP_INT); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd27, 3'b000, 5'd30, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd29, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd26, 5'd30, 3'b000, 5'd30, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h40F, 5'd30, 3'b101, 5'd30, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd29, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd27, 3'b000, 5'd29, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0100000, 5'd29, 5'd26, 3'b000, 5'd29, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h40F, 5'd29, 3'b101, 5'd29, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd25, 5'd28, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd24, 5'd29, 3'b000, 5'd27, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0100000, 5'd27, 5'd26, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h40F, 5'd26, 3'b101, 5'd26, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd20, 5'd30, 3'b000, 5'd30, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd21, 5'd26, 3'b000, 5'd26, OP_REG); pc += 4;
             rom[pc>>2] = nop(); pc += 4;
             rom[pc>>2] = nop(); pc += 4;
             rom[pc>>2] = nop(); pc += 4;
@@ -1094,28 +1094,28 @@ module gfx_console_tb;
             rom[pc>>2] = s_type(24,5'd18, 5'd31,3'b010, OP_STORE); pc += 4;
 
             // Vertex 1
-            rom[pc>>2] = i_type(3, 5'd23, 3'b001, 5'd26, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(2, 5'd23, 3'b001, 5'd27, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd27, 5'd26, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd6, 5'd26, 3'b000, 5'd26, OP_INT); pc += 4;
+            rom[pc>>2] = i_type(3, 5'd23, 3'b001, 5'd26, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(2, 5'd23, 3'b001, 5'd27, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd27, 5'd26, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd6, 5'd26, 3'b000, 5'd26, OP_REG); pc += 4;
             rom[pc>>2] = i_type(0, 5'd26, 3'b010, 5'd27, OP_LOAD); pc += 4;
             rom[pc>>2] = i_type(4, 5'd26, 3'b010, 5'd28, OP_LOAD); pc += 4;
             rom[pc>>2] = i_type(8, 5'd26, 3'b010, 5'd29, OP_LOAD); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd27, 3'b000, 5'd30, OP_INT); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd27, 3'b000, 5'd30, OP_REG); pc += 4;
             rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd0, 3'b000, 5'd0, OP_SYSTEM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd29, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd26, 5'd30, 3'b000, 5'd30, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h40F, 5'd30, 3'b101, 5'd30, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd29, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd27, 3'b000, 5'd29, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0100000, 5'd29, 5'd26, 3'b000, 5'd29, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h40F, 5'd29, 3'b101, 5'd29, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd25, 5'd28, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd24, 5'd29, 3'b000, 5'd27, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0100000, 5'd27, 5'd26, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h40F, 5'd26, 3'b101, 5'd26, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd20, 5'd30, 3'b000, 5'd30, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd21, 5'd26, 3'b000, 5'd26, OP_INT); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd29, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd26, 5'd30, 3'b000, 5'd30, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h40F, 5'd30, 3'b101, 5'd30, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd29, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd27, 3'b000, 5'd29, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0100000, 5'd29, 5'd26, 3'b000, 5'd29, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h40F, 5'd29, 3'b101, 5'd29, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd25, 5'd28, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd24, 5'd29, 3'b000, 5'd27, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0100000, 5'd27, 5'd26, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h40F, 5'd26, 3'b101, 5'd26, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd20, 5'd30, 3'b000, 5'd30, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd21, 5'd26, 3'b000, 5'd26, OP_REG); pc += 4;
             rom[pc>>2] = nop(); pc += 4;
             rom[pc>>2] = nop(); pc += 4;
             rom[pc>>2] = nop(); pc += 4;
@@ -1135,28 +1135,28 @@ module gfx_console_tb;
             rom[pc>>2] = s_type(56, 5'd18, 5'd31,3'b010, OP_STORE); pc += 4;
 
             // Vertex 2
-            rom[pc>>2] = i_type(3, 5'd12, 3'b001, 5'd26, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(2, 5'd12, 3'b001, 5'd27, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd27, 5'd26, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd6, 5'd26, 3'b000, 5'd26, OP_INT); pc += 4;
+            rom[pc>>2] = i_type(3, 5'd12, 3'b001, 5'd26, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(2, 5'd12, 3'b001, 5'd27, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd27, 5'd26, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd6, 5'd26, 3'b000, 5'd26, OP_REG); pc += 4;
             rom[pc>>2] = i_type(0, 5'd26, 3'b010, 5'd27, OP_LOAD); pc += 4;
             rom[pc>>2] = i_type(4, 5'd26, 3'b010, 5'd28, OP_LOAD); pc += 4;
             rom[pc>>2] = i_type(8, 5'd26, 3'b010, 5'd29, OP_LOAD); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd27, 3'b000, 5'd30, OP_INT); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd27, 3'b000, 5'd30, OP_REG); pc += 4;
             rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd0, 3'b000, 5'd0, OP_SYSTEM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd29, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd26, 5'd30, 3'b000, 5'd30, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h40F, 5'd30, 3'b101, 5'd30, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd29, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd27, 3'b000, 5'd29, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0100000, 5'd29, 5'd26, 3'b000, 5'd29, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h40F, 5'd29, 3'b101, 5'd29, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd25, 5'd28, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd24, 5'd29, 3'b000, 5'd27, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0100000, 5'd27, 5'd26, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h40F, 5'd26, 3'b101, 5'd26, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd20, 5'd30, 3'b000, 5'd30, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd21, 5'd26, 3'b000, 5'd26, OP_INT); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd29, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd26, 5'd30, 3'b000, 5'd30, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h40F, 5'd30, 3'b101, 5'd30, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd29, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd27, 3'b000, 5'd29, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0100000, 5'd29, 5'd26, 3'b000, 5'd29, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h40F, 5'd29, 3'b101, 5'd29, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd25, 5'd28, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd24, 5'd29, 3'b000, 5'd27, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0100000, 5'd27, 5'd26, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h40F, 5'd26, 3'b101, 5'd26, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd20, 5'd30, 3'b000, 5'd30, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd21, 5'd26, 3'b000, 5'd26, OP_REG); pc += 4;
             rom[pc>>2] = nop(); pc += 4;
             rom[pc>>2] = nop(); pc += 4;
             rom[pc>>2] = nop(); pc += 4;
@@ -1175,11 +1175,11 @@ module gfx_console_tb;
             rom[pc>>2] = s_type(76, 5'd18, 5'd0, 3'b010, OP_STORE); pc += 4;
             rom[pc>>2] = s_type(88, 5'd18, 5'd31,3'b010, OP_STORE); pc += 4;
 
-            rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd18, 3'b001, 5'd0, OP_ATOM_SC); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd0, 3'b010, 5'd0, OP_ATOM_SC); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd18, 3'b001, 5'd0, OP_CUSTOM0); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd0, 3'b010, 5'd0, OP_CUSTOM0); pc += 4;
 
-            rom[pc>>2] = i_type(1, 5'd17, 3'b000, 5'd17, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(TEA_TRIS, 5'd0, 3'b000, 5'd26, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(1, 5'd17, 3'b000, 5'd17, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(TEA_TRIS, 5'd0, 3'b000, 5'd26, OP_IMM); pc += 4;
             blt_tea_pc = pc;
             rom[pc>>2] = b_type(0, 5'd17, 5'd26, 3'b100, OP_BRANCH); pc += 4; // patched
             rom[pc>>2] = nop(); pc += 4;
@@ -1187,8 +1187,8 @@ module gfx_console_tb;
             // Frame done (teapot)
             rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd0, 3'b000, 5'd0, OP_SYSTEM); pc += 4; // MEMBAR
             rom[pc>>2] = s_type(DONE_OFF, 5'd1, 5'd13, 3'b010, OP_STORE); pc += 4;
-            rom[pc>>2] = i_type(1, 5'd13, 3'b000, 5'd13, OP_INT_IMM); pc += 4; // frame++
-            rom[pc>>2] = i_type(FRAMES, 5'd0, 3'b000, 5'd26, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(1, 5'd13, 3'b000, 5'd13, OP_IMM); pc += 4; // frame++
+            rom[pc>>2] = i_type(FRAMES, 5'd0, 3'b000, 5'd26, OP_IMM); pc += 4;
             blt_tea_frame_pc = pc;
             rom[pc>>2] = b_type(0, 5'd13, 5'd26, 3'b100, OP_BRANCH); pc += 4; // patched
             rom[pc>>2] = nop(); pc += 4;

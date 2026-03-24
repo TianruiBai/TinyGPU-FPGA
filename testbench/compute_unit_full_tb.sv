@@ -675,9 +675,25 @@ module compute_unit_full_tb;
         b_type = {imm[12], imm[10:5], rs2, rs1, funct3, imm[4:1], imm[11], opcode};
     endfunction
 
+    // --- RVV encoding helpers ---
+    // Vector unit-stride load: VLE8/16/32 vd, (rs1)
+    function automatic [31:0] rvv_vl(input [4:0] vd, input [4:0] rs1, input [2:0] width, input vm);
+        rvv_vl = {3'b000, 1'b0, 2'b00, vm, 5'b00000, rs1, width, vd, 7'b0000111};
+    endfunction
+
+    // Vector unit-stride store: VSE8/16/32 vs3, (rs1)
+    function automatic [31:0] rvv_vs(input [4:0] vs3, input [4:0] rs1, input [2:0] width, input vm);
+        rvv_vs = {3'b000, 1'b0, 2'b00, vm, 5'b00000, rs1, width, vs3, 7'b0100111};
+    endfunction
+
+    // vsetvli rd, rs1, zimm[10:0]
+    function automatic [31:0] vsetvli_inst(input [4:0] rd, input [4:0] rs1, input [10:0] zimm);
+        vsetvli_inst = {1'b0, zimm, rs1, 3'b111, rd, 7'b1010111};
+    endfunction
+
 
     function automatic [31:0] nop();
-        nop = i_type(12'd0, 5'd0, 3'b000, 5'd0, OP_INT_IMM);
+        nop = i_type(12'd0, 5'd0, 3'b000, 5'd0, OP_IMM);
     endfunction
 
     // --------------------------------------------------------------
@@ -693,12 +709,12 @@ module compute_unit_full_tb;
         for (int i = 0; i < ROM_WORDS; i++) rom[i] = nop();
         pc = 0;
         // x1 = BASE_ADDR (ADDI x1, x0, -2048)
-        rom[pc >> 2] = i_type(-2048, 5'd0, 3'b000, 5'd1, OP_INT_IMM); pc += 4;
+        rom[pc >> 2] = i_type(-2048, 5'd0, 3'b000, 5'd1, OP_IMM); pc += 4;
         // x2 = 5; x3 = 7
-        rom[pc >> 2] = i_type(5, 5'd0, 3'b000, 5'd2, OP_INT_IMM);  pc += 4;
-        rom[pc >> 2] = i_type(7, 5'd0, 3'b000, 5'd3, OP_INT_IMM);  pc += 4;
+        rom[pc >> 2] = i_type(5, 5'd0, 3'b000, 5'd2, OP_IMM);  pc += 4;
+        rom[pc >> 2] = i_type(7, 5'd0, 3'b000, 5'd3, OP_IMM);  pc += 4;
         // x4 = x2 + x3 = 12
-        rom[pc >> 2] = r_type(7'b0000000, 5'd3, 5'd2, 3'b000, 5'd4, OP_INT); pc += 4;
+        rom[pc >> 2] = r_type(7'b0000000, 5'd3, 5'd2, 3'b000, 5'd4, OP_REG); pc += 4;
         // SW x4, 0(x1)
         rom[pc >> 2] = s_type(0, 5'd1, 5'd4, 3'b010, OP_STORE); pc += 4;
 
@@ -714,7 +730,7 @@ module compute_unit_full_tb;
 
         // x13 = 0x12345ABC (MOVI pseudo: LUI 0x12346; ADDI -1348)
         rom[pc >> 2] = u_type(32'h12346, 5'd13, OP_LUI); pc += 4;
-        rom[pc >> 2] = i_type(-1348, 5'd13, 3'b000, 5'd13, OP_INT_IMM); pc += 4;
+        rom[pc >> 2] = i_type(-1348, 5'd13, 3'b000, 5'd13, OP_IMM); pc += 4;
         rom[pc >> 2] = s_type(32'h33C, 5'd1, 5'd13, 3'b010, OP_STORE); pc += 4;
 
         // Keep subsequent scalar memory ops in slot0 (pc%8==0)
@@ -743,7 +759,7 @@ module compute_unit_full_tb;
         // SW x9, 0x330(x1)   (store link register)
         rom[pc >> 2] = s_type(32'h330, 5'd1, 5'd9, 3'b010, OP_STORE); pc += 4;
         // x11 = 0x5A
-        rom[pc >> 2] = i_type(32'h5A, 5'd0, 3'b000, 5'd11, OP_INT_IMM); pc += 4;
+        rom[pc >> 2] = i_type(32'h5A, 5'd0, 3'b000, 5'd11, OP_IMM); pc += 4;
         // JALR x0, 0(x9)     (return)
         rom[pc >> 2] = i_type(0, 5'd9, 3'b010, 5'd0, OP_BRANCH); pc += 4;
 
@@ -766,8 +782,8 @@ module compute_unit_full_tb;
         // Uses memory markers at 0x360..0x370.
         // ----------------------------------------------------------
         // x4 = 0x11; x5 = 0x22
-        rom[pc >> 2] = i_type(32'h11, 5'd0, 3'b000, 5'd4, OP_INT_IMM); pc += 4;
-        rom[pc >> 2] = i_type(32'h22, 5'd0, 3'b000, 5'd5, OP_INT_IMM); pc += 4;
+        rom[pc >> 2] = i_type(32'h11, 5'd0, 3'b000, 5'd4, OP_IMM); pc += 4;
+        rom[pc >> 2] = i_type(32'h22, 5'd0, 3'b000, 5'd5, OP_IMM); pc += 4;
 
         // BEQ x2, x2, +8  (taken)
         rom[pc >> 2] = b_type(8, 5'd2, 5'd2, 3'b000, OP_BRANCH); pc += 4;
@@ -801,19 +817,19 @@ module compute_unit_full_tb;
 
         // (A) Branch in inst1: NOP in inst0, BEQ in inst1.
         // x20=0xAA
-        rom[pc >> 2] = i_type(32'hAA, 5'd0, 3'b000, 5'd20, OP_INT_IMM); pc += 4;
+        rom[pc >> 2] = i_type(32'hAA, 5'd0, 3'b000, 5'd20, OP_IMM); pc += 4;
         // BEQ x0,x0,+8 (taken)  [lands in inst1]
         rom[pc >> 2] = b_type(8, 5'd0, 5'd0, 3'b000, OP_BRANCH); pc += 4;
         // Fall-through sentinel (must NOT execute)
         rom[pc >> 2] = s_type(32'h3A0, 5'd1, 5'd20, 3'b010, OP_STORE); pc += 4;
         // Target marker (must execute)
-        rom[pc >> 2] = i_type(32'hBB, 5'd0, 3'b000, 5'd21, OP_INT_IMM); pc += 4;
+        rom[pc >> 2] = i_type(32'hBB, 5'd0, 3'b000, 5'd21, OP_IMM); pc += 4;
         rom[pc >> 2] = s_type(32'h3A4, 5'd1, 5'd21, 3'b010, OP_STORE); pc += 4;
         // Pad to keep downstream bundle alignment stable
         rom[pc >> 2] = nop(); pc += 4;
 
         // (B) Store in inst1: ADDI in inst0, SW in inst1.
-        rom[pc >> 2] = i_type(32'h5A, 5'd0, 3'b000, 5'd22, OP_INT_IMM); pc += 4;
+        rom[pc >> 2] = i_type(32'h5A, 5'd0, 3'b000, 5'd22, OP_IMM); pc += 4;
         rom[pc >> 2] = s_type(32'h3A8, 5'd1, 5'd22, 3'b010, OP_STORE); pc += 4;
 
         // (C) Load in inst1: NOP in inst0, LW in inst1, then store the loaded value.
@@ -855,10 +871,10 @@ module compute_unit_full_tb;
         // Markers at 0x3C0..0x3EC.
         // ----------------------------------------------------------
         // Marker payloads
-        rom[pc >> 2] = i_type(32'h33, 5'd0, 3'b000, 5'd24, OP_INT_IMM); pc += 4;
-        rom[pc >> 2] = i_type(32'h44, 5'd0, 3'b000, 5'd25, OP_INT_IMM); pc += 4;
-        rom[pc >> 2] = i_type(32'h55, 5'd0, 3'b000, 5'd26, OP_INT_IMM); pc += 4;
-        rom[pc >> 2] = i_type(32'h66, 5'd0, 3'b000, 5'd27, OP_INT_IMM); pc += 4;
+        rom[pc >> 2] = i_type(32'h33, 5'd0, 3'b000, 5'd24, OP_IMM); pc += 4;
+        rom[pc >> 2] = i_type(32'h44, 5'd0, 3'b000, 5'd25, OP_IMM); pc += 4;
+        rom[pc >> 2] = i_type(32'h55, 5'd0, 3'b000, 5'd26, OP_IMM); pc += 4;
+        rom[pc >> 2] = i_type(32'h66, 5'd0, 3'b000, 5'd27, OP_IMM); pc += 4;
 
         // BLT x2(5), x3(7), +8 (taken)
         rom[pc >> 2] = b_type(8, 5'd2, 5'd3, 3'b100, OP_BRANCH); pc += 4;
@@ -872,8 +888,8 @@ module compute_unit_full_tb;
         rom[pc >> 2] = s_type(32'h3CC, 5'd1, 5'd25, 3'b010, OP_STORE); pc += 4; // taken block (must NOT exec)
 
         // Signed/unsigned compare operands
-        rom[pc >> 2] = i_type(-1, 5'd0, 3'b000, 5'd28, OP_INT_IMM); pc += 4; // x28 = -1
-        rom[pc >> 2] = i_type(1,  5'd0, 3'b000, 5'd29, OP_INT_IMM); pc += 4; // x29 = +1
+        rom[pc >> 2] = i_type(-1, 5'd0, 3'b000, 5'd28, OP_IMM); pc += 4; // x28 = -1
+        rom[pc >> 2] = i_type(1,  5'd0, 3'b000, 5'd29, OP_IMM); pc += 4; // x29 = +1
 
         // BLT x28(-1), x29(+1), +8 (taken)
         rom[pc >> 2] = b_type(8, 5'd28, 5'd29, 3'b100, OP_BRANCH); pc += 4;
@@ -894,10 +910,10 @@ module compute_unit_full_tb;
         // Backward branch loop: count 3 iterations
         // Keep the loop body in slot0 to avoid any slot1 sensitivity.
         // x10=3, x11=-1 (decrement), x12=1 (inc), x13=0 (count)
-        rom[pc >> 2] = i_type(3,  5'd0, 3'b000, 5'd10, OP_INT_IMM); pc += 4;
-        rom[pc >> 2] = i_type(-1, 5'd0, 3'b000, 5'd11, OP_INT_IMM); pc += 4;
-        rom[pc >> 2] = i_type(1,  5'd0, 3'b000, 5'd12, OP_INT_IMM); pc += 4;
-        rom[pc >> 2] = i_type(0,  5'd0, 3'b000, 5'd13, OP_INT_IMM); pc += 4;
+        rom[pc >> 2] = i_type(3,  5'd0, 3'b000, 5'd10, OP_IMM); pc += 4;
+        rom[pc >> 2] = i_type(-1, 5'd0, 3'b000, 5'd11, OP_IMM); pc += 4;
+        rom[pc >> 2] = i_type(1,  5'd0, 3'b000, 5'd12, OP_IMM); pc += 4;
+        rom[pc >> 2] = i_type(0,  5'd0, 3'b000, 5'd13, OP_IMM); pc += 4;
 
         // Align loop head to slot0
         if (pc[2]) begin
@@ -910,9 +926,9 @@ module compute_unit_full_tb;
             automatic int br_pc;
             loop_pc = pc;
             // loop:
-            rom[pc >> 2] = r_type(7'b0000000, 5'd12, 5'd13, 3'b000, 5'd13, OP_INT); pc += 4; // x13++
+            rom[pc >> 2] = r_type(7'b0000000, 5'd12, 5'd13, 3'b000, 5'd13, OP_REG); pc += 4; // x13++
             rom[pc >> 2] = nop(); pc += 4;
-            rom[pc >> 2] = r_type(7'b0000000, 5'd11, 5'd10, 3'b000, 5'd10, OP_INT); pc += 4; // x10--
+            rom[pc >> 2] = r_type(7'b0000000, 5'd11, 5'd10, 3'b000, 5'd10, OP_REG); pc += 4; // x10--
             rom[pc >> 2] = nop(); pc += 4;
             rom[pc >> 2] = nop(); pc += 4;
             rom[pc >> 2] = nop(); pc += 4;
@@ -931,63 +947,63 @@ module compute_unit_full_tb;
         // Markers at 0x3F0..0x3FC.
         // ----------------------------------------------------------
         // RAW: x15 = x2+x3; x16=x15+x2; x17=x16^x3 => 22
-        rom[pc >> 2] = r_type(7'b0000000, 5'd3,  5'd2,  3'b000, 5'd15, OP_INT); pc += 4;
-        rom[pc >> 2] = r_type(7'b0000000, 5'd2,  5'd15, 3'b000, 5'd16, OP_INT); pc += 4;
-        rom[pc >> 2] = r_type(7'b0000000, 5'd3,  5'd16, 3'b100, 5'd17, OP_INT); pc += 4;
+        rom[pc >> 2] = r_type(7'b0000000, 5'd3,  5'd2,  3'b000, 5'd15, OP_REG); pc += 4;
+        rom[pc >> 2] = r_type(7'b0000000, 5'd2,  5'd15, 3'b000, 5'd16, OP_REG); pc += 4;
+        rom[pc >> 2] = r_type(7'b0000000, 5'd3,  5'd16, 3'b100, 5'd17, OP_REG); pc += 4;
         rom[pc >> 2] = s_type(32'h3F0, 5'd1, 5'd17, 3'b010, OP_STORE); pc += 4;
 
         // WAW: x18 = x2+x3; x18 = x18-x2 => 7
-        rom[pc >> 2] = r_type(7'b0000000, 5'd3,  5'd2,  3'b000, 5'd18, OP_INT); pc += 4;
-        rom[pc >> 2] = r_type(7'b0100000, 5'd2,  5'd18, 3'b000, 5'd18, OP_INT); pc += 4;
+        rom[pc >> 2] = r_type(7'b0000000, 5'd3,  5'd2,  3'b000, 5'd18, OP_REG); pc += 4;
+        rom[pc >> 2] = r_type(7'b0100000, 5'd2,  5'd18, 3'b000, 5'd18, OP_REG); pc += 4;
         rom[pc >> 2] = s_type(32'h3F4, 5'd1, 5'd18, 3'b010, OP_STORE); pc += 4;
 
         // Load-use: LW x19,@0x3F8; ADD x20=x19+x2; SW x20,@0x3FC
         rom[pc >> 2] = i_type(32'h3F8, 5'd1, 3'b010, 5'd19, OP_LOAD); pc += 4;
-        rom[pc >> 2] = r_type(7'b0000000, 5'd2,  5'd19, 3'b000, 5'd20, OP_INT); pc += 4;
+        rom[pc >> 2] = r_type(7'b0000000, 5'd2,  5'd19, 3'b000, 5'd20, OP_REG); pc += 4;
         rom[pc >> 2] = s_type(32'h3FC, 5'd1, 5'd20, 3'b010, OP_STORE); pc += 4;
 
         // ----------------------------------------------------------
-        // Expanded scalar integer ALU coverage (R-type only; OP_INT I/R heuristic)
+        // Expanded scalar integer ALU coverage (R-type only; OP_REG I/R heuristic)
         // Store results to BASE+12..+44 for deterministic checking.
         // ----------------------------------------------------------
         // x16 = x3 - x2 = 2
-        rom[pc >> 2] = r_type(7'b0100000, 5'd2, 5'd3, 3'b000, 5'd16, OP_INT); pc += 4;
+        rom[pc >> 2] = r_type(7'b0100000, 5'd2, 5'd3, 3'b000, 5'd16, OP_REG); pc += 4;
         rom[pc >> 2] = s_type(32'h300, 5'd1, 5'd16, 3'b010, OP_STORE); pc += 4;
 
         // x17 = x2 << x3 = 5 << 7 = 640
-        rom[pc >> 2] = r_type(7'b0000000, 5'd3, 5'd2, 3'b001, 5'd17, OP_INT); pc += 4;
+        rom[pc >> 2] = r_type(7'b0000000, 5'd3, 5'd2, 3'b001, 5'd17, OP_REG); pc += 4;
         rom[pc >> 2] = s_type(32'h304, 5'd1, 5'd17, 3'b010, OP_STORE); pc += 4;
 
         // x18 = -16
-        rom[pc >> 2] = i_type(-16, 5'd0, 3'b000, 5'd18, OP_INT_IMM); pc += 4;
+        rom[pc >> 2] = i_type(-16, 5'd0, 3'b000, 5'd18, OP_IMM); pc += 4;
         // x19 = 2
-        rom[pc >> 2] = i_type(2, 5'd0, 3'b000, 5'd19, OP_INT_IMM); pc += 4;
+        rom[pc >> 2] = i_type(2, 5'd0, 3'b000, 5'd19, OP_IMM); pc += 4;
         // x20 = SRA(x18, x19) = -4
-        rom[pc >> 2] = r_type(7'b0100000, 5'd19, 5'd18, 3'b101, 5'd20, OP_INT); pc += 4;
+        rom[pc >> 2] = r_type(7'b0100000, 5'd19, 5'd18, 3'b101, 5'd20, OP_REG); pc += 4;
         rom[pc >> 2] = s_type(32'h308, 5'd1, 5'd20, 3'b010, OP_STORE); pc += 4;
 
         // x21 = SRL(x18, x19) = 0x3FFFFFFC
-        rom[pc >> 2] = r_type(7'b0000000, 5'd19, 5'd18, 3'b101, 5'd21, OP_INT); pc += 4;
+        rom[pc >> 2] = r_type(7'b0000000, 5'd19, 5'd18, 3'b101, 5'd21, OP_REG); pc += 4;
         rom[pc >> 2] = s_type(32'h30C, 5'd1, 5'd21, 3'b010, OP_STORE); pc += 4;
 
         // x22 = -1; x23 = 1
-        rom[pc >> 2] = i_type(-1, 5'd0, 3'b000, 5'd22, OP_INT_IMM); pc += 4;
-        rom[pc >> 2] = i_type(1, 5'd0, 3'b000, 5'd23, OP_INT_IMM); pc += 4;
+        rom[pc >> 2] = i_type(-1, 5'd0, 3'b000, 5'd22, OP_IMM); pc += 4;
+        rom[pc >> 2] = i_type(1, 5'd0, 3'b000, 5'd23, OP_IMM); pc += 4;
         // x24 = SLT(x22, x23) = 1
-        rom[pc >> 2] = r_type(7'b0000000, 5'd23, 5'd22, 3'b010, 5'd24, OP_INT); pc += 4;
+        rom[pc >> 2] = r_type(7'b0000000, 5'd23, 5'd22, 3'b010, 5'd24, OP_REG); pc += 4;
         rom[pc >> 2] = s_type(32'h310, 5'd1, 5'd24, 3'b010, OP_STORE); pc += 4;
         // x25 = SLTU(x22, x23) = 0
-        rom[pc >> 2] = r_type(7'b0000000, 5'd23, 5'd22, 3'b011, 5'd25, OP_INT); pc += 4;
+        rom[pc >> 2] = r_type(7'b0000000, 5'd23, 5'd22, 3'b011, 5'd25, OP_REG); pc += 4;
         rom[pc >> 2] = s_type(32'h314, 5'd1, 5'd25, 3'b010, OP_STORE); pc += 4;
 
         // x26 = XOR(x2, x3) = 2
-        rom[pc >> 2] = r_type(7'b0000000, 5'd3, 5'd2, 3'b100, 5'd26, OP_INT); pc += 4;
+        rom[pc >> 2] = r_type(7'b0000000, 5'd3, 5'd2, 3'b100, 5'd26, OP_REG); pc += 4;
         rom[pc >> 2] = s_type(32'h318, 5'd1, 5'd26, 3'b010, OP_STORE); pc += 4;
         // x27 = OR(x2, x3) = 7
-        rom[pc >> 2] = r_type(7'b0000000, 5'd3, 5'd2, 3'b110, 5'd27, OP_INT); pc += 4;
+        rom[pc >> 2] = r_type(7'b0000000, 5'd3, 5'd2, 3'b110, 5'd27, OP_REG); pc += 4;
         rom[pc >> 2] = s_type(32'h31C, 5'd1, 5'd27, 3'b010, OP_STORE); pc += 4;
         // x28 = AND(x2, x3) = 5
-        rom[pc >> 2] = r_type(7'b0000000, 5'd3, 5'd2, 3'b111, 5'd28, OP_INT); pc += 4;
+        rom[pc >> 2] = r_type(7'b0000000, 5'd3, 5'd2, 3'b111, 5'd28, OP_REG); pc += 4;
         rom[pc >> 2] = s_type(32'h320, 5'd1, 5'd28, 3'b010, OP_STORE); pc += 4;
 
         // MEMBAR: flush write-merge buffer before dependent load
@@ -997,7 +1013,7 @@ module compute_unit_full_tb;
         // SW x5,8(x1)
         rom[pc >> 2] = s_type(8, 5'd1, 5'd5, 3'b010, OP_STORE); pc += 4;
         // CSR status write/read
-        rom[pc >> 2] = i_type(7, 5'd0, 3'b000, 5'd6, OP_INT_IMM);    pc += 4; // x6=7
+        rom[pc >> 2] = i_type(7, 5'd0, 3'b000, 5'd6, OP_IMM);    pc += 4; // x6=7
         rom[pc >> 2] = i_type(0, 5'd6, 3'b001, 5'd7, OP_SYSTEM); pc += 4; // CSRRW
         rom[pc >> 2] = i_type(0, 5'd0, 3'b010, 5'd8, OP_SYSTEM); pc += 4; // CSRRS
 
@@ -1007,213 +1023,260 @@ module compute_unit_full_tb;
         // We validate the datapath behavior bit-exact against that implementation.
         // ----------------------------------------------------------
         // x29 = -1 (used for FP16 conversion inputs)
-        rom[pc >> 2] = i_type(-1, 5'd0, 3'b000, 5'd29, OP_INT_IMM); pc += 4;
+        rom[pc >> 2] = i_type(-1, 5'd0, 3'b000, 5'd29, OP_IMM); pc += 4;
         // f1 = FCVT.i2f(x0)  -> +1.0
-        rom[pc >> 2] = r_type(7'b0001000, 5'd0, 5'd0, 3'b110, 5'd1, OP_INT); pc += 4;
+        rom[pc >> 2] = r_type(7'b0001000, 5'd0, 5'd0, 3'b110, 5'd1, OP_REG); pc += 4;
         // f2 = FCVT.i2f(x29) -> -1.0
-        rom[pc >> 2] = r_type(7'b0001000, 5'd0, 5'd29, 3'b110, 5'd2, OP_INT); pc += 4;
+        rom[pc >> 2] = r_type(7'b0001000, 5'd0, 5'd29, 3'b110, 5'd2, OP_REG); pc += 4;
         // f3 = f1 + f1 -> 2.0
-        rom[pc >> 2] = r_type(7'b0001000, 5'd1, 5'd1, 3'b000, 5'd3, OP_INT); pc += 4;
+        rom[pc >> 2] = r_type(7'b0001000, 5'd1, 5'd1, 3'b000, 5'd3, OP_REG); pc += 4;
         // f4 = f3 - f1 -> 1.0
-        rom[pc >> 2] = r_type(7'b0001000, 5'd1, 5'd3, 3'b001, 5'd4, OP_INT); pc += 4;
+        rom[pc >> 2] = r_type(7'b0001000, 5'd1, 5'd3, 3'b001, 5'd4, OP_REG); pc += 4;
         // f5 = f3 * f3 -> 4.0
-        rom[pc >> 2] = r_type(7'b0001000, 5'd3, 5'd3, 3'b010, 5'd5, OP_INT); pc += 4;
+        rom[pc >> 2] = r_type(7'b0001000, 5'd3, 5'd3, 3'b010, 5'd5, OP_REG); pc += 4;
         // f6 = min(f2, f1) -> -1.0
-        rom[pc >> 2] = r_type(7'b0001000, 5'd1, 5'd2, 3'b100, 5'd6, OP_INT); pc += 4;
+        rom[pc >> 2] = r_type(7'b0001000, 5'd1, 5'd2, 3'b100, 5'd6, OP_REG); pc += 4;
         // f7 = max(f2, f1) -> +1.0
-        rom[pc >> 2] = r_type(7'b0001000, 5'd1, 5'd2, 3'b101, 5'd7, OP_INT); pc += 4;
+        rom[pc >> 2] = r_type(7'b0001000, 5'd1, 5'd2, 3'b101, 5'd7, OP_REG); pc += 4;
 
         // Additional scalar FP16 coverage:
         // x30 = FCVT.f2i(f1) (implementation-specific; current datapath yields 2048 for +1.0)
-        rom[pc >> 2] = r_type(7'b0001000, 5'd0, 5'd1, 3'b111, 5'd30, OP_INT); pc += 4;
+        rom[pc >> 2] = r_type(7'b0001000, 5'd0, 5'd1, 3'b111, 5'd30, OP_REG); pc += 4;
         rom[pc >> 2] = s_type(132, 5'd1, 5'd30, 3'b010, OP_STORE); pc += 4;
         // x31 = FCVT.f2i(f2) (expected -2048)
-        rom[pc >> 2] = r_type(7'b0001000, 5'd0, 5'd2, 3'b111, 5'd31, OP_INT); pc += 4;
+        rom[pc >> 2] = r_type(7'b0001000, 5'd0, 5'd2, 3'b111, 5'd31, OP_REG); pc += 4;
         rom[pc >> 2] = s_type(136, 5'd1, 5'd31, 3'b010, OP_STORE); pc += 4;
 
         // FMA smoke: f21 = (f1 * f20) + src_c, where src_c comes from scalar rs2 low16.
         // Build x20 = 0x3C00 (+1.0 bits) and set f20 = FCVT.i2f(x0) -> +1.0.
         // x20 = 960; x19 = 4; x20 = x20 << x19 -> 15360 (0x3C00)
-        rom[pc >> 2] = i_type(960, 5'd0, 3'b000, 5'd20, OP_INT_IMM); pc += 4;
-        rom[pc >> 2] = i_type(4,   5'd0, 3'b000, 5'd19, OP_INT_IMM); pc += 4;
-        rom[pc >> 2] = r_type(7'b0000000, 5'd19, 5'd20, 3'b001, 5'd20, OP_INT); pc += 4;
+        rom[pc >> 2] = i_type(960, 5'd0, 3'b000, 5'd20, OP_IMM); pc += 4;
+        rom[pc >> 2] = i_type(4,   5'd0, 3'b000, 5'd19, OP_IMM); pc += 4;
+        rom[pc >> 2] = r_type(7'b0000000, 5'd19, 5'd20, 3'b001, 5'd20, OP_REG); pc += 4;
         // f20 = FCVT.i2f(x0) -> +1.0
-        rom[pc >> 2] = r_type(7'b0001000, 5'd0, 5'd0, 3'b110, 5'd20, OP_INT); pc += 4;
+        rom[pc >> 2] = r_type(7'b0001000, 5'd0, 5'd0, 3'b110, 5'd20, OP_REG); pc += 4;
         // f21 = f1*f20 + x20[15:0] -> 2.0
-        rom[pc >> 2] = r_type(7'b0001000, 5'd20, 5'd1, 3'b011, 5'd21, OP_INT); pc += 4;
+        rom[pc >> 2] = r_type(7'b0001000, 5'd20, 5'd1, 3'b011, 5'd21, OP_REG); pc += 4;
 
         // MEMBAR
         rom[pc >> 2] = i_type(0, 5'd0, 3'b000, 5'd0, OP_SYSTEM); pc += 4;
-        // Vector loads
-        rom[pc >> 2] = i_type(16, 5'd1, 3'b000, 5'd1, OP_VLD);   pc += 4; // v1
-        rom[pc >> 2] = i_type(32, 5'd1, 3'b000, 5'd2, OP_VLD);   pc += 4; // v2
-        // VADD v3 = v1+v2
-        rom[pc >> 2] = r_type(7'b0000000, 5'd2, 5'd1, 3'b000, 5'd3, OP_VEC_ALU); pc += 4;
-        // Store v3 to base+48
-        rom[pc >> 2] = s_type(48, 5'd1, 5'd3, 3'b000, OP_VST);   pc += 4;
+        // vsetvli x0, x0, e32,m1 (SEW=32, LMUL=1, VL=4)
+        rom[pc >> 2] = vsetvli_inst(5'd0, 5'd0, 11'h010); pc += 4;
+        // Vector loads (RVV: ADDI scratch + VLE32)
+        rom[pc >> 2] = i_type(16, 5'd1, 3'b000, 5'd2, OP_IMM);   pc += 4; // x2 = x1+16
+        rom[pc >> 2] = rvv_vl(5'd1, 5'd2, RVV_VEW32, 1'b1);      pc += 4; // v1
+        rom[pc >> 2] = i_type(32, 5'd1, 3'b000, 5'd2, OP_IMM);   pc += 4; // x2 = x1+32
+        rom[pc >> 2] = rvv_vl(5'd2, 5'd2, RVV_VEW32, 1'b1);      pc += 4; // v2
+        // vadd.vv v3, v2, v1
+        rom[pc >> 2] = r_type({RVV_VADD, 1'b1}, 5'd2, 5'd1, RVV_OPIVV, 5'd3, OP_V); pc += 4;
+        // VSE32.V v3 to base+48
+        rom[pc >> 2] = i_type(48, 5'd1, 3'b000, 5'd2, OP_IMM);   pc += 4; // x2 = x1+48
+        rom[pc >> 2] = rvv_vs(5'd3, 5'd2, RVV_VEW32, 1'b1);      pc += 4;
 
         // ----------------------------------------------------------
         // v0 is writable: hazard + logical op coverage (VXOR)
         // ----------------------------------------------------------
-        // VADD.I32 v0 = v1 + v2
-        rom[pc >> 2] = r_type(7'b0000000, 5'd2, 5'd1, 3'b000, 5'd0, OP_VEC_ALU); pc += 4;
-        // VADD.I32 v28 = v0 + v1
-        rom[pc >> 2] = r_type(7'b0000000, 5'd1, 5'd0, 3'b000, 5'd28, OP_VEC_ALU); pc += 4;
-        rom[pc >> 2] = s_type(144, 5'd1, 5'd28, 3'b000, OP_VST);  pc += 4;
-        // VXOR.I32 v0 = v0 ^ v0 (funct6=6'b001001 => funct7=7'b0010010)
-        rom[pc >> 2] = r_type(7'b0010010, 5'd0, 5'd0, 3'b000, 5'd0, OP_VEC_ALU); pc += 4;
-        // VADD.I32 v29 = v1 + v0 (should copy v1)
-        rom[pc >> 2] = r_type(7'b0000000, 5'd0, 5'd1, 3'b000, 5'd29, OP_VEC_ALU); pc += 4;
-        rom[pc >> 2] = s_type(160, 5'd1, 5'd29, 3'b000, OP_VST);  pc += 4;
+        // vadd.vv v0 = v1 + v2
+        rom[pc >> 2] = r_type({RVV_VADD, 1'b1}, 5'd2, 5'd1, RVV_OPIVV, 5'd0, OP_V); pc += 4;
+        // vadd.vv v28 = v0 + v1
+        rom[pc >> 2] = r_type({RVV_VADD, 1'b1}, 5'd1, 5'd0, RVV_OPIVV, 5'd28, OP_V); pc += 4;
+        rom[pc >> 2] = i_type(144, 5'd1, 3'b000, 5'd2, OP_IMM);  pc += 4;
+        rom[pc >> 2] = rvv_vs(5'd28, 5'd2, RVV_VEW32, 1'b1);     pc += 4;
+        // vxor.vv v0 = v0 ^ v0 (RVV funct6=VXOR, vm=1)
+        rom[pc >> 2] = r_type({RVV_VXOR, 1'b1}, 5'd0, 5'd0, RVV_OPIVV, 5'd0, OP_V); pc += 4;
+        // vadd.vv v29 = v1 + v0 (should copy v1)
+        rom[pc >> 2] = r_type({RVV_VADD, 1'b1}, 5'd0, 5'd1, RVV_OPIVV, 5'd29, OP_V); pc += 4;
+        rom[pc >> 2] = i_type(160, 5'd1, 3'b000, 5'd2, OP_IMM);  pc += 4;
+        rom[pc >> 2] = rvv_vs(5'd29, 5'd2, RVV_VEW32, 1'b1);     pc += 4;
 
         // ----------------------------------------------------------
         // Vector logical ops: VAND/VOR and predicated select (VSEL)
         // ----------------------------------------------------------
-        // VAND.I32 v24 = v1 & v2 (funct6=6'b001010 => funct7=7'b0010100)
-        rom[pc >> 2] = r_type(7'b0010100, 5'd2, 5'd1, 3'b000, 5'd24, OP_VEC_ALU); pc += 4;
-        rom[pc >> 2] = s_type(176, 5'd1, 5'd24, 3'b000, OP_VST);  pc += 4;
-        // VOR.I32 v25 = v1 | v2 (funct6=6'b001011 => funct7=7'b0010110)
-        rom[pc >> 2] = r_type(7'b0010110, 5'd2, 5'd1, 3'b000, 5'd25, OP_VEC_ALU); pc += 4;
-        rom[pc >> 2] = s_type(192, 5'd1, 5'd25, 3'b000, OP_VST);  pc += 4;
+        // vand.vv v24 = v1 & v2
+        rom[pc >> 2] = r_type({RVV_VAND, 1'b1}, 5'd2, 5'd1, RVV_OPIVV, 5'd24, OP_V); pc += 4;
+        rom[pc >> 2] = i_type(176, 5'd1, 3'b000, 5'd2, OP_IMM);  pc += 4;
+        rom[pc >> 2] = rvv_vs(5'd24, 5'd2, RVV_VEW32, 1'b1);     pc += 4;
+        // vor.vv v25 = v1 | v2
+        rom[pc >> 2] = r_type({RVV_VOR, 1'b1}, 5'd2, 5'd1, RVV_OPIVV, 5'd25, OP_V); pc += 4;
+        rom[pc >> 2] = i_type(192, 5'd1, 3'b000, 5'd2, OP_IMM);  pc += 4;
+        rom[pc >> 2] = rvv_vs(5'd25, 5'd2, RVV_VEW32, 1'b1);     pc += 4;
 
         // Set CSR_VMASK (0x004) to 0b0101 so lanes [0,2] pick rs1 and [1,3] pick rs2.
-        rom[pc >> 2] = i_type(5, 5'd0, 3'b000, 5'd14, OP_INT_IMM);    pc += 4; // x14=5
+        rom[pc >> 2] = i_type(5, 5'd0, 3'b000, 5'd14, OP_IMM);    pc += 4; // x14=5
         rom[pc >> 2] = i_type(12'h004, 5'd14, 3'b001, 5'd0, OP_SYSTEM); pc += 4; // CSRRW x0, CSR_VMASK, x14
         // VSEL.I32(vmask) v26 = (vmask? v1 : v2) (funct6=000110, vm=1 => funct7=0001101)
-        rom[pc >> 2] = r_type(7'b0001101, 5'd2, 5'd1, 3'b000, 5'd26, OP_VEC_ALU); pc += 4;
-        rom[pc >> 2] = s_type(208, 5'd1, 5'd26, 3'b000, OP_VST);  pc += 4;
+        rom[pc >> 2] = r_type(7'b0001101, 5'd2, 5'd1, 3'b000, 5'd26, OP_CUSTOM1); pc += 4;
+        rom[pc >> 2] = i_type(208, 5'd1, 3'b000, 5'd2, OP_IMM);  pc += 4;
+        rom[pc >> 2] = rvv_vs(5'd26, 5'd2, RVV_VEW32, 1'b1);     pc += 4;
 
         // ----------------------------------------------------------
         // Expanded vector integer coverage: VSUB + VDOT
         // ----------------------------------------------------------
-        // VSUB.I32 v31 = v2 - v1
-        rom[pc >> 2] = r_type(7'b0000010, 5'd1, 5'd2, 3'b000, 5'd31, OP_VEC_ALU); pc += 4;
-        rom[pc >> 2] = s_type(96, 5'd1, 5'd31, 3'b000, OP_VST);   pc += 4;
-        // VDOT.I32 v30 = dot(v1, v2) (reduction into lane0)
-        rom[pc >> 2] = r_type(7'b0001000, 5'd2, 5'd1, 3'b000, 5'd30, OP_VEC_ALU); pc += 4;
-        rom[pc >> 2] = s_type(112, 5'd1, 5'd30, 3'b000, OP_VST);   pc += 4;
+        // vsub.vv v31 = v2 - v1
+        rom[pc >> 2] = r_type({RVV_VSUB, 1'b1}, 5'd1, 5'd2, RVV_OPIVV, 5'd31, OP_V); pc += 4;
+        rom[pc >> 2] = i_type(96, 5'd1, 3'b000, 5'd2, OP_IMM);   pc += 4;
+        rom[pc >> 2] = rvv_vs(5'd31, 5'd2, RVV_VEW32, 1'b1);     pc += 4;
+        // VDOT.I32 v30 = dot(v1, v2) (reduction into lane0) — Xgpu custom
+        rom[pc >> 2] = r_type(7'b0001000, 5'd2, 5'd1, 3'b000, 5'd30, OP_CUSTOM1); pc += 4;
+        rom[pc >> 2] = i_type(112, 5'd1, 3'b000, 5'd2, OP_IMM);  pc += 4;
+        rom[pc >> 2] = rvv_vs(5'd30, 5'd2, RVV_VEW32, 1'b1);     pc += 4;
 
         // ----------------------------------------------------------
-        // FP32 vector ALU smoke: add/sub/min/max (funct3=TYPE_FP32=3'b011)
-        // v8/v9 inputs loaded from memory; results stored back for checking.
+        // FP32 vector ALU smoke: vfadd/vfsub/vfmin/vfmax (RVV OPFVV)
+        // SEW already 32 from int section; v8/v9 inputs loaded from memory.
         // ----------------------------------------------------------
-        rom[pc >> 2] = i_type(32'h180, 5'd1, 3'b000, 5'd8, OP_VLD);   pc += 4; // v8 = fp32 A
-        rom[pc >> 2] = i_type(32'h190, 5'd1, 3'b000, 5'd9, OP_VLD);   pc += 4; // v9 = fp32 B
+        rom[pc >> 2] = i_type(32'h180, 5'd1, 3'b000, 5'd2, OP_IMM);    pc += 4;
+        rom[pc >> 2] = rvv_vl(5'd8, 5'd2, RVV_VEW32, 1'b1);            pc += 4; // v8 = fp32 A
+        rom[pc >> 2] = i_type(32'h190, 5'd1, 3'b000, 5'd2, OP_IMM);    pc += 4;
+        rom[pc >> 2] = rvv_vl(5'd9, 5'd2, RVV_VEW32, 1'b1);            pc += 4; // v9 = fp32 B
 
-        // VADD.FP32 v10 = v8 + v9
-        rom[pc >> 2] = r_type(7'b0000000, 5'd9, 5'd8, 3'b011, 5'd10, OP_VEC_ALU); pc += 4;
-        rom[pc >> 2] = s_type(32'h1A0, 5'd1, 5'd10, 3'b000, OP_VST);   pc += 4;
+        // vfadd.vv v10 = v8 + v9
+        rom[pc >> 2] = r_type({RVV_VADD, 1'b1}, 5'd9, 5'd8, RVV_OPFVV, 5'd10, OP_V); pc += 4;
+        rom[pc >> 2] = i_type(32'h1A0, 5'd1, 3'b000, 5'd2, OP_IMM);    pc += 4;
+        rom[pc >> 2] = rvv_vs(5'd10, 5'd2, RVV_VEW32, 1'b1);           pc += 4;
 
-        // VSUB.FP32 v11 = v8 - v9
-        rom[pc >> 2] = r_type(7'b0000010, 5'd9, 5'd8, 3'b011, 5'd11, OP_VEC_ALU); pc += 4;
-        rom[pc >> 2] = s_type(32'h1B0, 5'd1, 5'd11, 3'b000, OP_VST);   pc += 4;
+        // vfsub.vv v11 = v8 - v9
+        rom[pc >> 2] = r_type({RVV_VSUB, 1'b1}, 5'd9, 5'd8, RVV_OPFVV, 5'd11, OP_V); pc += 4;
+        rom[pc >> 2] = i_type(32'h1B0, 5'd1, 3'b000, 5'd2, OP_IMM);    pc += 4;
+        rom[pc >> 2] = rvv_vs(5'd11, 5'd2, RVV_VEW32, 1'b1);           pc += 4;
 
-        // VMIN.FP32 v12 = min(v8, v9)
-        rom[pc >> 2] = r_type(7'b0000100, 5'd9, 5'd8, 3'b011, 5'd12, OP_VEC_ALU); pc += 4;
-        rom[pc >> 2] = s_type(32'h1C0, 5'd1, 5'd12, 3'b000, OP_VST);   pc += 4;
+        // vfmin.vv v12 = min(v8, v9)
+        rom[pc >> 2] = r_type({RVV_VMINU, 1'b1}, 5'd9, 5'd8, RVV_OPFVV, 5'd12, OP_V); pc += 4;
+        rom[pc >> 2] = i_type(32'h1C0, 5'd1, 3'b000, 5'd2, OP_IMM);    pc += 4;
+        rom[pc >> 2] = rvv_vs(5'd12, 5'd2, RVV_VEW32, 1'b1);           pc += 4;
 
-        // VMAX.FP32 v13 = max(v8, v9)
-        rom[pc >> 2] = r_type(7'b0000110, 5'd9, 5'd8, 3'b011, 5'd13, OP_VEC_ALU); pc += 4;
-        rom[pc >> 2] = s_type(32'h1D0, 5'd1, 5'd13, 3'b000, OP_VST);   pc += 4;
+        // vfmax.vv v13 = max(v8, v9)
+        rom[pc >> 2] = r_type({RVV_VMAXU, 1'b1}, 5'd9, 5'd8, RVV_OPFVV, 5'd13, OP_V); pc += 4;
+        rom[pc >> 2] = i_type(32'h1D0, 5'd1, 3'b000, 5'd2, OP_IMM);    pc += 4;
+        rom[pc >> 2] = rvv_vs(5'd13, 5'd2, RVV_VEW32, 1'b1);           pc += 4;
 
         // ----------------------------------------------------------
-        // FP16 vector ALU smoke: add/sub/min/max (funct3=TYPE_FP16=3'b100)
+        // FP16 vector ALU smoke: vfadd/vfsub/vfmin/vfmax (RVV OPFVV, SEW=16)
         // v14/v15 inputs loaded from memory; results stored back for checking.
         // ----------------------------------------------------------
-        rom[pc >> 2] = i_type(32'h200, 5'd1, 3'b000, 5'd14, OP_VLD);   pc += 4; // v14 = fp16 A
-        rom[pc >> 2] = i_type(32'h210, 5'd1, 3'b000, 5'd15, OP_VLD);   pc += 4; // v15 = fp16 B
+        rom[pc >> 2] = vsetvli_inst(5'd0, 5'd0, 11'h008); pc += 4; // SEW=16, VL=8
+        rom[pc >> 2] = i_type(32'h200, 5'd1, 3'b000, 5'd2, OP_IMM);    pc += 4;
+        rom[pc >> 2] = rvv_vl(5'd14, 5'd2, RVV_VEW16, 1'b1);           pc += 4; // v14 = fp16 A
+        rom[pc >> 2] = i_type(32'h210, 5'd1, 3'b000, 5'd2, OP_IMM);    pc += 4;
+        rom[pc >> 2] = rvv_vl(5'd15, 5'd2, RVV_VEW16, 1'b1);           pc += 4; // v15 = fp16 B
 
-        // VADD.FP16 v16 = v14 + v15
-        rom[pc >> 2] = r_type(7'b0000000, 5'd15, 5'd14, 3'b100, 5'd16, OP_VEC_ALU); pc += 4;
-        rom[pc >> 2] = s_type(32'h220, 5'd1, 5'd16, 3'b000, OP_VST);   pc += 4;
-        // VSUB.FP16 v17 = v14 - v15
-        rom[pc >> 2] = r_type(7'b0000010, 5'd15, 5'd14, 3'b100, 5'd17, OP_VEC_ALU); pc += 4;
-        rom[pc >> 2] = s_type(32'h230, 5'd1, 5'd17, 3'b000, OP_VST);   pc += 4;
-        // VMIN.FP16 v18 = min(v14, v15)
-        rom[pc >> 2] = r_type(7'b0000100, 5'd15, 5'd14, 3'b100, 5'd18, OP_VEC_ALU); pc += 4;
-        rom[pc >> 2] = s_type(32'h240, 5'd1, 5'd18, 3'b000, OP_VST);   pc += 4;
-        // VMAX.FP16 v19 = max(v14, v15)
-        rom[pc >> 2] = r_type(7'b0000110, 5'd15, 5'd14, 3'b100, 5'd19, OP_VEC_ALU); pc += 4;
-        rom[pc >> 2] = s_type(32'h250, 5'd1, 5'd19, 3'b000, OP_VST);   pc += 4;
+        // vfadd.vv v16 = v14 + v15
+        rom[pc >> 2] = r_type({RVV_VADD, 1'b1}, 5'd15, 5'd14, RVV_OPFVV, 5'd16, OP_V); pc += 4;
+        rom[pc >> 2] = i_type(32'h220, 5'd1, 3'b000, 5'd2, OP_IMM);    pc += 4;
+        rom[pc >> 2] = rvv_vs(5'd16, 5'd2, RVV_VEW16, 1'b1);           pc += 4;
+        // vfsub.vv v17 = v14 - v15
+        rom[pc >> 2] = r_type({RVV_VSUB, 1'b1}, 5'd15, 5'd14, RVV_OPFVV, 5'd17, OP_V); pc += 4;
+        rom[pc >> 2] = i_type(32'h230, 5'd1, 3'b000, 5'd2, OP_IMM);    pc += 4;
+        rom[pc >> 2] = rvv_vs(5'd17, 5'd2, RVV_VEW16, 1'b1);           pc += 4;
+        // vfmin.vv v18 = min(v14, v15)
+        rom[pc >> 2] = r_type({RVV_VMINU, 1'b1}, 5'd15, 5'd14, RVV_OPFVV, 5'd18, OP_V); pc += 4;
+        rom[pc >> 2] = i_type(32'h240, 5'd1, 3'b000, 5'd2, OP_IMM);    pc += 4;
+        rom[pc >> 2] = rvv_vs(5'd18, 5'd2, RVV_VEW16, 1'b1);           pc += 4;
+        // vfmax.vv v19 = max(v14, v15)
+        rom[pc >> 2] = r_type({RVV_VMAXU, 1'b1}, 5'd15, 5'd14, RVV_OPFVV, 5'd19, OP_V); pc += 4;
+        rom[pc >> 2] = i_type(32'h250, 5'd1, 3'b000, 5'd2, OP_IMM);    pc += 4;
+        rom[pc >> 2] = rvv_vs(5'd19, 5'd2, RVV_VEW16, 1'b1);           pc += 4;
 
         // ----------------------------------------------------------
-        // FP8 vector ALU smoke: add/sub and min/max (funct3=TYPE_FP8=3'b101)
+        // FP8 vector ALU smoke: vfadd/vfsub and vfmin/vfmax (RVV OPFVV, SEW=8)
         // ----------------------------------------------------------
+        rom[pc >> 2] = vsetvli_inst(5'd0, 5'd0, 11'h000); pc += 4; // SEW=8, VL=16
         // Add/Sub vectors
-        rom[pc >> 2] = i_type(32'h260, 5'd1, 3'b000, 5'd20, OP_VLD);   pc += 4; // v20 = fp8 A
-        rom[pc >> 2] = i_type(32'h270, 5'd1, 3'b000, 5'd21, OP_VLD);   pc += 4; // v21 = fp8 B
-        // VADD.FP8 v22
-        rom[pc >> 2] = r_type(7'b0000000, 5'd21, 5'd20, 3'b101, 5'd22, OP_VEC_ALU); pc += 4;
-        rom[pc >> 2] = s_type(32'h280, 5'd1, 5'd22, 3'b000, OP_VST);   pc += 4;
-        // VSUB.FP8 v23
-        rom[pc >> 2] = r_type(7'b0000010, 5'd21, 5'd20, 3'b101, 5'd23, OP_VEC_ALU); pc += 4;
-        rom[pc >> 2] = s_type(32'h290, 5'd1, 5'd23, 3'b000, OP_VST);   pc += 4;
+        rom[pc >> 2] = i_type(32'h260, 5'd1, 3'b000, 5'd2, OP_IMM);    pc += 4;
+        rom[pc >> 2] = rvv_vl(5'd20, 5'd2, RVV_VEW8, 1'b1);            pc += 4; // v20 = fp8 A
+        rom[pc >> 2] = i_type(32'h270, 5'd1, 3'b000, 5'd2, OP_IMM);    pc += 4;
+        rom[pc >> 2] = rvv_vl(5'd21, 5'd2, RVV_VEW8, 1'b1);            pc += 4; // v21 = fp8 B
+        // vfadd.vv v22
+        rom[pc >> 2] = r_type({RVV_VADD, 1'b1}, 5'd21, 5'd20, RVV_OPFVV, 5'd22, OP_V); pc += 4;
+        rom[pc >> 2] = i_type(32'h280, 5'd1, 3'b000, 5'd2, OP_IMM);    pc += 4;
+        rom[pc >> 2] = rvv_vs(5'd22, 5'd2, RVV_VEW8, 1'b1);            pc += 4;
+        // vfsub.vv v23
+        rom[pc >> 2] = r_type({RVV_VSUB, 1'b1}, 5'd21, 5'd20, RVV_OPFVV, 5'd23, OP_V); pc += 4;
+        rom[pc >> 2] = i_type(32'h290, 5'd1, 3'b000, 5'd2, OP_IMM);    pc += 4;
+        rom[pc >> 2] = rvv_vs(5'd23, 5'd2, RVV_VEW8, 1'b1);            pc += 4;
         // Min/Max vectors
-        rom[pc >> 2] = i_type(32'h2A0, 5'd1, 3'b000, 5'd24, OP_VLD);   pc += 4; // v24 = fp8 A (mixed sign)
-        rom[pc >> 2] = i_type(32'h2B0, 5'd1, 3'b000, 5'd25, OP_VLD);   pc += 4; // v25 = fp8 B
-        // VMIN.FP8 v26
-        rom[pc >> 2] = r_type(7'b0000100, 5'd25, 5'd24, 3'b101, 5'd26, OP_VEC_ALU); pc += 4;
-        rom[pc >> 2] = s_type(32'h2C0, 5'd1, 5'd26, 3'b000, OP_VST);   pc += 4;
-        // VMAX.FP8 v27
-        rom[pc >> 2] = r_type(7'b0000110, 5'd25, 5'd24, 3'b101, 5'd27, OP_VEC_ALU); pc += 4;
-        rom[pc >> 2] = s_type(32'h2D0, 5'd1, 5'd27, 3'b000, OP_VST);   pc += 4;
+        rom[pc >> 2] = i_type(32'h2A0, 5'd1, 3'b000, 5'd2, OP_IMM);    pc += 4;
+        rom[pc >> 2] = rvv_vl(5'd24, 5'd2, RVV_VEW8, 1'b1);            pc += 4; // v24 = fp8 A (mixed)
+        rom[pc >> 2] = i_type(32'h2B0, 5'd1, 3'b000, 5'd2, OP_IMM);    pc += 4;
+        rom[pc >> 2] = rvv_vl(5'd25, 5'd2, RVV_VEW8, 1'b1);            pc += 4; // v25 = fp8 B
+        // vfmin.vv v26
+        rom[pc >> 2] = r_type({RVV_VMINU, 1'b1}, 5'd25, 5'd24, RVV_OPFVV, 5'd26, OP_V); pc += 4;
+        rom[pc >> 2] = i_type(32'h2C0, 5'd1, 3'b000, 5'd2, OP_IMM);    pc += 4;
+        rom[pc >> 2] = rvv_vs(5'd26, 5'd2, RVV_VEW8, 1'b1);            pc += 4;
+        // vfmax.vv v27
+        rom[pc >> 2] = r_type({RVV_VMAXU, 1'b1}, 5'd25, 5'd24, RVV_OPFVV, 5'd27, OP_V); pc += 4;
+        rom[pc >> 2] = i_type(32'h2D0, 5'd1, 3'b000, 5'd2, OP_IMM);    pc += 4;
+        rom[pc >> 2] = rvv_vs(5'd27, 5'd2, RVV_VEW8, 1'b1);            pc += 4;
 
         // ----------------------------------------------------------
         // Additional vector op coverage: VMUL / VUNPACK / VPACK / VRCP / VRSQRT
         // - Keep expectations deterministic (exact for integer ops, and special-case exact for SFU).
         // Store results under BASE+0x700.. so we don't collide with earlier scalar markers.
         // ----------------------------------------------------------
-        // VMUL.I32 v5 = v1 * v2
-        rom[pc >> 2] = r_type(7'b0011000, 5'd2, 5'd1, 3'b000, 5'd5, OP_VEC_ALU); pc += 4;
-        rom[pc >> 2] = s_type(32'h700, 5'd1, 5'd5, 3'b000, OP_VST); pc += 4;
+        // Restore SEW=32 for integer/fp32 ops
+        rom[pc >> 2] = vsetvli_inst(5'd0, 5'd0, 11'h010); pc += 4; // SEW=32, VL=4
+        // vmul.vv v5 = v1 * v2 (RVV OPMVV)
+        rom[pc >> 2] = r_type({RVV_VMUL, 1'b1}, 5'd2, 5'd1, RVV_OPMVV, 5'd5, OP_V); pc += 4;
+        rom[pc >> 2] = i_type(32'h700, 5'd1, 3'b000, 5'd2, OP_IMM);   pc += 4;
+        rom[pc >> 2] = rvv_vs(5'd5, 5'd2, RVV_VEW32, 1'b1);           pc += 4;
 
         // x16 = 0x11223344 (MOVI pseudo: LUI + ADDI)
         rom[pc >> 2] = u_type(32'h11223, 5'd16, OP_LUI); pc += 4;
-        rom[pc >> 2] = i_type(32'h344, 5'd16, 3'b000, 5'd16, OP_INT_IMM); pc += 4;
-        // VUNPACK.I32 v28 = unpack(x16)
-        rom[pc >> 2] = r_type(7'b0011110, 5'd16, 5'd0, 3'b000, 5'd28, OP_VEC_ALU); pc += 4;
-        rom[pc >> 2] = s_type(32'h710, 5'd1, 5'd28, 3'b000, OP_VST); pc += 4;
+        rom[pc >> 2] = i_type(32'h344, 5'd16, 3'b000, 5'd16, OP_IMM); pc += 4;
+        // VUNPACK.I32 v28 = unpack(x16) — Xgpu custom
+        rom[pc >> 2] = r_type(7'b0011110, 5'd16, 5'd0, 3'b000, 5'd28, OP_CUSTOM1); pc += 4;
+        rom[pc >> 2] = i_type(32'h710, 5'd1, 3'b000, 5'd2, OP_IMM);   pc += 4;
+        rom[pc >> 2] = rvv_vs(5'd28, 5'd2, RVV_VEW32, 1'b1);          pc += 4;
 
         // VPACK.I32 x17 = pack(v28)
-        rom[pc >> 2] = r_type(7'b0010000, 5'd0, 5'd28, 3'b000, 5'd17, OP_VEC_ALU); pc += 4;
+        rom[pc >> 2] = r_type(7'b0010000, 5'd0, 5'd28, 3'b000, 5'd17, OP_CUSTOM1); pc += 4;
         rom[pc >> 2] = s_type(32'h720, 5'd1, 5'd17, 3'b010, OP_STORE); pc += 4;
 
-        // SFU special-cases (FP32): VRCP/VRSQRT over {+Inf, +0, NaN, -Inf}
-        rom[pc >> 2] = i_type(32'h6E0, 5'd1, 3'b000, 5'd24, OP_VLD); pc += 4; // v24 inputs
+        // SFU special-cases (FP32): VRCP/VRSQRT over {+Inf, +0, NaN, -Inf} — Xgpu custom
+        rom[pc >> 2] = i_type(32'h6E0, 5'd1, 3'b000, 5'd2, OP_IMM);   pc += 4;
+        rom[pc >> 2] = rvv_vl(5'd24, 5'd2, RVV_VEW32, 1'b1);          pc += 4; // v24 inputs
         // VRCP.FP32 v25 = rcp(v24)
-        rom[pc >> 2] = r_type(7'b0011010, 5'd0, 5'd24, 3'b011, 5'd25, OP_VEC_ALU); pc += 4;
-        rom[pc >> 2] = s_type(32'h730, 5'd1, 5'd25, 3'b000, OP_VST); pc += 4;
+        rom[pc >> 2] = r_type(7'b0011010, 5'd0, 5'd24, 3'b011, 5'd25, OP_CUSTOM1); pc += 4;
+        rom[pc >> 2] = i_type(32'h730, 5'd1, 3'b000, 5'd2, OP_IMM);   pc += 4;
+        rom[pc >> 2] = rvv_vs(5'd25, 5'd2, RVV_VEW32, 1'b1);          pc += 4;
         // VRSQRT.FP32 v26 = rsqrt(v24)
-        rom[pc >> 2] = r_type(7'b0011100, 5'd0, 5'd24, 3'b011, 5'd26, OP_VEC_ALU); pc += 4;
-        rom[pc >> 2] = s_type(32'h740, 5'd1, 5'd26, 3'b000, OP_VST); pc += 4;
+        rom[pc >> 2] = r_type(7'b0011100, 5'd0, 5'd24, 3'b011, 5'd26, OP_CUSTOM1); pc += 4;
+        rom[pc >> 2] = i_type(32'h740, 5'd1, 3'b000, 5'd2, OP_IMM);   pc += 4;
+        rom[pc >> 2] = rvv_vs(5'd26, 5'd2, RVV_VEW32, 1'b1);          pc += 4;
 
         // VRSQRT negative input: rsqrt(-1.0) -> qNaN
-        rom[pc >> 2] = i_type(32'h6F0, 5'd1, 3'b000, 5'd27, OP_VLD); pc += 4;
-        rom[pc >> 2] = r_type(7'b0011100, 5'd0, 5'd27, 3'b011, 5'd27, OP_VEC_ALU); pc += 4;
-        rom[pc >> 2] = s_type(32'h750, 5'd1, 5'd27, 3'b000, OP_VST); pc += 4;
+        rom[pc >> 2] = i_type(32'h6F0, 5'd1, 3'b000, 5'd2, OP_IMM);   pc += 4;
+        rom[pc >> 2] = rvv_vl(5'd27, 5'd2, RVV_VEW32, 1'b1);          pc += 4;
+        rom[pc >> 2] = r_type(7'b0011100, 5'd0, 5'd27, 3'b011, 5'd27, OP_CUSTOM1); pc += 4;
+        rom[pc >> 2] = i_type(32'h750, 5'd1, 3'b000, 5'd2, OP_IMM);   pc += 4;
+        rom[pc >> 2] = rvv_vs(5'd27, 5'd2, RVV_VEW32, 1'b1);          pc += 4;
 
         // MEMBAR: flush FP32 result stores before the rest of the test.
         rom[pc >> 2] = i_type(0, 5'd0, 3'b000, 5'd0, OP_SYSTEM); pc += 4;
-        // VCMP.eq v1,v1 -> x9 mask
-        rom[pc >> 2] = r_type(7'b0000110, 5'd1, 5'd1, 3'b000, 5'd9, OP_VEC_ALU); pc += 4;
+        // vmseq.vv v1,v1 -> x9 mask (RVV CMP)
+        rom[pc >> 2] = r_type({RVV_VMSEQ, 1'b1}, 5'd1, 5'd1, RVV_OPIVV, 5'd9, OP_V); pc += 4;
         rom[pc >> 2] = s_type(64, 5'd1, 5'd9, 3'b010, OP_STORE); pc += 4;
         // MEMBAR: flush mask store out of WMB (testbench checks global memory directly)
         rom[pc >> 2] = i_type(0, 5'd0, 3'b000, 5'd0, OP_SYSTEM); pc += 4;
         // VATOM.ADD v5, 48(x1), v2
-        rom[pc >> 2] = s_type(48, 5'd1, 5'd2, 3'b000, OP_ATOM_V); pc += 4;
-        // VLD v6 from 48; VST v6 to 80
-        rom[pc >> 2] = i_type(48, 5'd1, 3'b000, 5'd6, OP_VLD);    pc += 4;
-        rom[pc >> 2] = s_type(80, 5'd1, 5'd6, 3'b000, OP_VST);    pc += 4;
+        rom[pc >> 2] = s_type(48, 5'd1, 5'd2, 3'b100, OP_CUSTOM2); pc += 4;
+        // VLE32 v6 from base+48; VSE32 v6 to base+80
+        rom[pc >> 2] = i_type(48, 5'd1, 3'b000, 5'd2, OP_IMM);    pc += 4;
+        rom[pc >> 2] = rvv_vl(5'd6, 5'd2, RVV_VEW32, 1'b1);       pc += 4;
+        rom[pc >> 2] = i_type(80, 5'd1, 3'b000, 5'd2, OP_IMM);    pc += 4;
+        rom[pc >> 2] = rvv_vs(5'd6, 5'd2, RVV_VEW32, 1'b1);       pc += 4;
         // Texture sample
         // - v4 holds {u,v} in lanes 0/1
         // - x14 holds sampler descriptor pointer
-        rom[pc >> 2] = i_type(32'h160, 5'd1, 3'b000, 5'd4, OP_VLD); pc += 4; // v4 = coords
-        rom[pc >> 2] = i_type(32'h140, 5'd0, 3'b000, 5'd14, OP_INT_IMM); pc += 4;
-        rom[pc >> 2] = r_type(7'b0000000, 5'd14, 5'd1, 3'b000, 5'd14, OP_INT); pc += 4;
+        rom[pc >> 2] = i_type(32'h160, 5'd1, 3'b000, 5'd2, OP_IMM); pc += 4;
+        rom[pc >> 2] = rvv_vl(5'd4, 5'd2, RVV_VEW32, 1'b1);      pc += 4; // v4 = coords
+        rom[pc >> 2] = i_type(32'h140, 5'd0, 3'b000, 5'd14, OP_IMM); pc += 4;
+        rom[pc >> 2] = r_type(7'b0000000, 5'd14, 5'd1, 3'b000, 5'd14, OP_REG); pc += 4;
         // TEX v7, v4, x14
-        rom[pc >> 2] = r_type(7'b0000000, 5'd14, 5'd4, 3'b000, 5'd7, OP_TEX); pc += 4;
+        rom[pc >> 2] = r_type(7'b1000010, 5'd14, 5'd4, 3'b000, 5'd7, OP_CUSTOM0); pc += 4;
         // Store TEX result vector to base+0x120
-        rom[pc >> 2] = s_type(288, 5'd1, 5'd7, 3'b000, OP_VST);   pc += 4;
+        rom[pc >> 2] = i_type(288, 5'd1, 3'b000, 5'd2, OP_IMM);   pc += 4;
+        rom[pc >> 2] = rvv_vs(5'd7, 5'd2, RVV_VEW32, 1'b1);       pc += 4;
         // Final MEMBAR
         rom[pc >> 2] = i_type(0, 5'd0, 3'b000, 5'd0, OP_SYSTEM);
 
@@ -1224,17 +1287,17 @@ module compute_unit_full_tb;
         // ----------------------------------------------------------
         pc += 4;
         // x10 = BASE_ADDR + RSTATE_OFF
-        rom[pc >> 2] = i_type(RSTATE_OFF, 5'd0, 3'b000, 5'd10, OP_INT_IMM); pc += 4;
-        rom[pc >> 2] = r_type(7'b0000000, 5'd10, 5'd1, 3'b000, 5'd10, OP_INT); pc += 4;
+        rom[pc >> 2] = i_type(RSTATE_OFF, 5'd0, 3'b000, 5'd10, OP_IMM); pc += 4;
+        rom[pc >> 2] = r_type(7'b0000000, 5'd10, 5'd1, 3'b000, 5'd10, OP_REG); pc += 4;
         // x11 = BASE_ADDR + GSTATE_OFF
-        rom[pc >> 2] = i_type(GSTATE_OFF, 5'd0, 3'b000, 5'd11, OP_INT_IMM); pc += 4;
-        rom[pc >> 2] = r_type(7'b0000000, 5'd11, 5'd1, 3'b000, 5'd11, OP_INT); pc += 4;
+        rom[pc >> 2] = i_type(GSTATE_OFF, 5'd0, 3'b000, 5'd11, OP_IMM); pc += 4;
+        rom[pc >> 2] = r_type(7'b0000000, 5'd11, 5'd1, 3'b000, 5'd11, OP_REG); pc += 4;
         // x12 = BASE_ADDR + GPARAM_OFF
-        rom[pc >> 2] = i_type(GPARAM_OFF, 5'd0, 3'b000, 5'd12, OP_INT_IMM); pc += 4;
-        rom[pc >> 2] = r_type(7'b0000000, 5'd12, 5'd1, 3'b000, 5'd12, OP_INT); pc += 4;
+        rom[pc >> 2] = i_type(GPARAM_OFF, 5'd0, 3'b000, 5'd12, OP_IMM); pc += 4;
+        rom[pc >> 2] = r_type(7'b0000000, 5'd12, 5'd1, 3'b000, 5'd12, OP_REG); pc += 4;
         // x13 = BASE_ADDR + GDRAW_OFF
-        rom[pc >> 2] = i_type(GDRAW_OFF, 5'd0, 3'b000, 5'd13, OP_INT_IMM); pc += 4;
-        rom[pc >> 2] = r_type(7'b0000000, 5'd13, 5'd1, 3'b000, 5'd13, OP_INT); pc += 4;
+        rom[pc >> 2] = i_type(GDRAW_OFF, 5'd0, 3'b000, 5'd13, OP_IMM); pc += 4;
+        rom[pc >> 2] = r_type(7'b0000000, 5'd13, 5'd1, 3'b000, 5'd13, OP_REG); pc += 4;
 
         // The front-end can ignore some instructions in slot1; keep macro-ops in slot0.
         if (pc[2]) begin
@@ -1243,16 +1306,16 @@ module compute_unit_full_tb;
         end
 
         // RSTATE(x10)
-        rom[pc >> 2] = i_type(0, 5'd10, 3'b000, 5'd0, OP_ATOM_SC); pc += 4;
+        rom[pc >> 2] = i_type(0, 5'd10, 3'b000, 5'd0, OP_CUSTOM0); pc += 4;
         rom[pc >> 2] = nop(); pc += 4;
         // GSTATE(x11)
-        rom[pc >> 2] = i_type(0, 5'd11, 3'b100, 5'd0, OP_ATOM_SC); pc += 4;
+        rom[pc >> 2] = i_type(0, 5'd11, 3'b100, 5'd0, OP_CUSTOM0); pc += 4;
         rom[pc >> 2] = nop(); pc += 4;
         // GPARAM(x12)
-        rom[pc >> 2] = i_type(0, 5'd12, 3'b101, 5'd0, OP_ATOM_SC); pc += 4;
+        rom[pc >> 2] = i_type(0, 5'd12, 3'b101, 5'd0, OP_CUSTOM0); pc += 4;
         rom[pc >> 2] = nop(); pc += 4;
         // GDRAW(x13)
-        rom[pc >> 2] = i_type(0, 5'd13, 3'b110, 5'd0, OP_ATOM_SC); pc += 4;
+        rom[pc >> 2] = i_type(0, 5'd13, 3'b110, 5'd0, OP_CUSTOM0); pc += 4;
         rom[pc >> 2] = nop(); pc += 4;
 
         // ----------------------------------------------------------
@@ -1260,11 +1323,11 @@ module compute_unit_full_tb;
         // ----------------------------------------------------------
         // Use distinct GSTATE2/GPARAM2 blocks to avoid racing descriptor reads.
         // x18 = BASE_ADDR + GSTATE2_OFF
-        rom[pc >> 2] = i_type(GSTATE2_OFF, 5'd0, 3'b000, 5'd18, OP_INT_IMM); pc += 4;
-        rom[pc >> 2] = r_type(7'b0000000, 5'd18, 5'd1, 3'b000, 5'd18, OP_INT); pc += 4;
+        rom[pc >> 2] = i_type(GSTATE2_OFF, 5'd0, 3'b000, 5'd18, OP_IMM); pc += 4;
+        rom[pc >> 2] = r_type(7'b0000000, 5'd18, 5'd1, 3'b000, 5'd18, OP_REG); pc += 4;
         // x19 = BASE_ADDR + GPARAM2_OFF
-        rom[pc >> 2] = i_type(GPARAM2_OFF, 5'd0, 3'b000, 5'd19, OP_INT_IMM); pc += 4;
-        rom[pc >> 2] = r_type(7'b0000000, 5'd19, 5'd1, 3'b000, 5'd19, OP_INT); pc += 4;
+        rom[pc >> 2] = i_type(GPARAM2_OFF, 5'd0, 3'b000, 5'd19, OP_IMM); pc += 4;
+        rom[pc >> 2] = r_type(7'b0000000, 5'd19, 5'd1, 3'b000, 5'd19, OP_REG); pc += 4;
 
         // Keep macro-ops in slot0.
         if (pc[2]) begin
@@ -1273,26 +1336,26 @@ module compute_unit_full_tb;
         end
 
         // Re-issue state + draw (using the second descriptor blocks)
-        rom[pc >> 2] = i_type(0, 5'd18, 3'b100, 5'd0, OP_ATOM_SC); pc += 4; // GSTATE(x18)
+        rom[pc >> 2] = i_type(0, 5'd18, 3'b100, 5'd0, OP_CUSTOM0); pc += 4; // GSTATE(x18)
         rom[pc >> 2] = nop(); pc += 4;
-        rom[pc >> 2] = i_type(0, 5'd19, 3'b101, 5'd0, OP_ATOM_SC); pc += 4; // GPARAM(x19)
+        rom[pc >> 2] = i_type(0, 5'd19, 3'b101, 5'd0, OP_CUSTOM0); pc += 4; // GPARAM(x19)
         rom[pc >> 2] = nop(); pc += 4;
-        rom[pc >> 2] = i_type(0, 5'd13, 3'b110, 5'd0, OP_ATOM_SC); pc += 4; // GDRAW(x13)
+        rom[pc >> 2] = i_type(0, 5'd13, 3'b110, 5'd0, OP_CUSTOM0); pc += 4; // GDRAW(x13)
         rom[pc >> 2] = nop(); pc += 4;
 
         // Queue/backpressure stress: burst a few extra GDRAWs without changing state.
-        rom[pc >> 2] = i_type(0, 5'd13, 3'b110, 5'd0, OP_ATOM_SC); pc += 4;
+        rom[pc >> 2] = i_type(0, 5'd13, 3'b110, 5'd0, OP_CUSTOM0); pc += 4;
         rom[pc >> 2] = nop(); pc += 4;
-        rom[pc >> 2] = i_type(0, 5'd13, 3'b110, 5'd0, OP_ATOM_SC); pc += 4;
+        rom[pc >> 2] = i_type(0, 5'd13, 3'b110, 5'd0, OP_CUSTOM0); pc += 4;
         rom[pc >> 2] = nop(); pc += 4;
-        rom[pc >> 2] = i_type(0, 5'd13, 3'b110, 5'd0, OP_ATOM_SC); pc += 4;
+        rom[pc >> 2] = i_type(0, 5'd13, 3'b110, 5'd0, OP_CUSTOM0); pc += 4;
         rom[pc >> 2] = nop(); pc += 4;
 
         // Drain
         rom[pc >> 2] = i_type(0, 5'd0, 3'b000, 5'd0, OP_SYSTEM); pc += 4;
 
         // Done flag: store 1 to BASE+DONE_OFF and flush so TB can observe completion.
-        rom[pc >> 2] = i_type(1, 5'd0, 3'b000, 5'd15, OP_INT_IMM); pc += 4; // x15=1
+        rom[pc >> 2] = i_type(1, 5'd0, 3'b000, 5'd15, OP_IMM); pc += 4; // x15=1
         rom[pc >> 2] = s_type(DONE_OFF, 5'd1, 5'd15, 3'b010, OP_STORE); // SW x15, DONE_OFF(x1)
         $display("ROM final DONE store @pc=%0h inst=%08h", pc, rom[pc >> 2]);
         pc += 4;
@@ -1683,11 +1746,11 @@ module compute_unit_full_tb;
                          dut.valuv_wb_valid, dut.valuv_wb_rd, dut.valuv_wb_is_scalar, dut.valuv_wb_data[31:0]);
             end
 
-            // Focused VCMP/store sequencing debug: do we ever fetch/accept the store of x9 to BASE+64?
+            // Focused vmseq/store sequencing debug: do we ever fetch/accept the store of x9 to BASE+64?
             begin : vcmp_store_probe
                 logic [31:0] vcmp_inst;
                 logic [31:0] vcmp_store_inst;
-                vcmp_inst       = r_type(7'b0000110, 5'd1, 5'd1, 3'b000, 5'd9, OP_VEC_ALU);
+                vcmp_inst       = r_type({RVV_VMSEQ, 1'b1}, 5'd1, 5'd1, RVV_OPIVV, 5'd9, OP_V);
                 vcmp_store_inst = s_type(64, 5'd1, 5'd9, 3'b010, OP_STORE);
 
                 if (dut.if_valid && dut.if_inst0_valid && (dut.if_pc >= 32'h0000_0270) && (dut.if_pc <= 32'h0000_027C)) begin

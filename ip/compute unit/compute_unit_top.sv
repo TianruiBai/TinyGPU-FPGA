@@ -590,6 +590,29 @@ module compute_unit_top #(
     logic [31:0]  csr_rdata;
     logic [15:0]  csr_vmask;
 
+    // RVV vector configuration CSRs (managed by vsetvli/vsetivli/vsetvl, not csr_file)
+    logic [31:0]  rvv_vtype;   // vtype: {vill, ..., vma, vta, vsew[2:0], vlmul[2:0]}
+    logic [31:0]  rvv_vl;      // vector length
+    // Derived from rvv_vtype for type_sel computation
+    logic [2:0]   rvv_vsew;    // vtype[5:3]: 000=8, 001=16, 010=32
+    assign rvv_vsew = rvv_vtype[5:3];
+
+    // Compute type_sel from vtype for RVV instructions
+    // is_fp is encoded in the decoder's type_sel placeholder (TYPE_FP32 for FP, TYPE_I32 for INT)
+    function automatic logic [2:0] rvv_compute_type_sel(input logic [2:0] placeholder_type, input logic [2:0] vsew);
+        logic is_fp;
+        is_fp = (placeholder_type == TYPE_FP32 || placeholder_type == TYPE_FP16 || placeholder_type == TYPE_FP8);
+        case ({is_fp, vsew[1:0]})
+            {1'b0, 2'b00}: return TYPE_I8;
+            {1'b0, 2'b01}: return TYPE_I16;
+            {1'b0, 2'b10}: return TYPE_I32;
+            {1'b1, 2'b00}: return TYPE_FP8;
+            {1'b1, 2'b01}: return TYPE_FP16;
+            {1'b1, 2'b10}: return TYPE_FP32;
+            default:        return TYPE_I32;
+        endcase
+    endfunction
+
     // Command streamer CSR-config outputs
     logic         csr_cmd_enable;
     logic [31:0]  csr_cmd_ring_base;
@@ -637,7 +660,7 @@ module compute_unit_top #(
     // Load-use interlock (scalar + vector ALU). Uses registered EX/MEM state to avoid long comb paths.
     wire rr_is_scalar_pipe = rr_valid && !rr_is_vec_alu && !rr_is_gfx;
     wire rr1_is_scalar_alu = rr1_is_scalar_pipe && !rr1_ctrl.is_load && !rr1_ctrl.is_store
-                          && !rr1_ctrl.is_atomic && !rr1_ctrl.is_branch && !rr1_ctrl.is_system
+                          && !rr1_ctrl.is_atomic && !rr1_ctrl.is_branch && !rr1_ctrl.is_jalr && !rr1_ctrl.is_system
                           && !rr1_ctrl.is_scalar_fp;
     wire rr_uses_scalar_rs1 = rr_is_scalar_pipe && rr_ctrl.uses_rs1 && (rr_ctrl.rs1_class == CLASS_SCALAR) && (rr_ctrl.rs1 != 5'd0);
     wire rr_uses_scalar_rs2 = rr_is_scalar_pipe && rr_ctrl.uses_rs2 && (rr_ctrl.rs2_class == CLASS_SCALAR) && (rr_ctrl.rs2 != 5'd0);
@@ -907,7 +930,7 @@ module compute_unit_top #(
         .query_pc(if_pc),
         .pred_taken(bp_pred_taken),
         .pred_target(bp_pred_target),
-        .update_valid(ex_valid && ex_ctrl.is_branch),
+        .update_valid(ex_valid && (ex_ctrl.is_branch || ex_ctrl.is_jalr)),
         .update_ctrl(ex_ctrl),
         .update_pc(ex_pc),
         .update_taken(ex_cf_taken)
@@ -1044,14 +1067,14 @@ module compute_unit_top #(
     wire d1_is_gfx     = if_inst1_valid && (d1_ctrl.is_tex || d1_ctrl.is_gfx);
     wire d1_is_scalar_alu = if_inst1_valid && !d1_ctrl.is_vector && !d1_ctrl.is_tex && !d1_ctrl.is_gfx
                          && !d1_ctrl.is_load && !d1_ctrl.is_store && !d1_ctrl.is_atomic
-                         && !d1_ctrl.is_branch && !d1_ctrl.is_system && !d1_ctrl.is_scalar_fp;
+                         && !d1_ctrl.is_branch && !d1_ctrl.is_jalr && !d1_ctrl.is_system && !d1_ctrl.is_scalar_fp;
     wire d1_is_scalar_lsu = if_inst1_valid && !d1_ctrl.is_vector && !d1_ctrl.is_tex && !d1_ctrl.is_gfx
                          && (d1_ctrl.is_load || d1_ctrl.is_store || d1_ctrl.is_atomic)
-                         && !d1_ctrl.is_branch && !d1_ctrl.is_system && !d1_ctrl.is_scalar_fp;
+                         && !d1_ctrl.is_branch && !d1_ctrl.is_jalr && !d1_ctrl.is_system && !d1_ctrl.is_scalar_fp;
     wire d1_is_scalar_fp  = if_inst1_valid && d1_ctrl.is_scalar_fp;
 
     // Do not dual-issue behind control-flow: gfx/tex work is not flushed on redirects.
-    wire can_dual_raw = if_inst0_valid && if_inst1_valid && !d0_ctrl.is_branch && !d0_ctrl.is_system
+    wire can_dual_raw = if_inst0_valid && if_inst1_valid && !d0_ctrl.is_branch && !d0_ctrl.is_jalr && !d0_ctrl.is_system
                      && (d1_is_vec_alu || d1_is_gfx || d1_is_scalar_alu || d1_is_scalar_lsu || d1_is_scalar_fp);
     wire can_dual = can_dual_raw;
 
@@ -1499,6 +1522,17 @@ module compute_unit_top #(
     assign csr_en       = ex_valid && ex_ctrl.is_system && (ex_ctrl.funct3 == 3'b001 || ex_ctrl.funct3 == 3'b010);
     assign csr_csrrs    = (ex_ctrl.funct3 == 3'b010);
 
+    // RVV vector CSR read mux: vtype/vl/vlenb are maintained in compute_unit_top
+    logic [31:0] csr_rdata_muxed;
+    always_comb begin
+        case (csr_addr_ex)
+            CSR_VL:    csr_rdata_muxed = rvv_vl;
+            CSR_VTYPE: csr_rdata_muxed = rvv_vtype;
+            CSR_VLENB: csr_rdata_muxed = 32'd16; // VLEN/8 = 128/8
+            default:   csr_rdata_muxed = csr_rdata;
+        endcase
+    end
+
     // Address generation for loads/stores/texture
     agu u_agu (
         .base_addr(ex_op_a_fwd),
@@ -1525,7 +1559,7 @@ module compute_unit_top #(
         .funct3(ex_ctrl.funct3),
         .is_sub(ex_ctrl.funct7 == 7'b0100000),
         .funct7(ex_ctrl.funct7),
-        .opcode(OP_INT),
+        .opcode(OP_REG),
         .result(ex_alu_res),
         .branch_taken(ex_alu_branch_taken_unused)
     );
@@ -1537,7 +1571,7 @@ module compute_unit_top #(
         .funct3(ex1_ctrl.funct3),
         .is_sub(ex1_ctrl.funct7 == 7'b0100000),
         .funct7(ex1_ctrl.funct7),
-        .opcode(OP_INT),
+        .opcode(OP_REG),
         .result(ex1_alu_res),
         .branch_taken()
     );
@@ -1562,7 +1596,7 @@ module compute_unit_top #(
         ex_redirect_valid  = 1'b0;
         ex_redirect_target = 32'h0;
 
-        if (ex_valid && ex_ctrl.is_branch) begin
+        if (ex_valid && (ex_ctrl.is_branch || ex_ctrl.is_jalr)) begin
             if (ex_pred_taken) begin
                 if (!ex_cf_taken) begin
                     ex_redirect_valid  = 1'b1;
@@ -1578,10 +1612,66 @@ module compute_unit_top #(
         end
     end
 
+    // --- vsetvl/vsetvli/vsetivli execution (in scalar EX stage) ---
+    logic [31:0] vsetvl_new_vtype;
+    logic [31:0] vsetvl_new_vl;
+    logic        vsetvl_fire;
+    assign vsetvl_fire = ex_valid && ex_ctrl.is_vsetvl && !stall_any;
+
+    always_comb begin
+        logic [31:0] avl;
+        logic [10:0] zimm;
+        logic [2:0]  new_vsew;
+        logic [31:0] vlmax;
+
+        vsetvl_new_vtype = rvv_vtype;
+        vsetvl_new_vl    = rvv_vl;
+
+        if (ex_valid && ex_ctrl.is_vsetvl) begin
+            // Determine vtype and avl based on encoding variant
+            if (ex_ctrl.imm[31] == 1'b0 && ex_ctrl.funct7[6] == 1'b0) begin
+                // vsetvli: zimm from imm[10:0], avl from rs1 (or VLMAX if rs1=x0)
+                zimm = ex_ctrl.imm[10:0];
+                avl  = (ex_ctrl.rs1 == 5'd0) ? 32'hFFFFFFFF : ex_op_a_fwd;
+            end else if (ex_ctrl.imm != 32'h0 || ex_ctrl.rs1 == 5'd0) begin
+                // vsetivli: zimm from imm[9:0], avl from uimm[4:0] in rs1 field
+                zimm = {1'b0, ex_ctrl.imm[9:0]};
+                avl  = {27'b0, ex_ctrl.rs1};
+            end else begin
+                // vsetvl: vtype from rs2, avl from rs1
+                zimm = ex_op_b_fwd[10:0];
+                avl  = (ex_ctrl.rs1 == 5'd0) ? 32'hFFFFFFFF : ex_op_a_fwd;
+            end
+
+            vsetvl_new_vtype = {24'b0, zimm[7:0]}; // {vma, vta, vsew[2:0], vlmul[2:0]}
+            new_vsew = zimm[5:3];
+
+            // Only LMUL=1 (vlmul=000) is supported; flag illegal for any other LMUL
+            if (zimm[2:0] != 3'b000) begin
+                vlmax = 32'd0;
+                vsetvl_new_vtype[31] = 1'b1; // vill: unsupported LMUL
+            end else begin
+                // VLMAX = VLEN / SEW (LMUL=1), VLEN=128
+                case (new_vsew)
+                    3'b000: vlmax = 32'd16; // SEW=8
+                    3'b001: vlmax = 32'd8;  // SEW=16
+                    3'b010: vlmax = 32'd4;  // SEW=32
+                    default: begin
+                        vlmax = 32'd0;
+                        vsetvl_new_vtype[31] = 1'b1; // vill: illegal SEW
+                    end
+                endcase
+            end
+
+            vsetvl_new_vl = (avl > vlmax) ? vlmax : avl;
+        end
+    end
+
     // Scalar writeback value (JAL/JALR link = PC+4)
     always_comb begin
         if (ex_ctrl.is_lui) ex_scalar_res = ex_ctrl.imm;
         else if (ex_is_link) ex_scalar_res = ex_link_value;
+        else if (ex_ctrl.is_vsetvl) ex_scalar_res = vsetvl_new_vl;
         else ex_scalar_res = ex_alu_res;
     end
 
@@ -1738,6 +1828,9 @@ module compute_unit_top #(
             // Push RR VALU ops into queue when space available (up to two per cycle)
             if (push_vec_alu0) begin
                 vq[tail].ctrl        <= rr_ctrl;
+                // For RVV ops, derive type_sel from vtype CSR (decoder only sets FP/INT placeholder)
+                if (rr_ctrl.is_rvv)
+                    vq[tail].ctrl.type_sel <= rvv_compute_type_sel(rr_ctrl.type_sel, rvv_vsew);
                 vq[tail].src_a       <= push0_vec_src_a;
                 vq[tail].src_b       <= push0_vec_src_b;
                 vq[tail].scalar_mask <= push0_vec_scalar;
@@ -1748,6 +1841,8 @@ module compute_unit_top #(
 
             if (push_vec_alu1) begin
                 vq[tail].ctrl        <= rr1_ctrl;
+                if (rr1_ctrl.is_rvv)
+                    vq[tail].ctrl.type_sel <= rvv_compute_type_sel(rr1_ctrl.type_sel, rvv_vsew);
                 vq[tail].src_a       <= push1_vec_src_a;
                 vq[tail].src_b       <= push1_vec_src_b;
                 vq[tail].scalar_mask <= push1_vec_scalar;
@@ -1768,6 +1863,7 @@ module compute_unit_top #(
         .valid(valuv_issue_valid0),
         .funct6(vq[vq_head].ctrl.funct7[6:1]),
         .funct3(vq[vq_head].ctrl.funct3),
+        .type_sel(vq[vq_head].ctrl.type_sel),
         .vm_enable(vq[vq_head].ctrl.vm_enable),
         .vmask(csr_vmask),
         .rd_idx(vq[vq_head].ctrl.rd),
@@ -1790,6 +1886,7 @@ module compute_unit_top #(
         .valid(valuv_issue_valid1),
         .funct6(vq[vq_head_next].ctrl.funct7[6:1]),
         .funct3(vq[vq_head_next].ctrl.funct3),
+        .type_sel(vq[vq_head_next].ctrl.type_sel),
         .vm_enable(vq[vq_head_next].ctrl.vm_enable),
         .vmask(csr_vmask),
         .rd_idx(vq[vq_head_next].ctrl.rd),
@@ -1855,6 +1952,17 @@ module compute_unit_top #(
         .cmd_cons_ptr_bytes(csr_cmd_cons_ptr_bytes),
         .cmd_completion_base(csr_cmd_completion_base)
     );
+
+    // RVV vtype / vl register update (driven by vsetvl execution in EX stage)
+    always_ff @(posedge clk) begin
+        if (!rst_n) begin
+            rvv_vtype <= 32'h0000_0010; // default: SEW=32 (vsew=010), LMUL=1 (vlmul=000)
+            rvv_vl    <= 32'd4;         // VLMAX for SEW=32, VLEN=128
+        end else if (vsetvl_fire) begin
+            rvv_vtype <= vsetvl_new_vtype;
+            rvv_vl    <= vsetvl_new_vl;
+        end
+    end
 
     // Mailbox sideband
     logic        lsu_mailbox_tx_valid;
@@ -2283,7 +2391,9 @@ module compute_unit_top #(
         end else if (!stall_pipe) begin
             mem_valid        <= ex_valid;
             mem_ctrl         <= ex_ctrl;
-            mem_scalar_res   <= ex_ctrl.is_system ? csr_rdata : ex_scalar_res;
+            mem_scalar_res   <= ex_ctrl.is_system ? csr_rdata_muxed
+                              : ex_ctrl.is_vsetvl ? vsetvl_new_vl
+                              : ex_scalar_res;
             mem_fp_res       <= ex_fp_res;
             mem_pc           <= ex_pc;
             mem_addr         <= ex_addr;

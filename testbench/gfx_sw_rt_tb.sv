@@ -202,7 +202,15 @@ module gfx_sw_rt_tb;
     endfunction
 
     function automatic [31:0] nop();
-        nop = i_type(12'd0, 5'd0, 3'b000, 5'd0, OP_INT_IMM);
+        nop = i_type(12'd0, 5'd0, 3'b000, 5'd0, OP_IMM);
+    endfunction
+
+    // --- RVV encoding helpers ---
+    function automatic [31:0] rvv_vl(input [4:0] vd, input [4:0] rs1, input [2:0] width, input vm);
+        rvv_vl = {3'b000, 1'b0, 2'b00, vm, 5'b00000, rs1, width, vd, 7'b0000111};
+    endfunction
+    function automatic [31:0] vsetvli_inst(input [4:0] rd, input [4:0] rs1, input [10:0] zimm);
+        vsetvli_inst = {1'b0, zimm, rs1, 3'b111, rd, 7'b1010111};
     endfunction
 
     // ---------------------------------------------------------------------
@@ -248,60 +256,16 @@ module gfx_sw_rt_tb;
     task automatic dcache_write_line(
         input logic [31:0] line_addr,
         input logic [511:0] line_data,
-        input logic [7:0]  line_wstrb
+        input logic [7:0]  line_wstrb  // 1 strobe bit per 8-byte beat
     );
         int base_word;
-        int done_idx;
-        logic [31:0] done_w;
         begin
             base_word = mem_index(line_addr);
-            done_idx = ((BASE_ADDR + DONE_OFF) - line_addr) >> 2;
-            done_w = mem[base_word + done_idx];
-
-            if ((line_addr <= (BASE_ADDR + DONE_OFF)) && ((line_addr + 32'd64) > (BASE_ADDR + DONE_OFF))) begin
-                for (int b = 0; b < DCACHE_BEATS; b++) begin
-                    int word_idx;
-                    logic [31:0] w0;
-                    logic [31:0] w1;
-                    word_idx = base_word + (b * 2);
-                    w0 = mem[word_idx + 0];
-                    w1 = mem[word_idx + 1];
-                    for (int cbyte = 0; cbyte < 4; cbyte++) begin
-                        if (line_wstrb[(b*8) + cbyte]) begin
-                            w0[(cbyte*8) +: 8] = line_data[(b*64) + (cbyte*8) +: 8];
-                        end
-                        if (line_wstrb[(b*8) + cbyte + 4]) begin
-                            w1[(cbyte*8) +: 8] = line_data[(b*64) + (cbyte*8) + 32 +: 8];
-                        end
-                    end
-                    mem[word_idx + 0] = w0;
-                    mem[word_idx + 1] = w1;
+            for (int b = 0; b < DCACHE_BEATS; b++) begin
+                if (line_wstrb[b]) begin
+                    mem[base_word + (b * 2) + 0] = line_data[(b*64) +: 32];
+                    mem[base_word + (b * 2) + 1] = line_data[(b*64) + 32 +: 32];
                 end
-
-                done_w = mem[mem_index(BASE_ADDR + DONE_OFF)];
-            end else begin
-                for (int b = 0; b < DCACHE_BEATS; b++) begin
-                    int word_idx;
-                    logic [31:0] w0;
-                    logic [31:0] w1;
-                    word_idx = base_word + (b * 2);
-                    w0 = mem[word_idx + 0];
-                    w1 = mem[word_idx + 1];
-                    for (int cbyte = 0; cbyte < 4; cbyte++) begin
-                        if (line_wstrb[(b*8) + cbyte]) begin
-                            w0[(cbyte*8) +: 8] = line_data[(b*64) + (cbyte*8) +: 8];
-                        end
-                        if (line_wstrb[(b*8) + cbyte + 4]) begin
-                            w1[(cbyte*8) +: 8] = line_data[(b*64) + (cbyte*8) + 32 +: 8];
-                        end
-                    end
-                    mem[word_idx + 0] = w0;
-                    mem[word_idx + 1] = w1;
-                end
-            end
-
-            if (done_w != 32'h0) begin
-                $display("TB: DONE write value=%08h", done_w);
             end
         end
     endtask
@@ -405,17 +369,17 @@ module gfx_sw_rt_tb;
             rom[pc>>2] = u_type(BASE_ADDR + FB_OFF, 5'd2, OP_LUI); pc += 4;
 
             // x3 = invW (Q16.16) = 65536/102 ~= 642 (wider FOV / zoom out)
-            rom[pc>>2] = i_type(642, 5'd0, 3'b000, 5'd3, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(642, 5'd0, 3'b000, 5'd3, OP_IMM); pc += 4;
             // x4 = invH (Q16.16)
-            rom[pc>>2] = i_type(642, 5'd0, 3'b000, 5'd4, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(642, 5'd0, 3'b000, 5'd4, OP_IMM); pc += 4;
             // x5 = one (Q16.16)
             rom[pc>>2] = u_type(32'h0001_0000, 5'd5, OP_LUI); pc += 4;
             // x17 = r2 (sphere radius^2 ~= 0.36)
             rom[pc>>2] = u_type(32'h0000_6000, 5'd17, OP_LUI); pc += 4;
-            rom[pc>>2] = i_type(-983, 5'd17, 3'b000, 5'd17, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(-983, 5'd17, 3'b000, 5'd17, OP_IMM); pc += 4;
             // x19 = W, x20 = H
-            rom[pc>>2] = i_type(W, 5'd0, 3'b000, 5'd19, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(H, 5'd0, 3'b000, 5'd20, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(W, 5'd0, 3'b000, 5'd19, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(H, 5'd0, 3'b000, 5'd20, OP_IMM); pc += 4;
 
             // x21 = sincos base
             rom[pc>>2] = u_type(BASE_ADDR + SINCOS_OFF, 5'd21, OP_LUI); pc += 4;
@@ -423,13 +387,14 @@ module gfx_sw_rt_tb;
             rom[pc>>2] = u_type(BASE_ADDR + INVSQRT_OFF, 5'd22, OP_LUI); pc += 4;
             // x12 = vector const base (mirror tint)
             rom[pc>>2] = u_type(BASE_ADDR + VEC_CONST_OFF, 5'd12, OP_LUI); pc += 4;
-            // v2 = mirror tint vector (FP32)
-            rom[pc>>2] = i_type(0, 5'd12, 3'b000, 5'd2, OP_VLD); pc += 4;
+            // v2 = mirror tint vector (FP32) — RVV VLE32
+            rom[pc>>2] = vsetvli_inst(5'd0, 5'd0, 11'h010); pc += 4; // SEW=32, VL=4
+            rom[pc>>2] = rvv_vl(5'd2, 5'd12, RVV_VEW32, 1'b1); pc += 4;
             // x13 = FRAMES
-            rom[pc>>2] = i_type(FRAMES, 5'd0, 3'b000, 5'd13, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(FRAMES, 5'd0, 3'b000, 5'd13, OP_IMM); pc += 4;
 
             // frame = 0 (x6)
-            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd6, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd6, OP_IMM); pc += 4;
 
             // -------------------------
             // Frame loop
@@ -437,55 +402,55 @@ module gfx_sw_rt_tb;
             loop_frame_pc = pc;
 
             // angle_idx = frame & 0xFF -> x7
-            rom[pc>>2] = i_type(255, 5'd6, 3'b111, 5'd7, OP_INT_IMM); pc += 4; // ANDI
+            rom[pc>>2] = i_type(255, 5'd6, 3'b111, 5'd7, OP_IMM); pc += 4; // ANDI
             // angle_ptr = sincos_base + (idx<<3) -> x7
-            rom[pc>>2] = i_type(3, 5'd7, 3'b001, 5'd7, OP_INT_IMM); pc += 4; // SLLI
-            rom[pc>>2] = r_type(7'b0000000, 5'd21, 5'd7, 3'b000, 5'd7, OP_INT); pc += 4; // ADD
+            rom[pc>>2] = i_type(3, 5'd7, 3'b001, 5'd7, OP_IMM); pc += 4; // SLLI
+            rom[pc>>2] = r_type(7'b0000000, 5'd21, 5'd7, 3'b000, 5'd7, OP_REG); pc += 4; // ADD
             // sin (Q1.15) -> x14, cos -> x15
             rom[pc>>2] = i_type(0, 5'd7, 3'b010, 5'd14, OP_LOAD); pc += 4;
             rom[pc>>2] = i_type(4, 5'd7, 3'b010, 5'd15, OP_LOAD); pc += 4;
             // sphere_x = sin<<1 (Q16.16) -> x16
-            rom[pc>>2] = i_type(1, 5'd14, 3'b001, 5'd16, OP_INT_IMM); pc += 4; // SLLI
+            rom[pc>>2] = i_type(1, 5'd14, 3'b001, 5'd16, OP_IMM); pc += 4; // SLLI
             // sphere_z = (cos<<1) + 2.0 -> x18
-            rom[pc>>2] = i_type(1, 5'd15, 3'b001, 5'd18, OP_INT_IMM); pc += 4; // cos<<1
+            rom[pc>>2] = i_type(1, 5'd15, 3'b001, 5'd18, OP_IMM); pc += 4; // cos<<1
             rom[pc>>2] = u_type(32'h0002_0000, 5'd7, OP_LUI); pc += 4;           // 2.0
-            rom[pc>>2] = r_type(7'b0000000, 5'd7, 5'd18, 3'b000, 5'd18, OP_INT); pc += 4; // +2.0
+            rom[pc>>2] = r_type(7'b0000000, 5'd7, 5'd18, 3'b000, 5'd18, OP_REG); pc += 4; // +2.0
 
             // y = 0
-            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd8, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd8, OP_IMM); pc += 4;
             loop_y_pc = pc;
 
             // y2 = (y<<1) - (H-1) -> x9
-            rom[pc>>2] = i_type(1, 5'd8, 3'b001, 5'd9, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(-127, 5'd9, 3'b000, 5'd9, OP_INT_IMM); pc += 4; // ADDI x9,x9,-127
+            rom[pc>>2] = i_type(1, 5'd8, 3'b001, 5'd9, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(-127, 5'd9, 3'b000, 5'd9, OP_IMM); pc += 4; // ADDI x9,x9,-127
             // yndc = (y2 * invH) -> x10 (Q16.16). Keep full fixed-point precision.
-            rom[pc>>2] = r_type(7'b0000001, 5'd4, 5'd9, 3'b000, 5'd10, OP_INT); pc += 4; // MUL
-            rom[pc>>2] = i_type(12'h400, 5'd10, 3'b101, 5'd10, OP_INT_IMM); pc += 4;       // SRAI 0 (no-op)
+            rom[pc>>2] = r_type(7'b0000001, 5'd4, 5'd9, 3'b000, 5'd10, OP_REG); pc += 4; // MUL
+            rom[pc>>2] = i_type(12'h400, 5'd10, 3'b101, 5'd10, OP_IMM); pc += 4;       // SRAI 0 (no-op)
             // yndc = -yndc
-            rom[pc>>2] = r_type(7'b0100000, 5'd10, 5'd0, 3'b000, 5'd10, OP_INT); pc += 4; // SUB x10,x0,x10
+            rom[pc>>2] = r_type(7'b0100000, 5'd10, 5'd0, 3'b000, 5'd10, OP_REG); pc += 4; // SUB x10,x0,x10
 
             // row_ptr = fb_base + (y << 9) -> x23
-            rom[pc>>2] = i_type(9, 5'd8, 3'b001, 5'd23, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd2, 5'd23, 3'b000, 5'd23, OP_INT); pc += 4;
+            rom[pc>>2] = i_type(9, 5'd8, 3'b001, 5'd23, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd2, 5'd23, 3'b000, 5'd23, OP_REG); pc += 4;
 
             // x = 0
-            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd11, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd11, OP_IMM); pc += 4;
             loop_x_pc = pc;
 
             // x2 = (x<<1) - (W-1) -> x12
-            rom[pc>>2] = i_type(1, 5'd11, 3'b001, 5'd12, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(-127, 5'd12, 3'b000, 5'd12, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(1, 5'd11, 3'b001, 5'd12, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(-127, 5'd12, 3'b000, 5'd12, OP_IMM); pc += 4;
             // xndc = (x2 * invW) -> x24 (Q16.16). Keep full fixed-point precision.
-            rom[pc>>2] = r_type(7'b0000001, 5'd3, 5'd12, 3'b000, 5'd24, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h400, 5'd24, 3'b101, 5'd24, OP_INT_IMM); pc += 4;       // SRAI 0 (no-op)
+            rom[pc>>2] = r_type(7'b0000001, 5'd3, 5'd12, 3'b000, 5'd24, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h400, 5'd24, 3'b101, 5'd24, OP_IMM); pc += 4;       // SRAI 0 (no-op)
             // dx = xndc - sphere_x
-            rom[pc>>2] = r_type(7'b0100000, 5'd16, 5'd24, 3'b000, 5'd24, OP_INT); pc += 4;
+            rom[pc>>2] = r_type(7'b0100000, 5'd16, 5'd24, 3'b000, 5'd24, OP_REG); pc += 4;
 
-            // r2 = (xndc*xndc + yndc*yndc) >> 16 -> x25
-            rom[pc>>2] = r_type(7'b0000001, 5'd24, 5'd24, 3'b000, 5'd25, OP_INT); pc += 4; // x^2
-            rom[pc>>2] = r_type(7'b0000001, 5'd10, 5'd10, 3'b000, 5'd26, OP_INT); pc += 4; // y^2
-            rom[pc>>2] = r_type(7'b0000000, 5'd26, 5'd25, 3'b000, 5'd25, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h410, 5'd25, 3'b101, 5'd25, OP_INT_IMM); pc += 4; // >>16
+            // r2 = (dx*dx + yndc*yndc) >> 16 -> x25
+            rom[pc>>2] = r_type(7'b0000001, 5'd24, 5'd24, 3'b000, 5'd25, OP_REG); pc += 4; // x^2
+            rom[pc>>2] = r_type(7'b0000001, 5'd10, 5'd10, 3'b000, 5'd26, OP_REG); pc += 4; // y^2
+            rom[pc>>2] = r_type(7'b0000000, 5'd26, 5'd25, 3'b000, 5'd25, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h410, 5'd25, 3'b101, 5'd25, OP_IMM); pc += 4; // >>16
 
             // if r2 < r2_sphere -> sphere
             br_sphere_pc = pc;
@@ -500,28 +465,29 @@ module gfx_sw_rt_tb;
 
             // Sky: color = (0.2,0.3,0.6) -> 0xFF996633
             rom[pc>>2] = u_type(32'hFF_99_6000, 5'd31, OP_LUI); pc += 4;
-            rom[pc>>2] = i_type(12'h633, 5'd31, 3'b000, 5'd31, OP_INT_IMM); pc += 4; // ADDI low bits
+            rom[pc>>2] = i_type(12'h633, 5'd31, 3'b000, 5'd31, OP_IMM); pc += 4; // ADDI low bits
             bg_sky_jmp_pc = pc;
             rom[pc>>2] = b_type(0, 5'd0, 5'd0, 3'b000, OP_BRANCH); pc += 4; // jump to write (patched)
             rom[pc>>2] = nop(); pc += 4;
 
             // Ground checker: (xndc>>16 + frame) & 1
             bg_ground_pc = pc;
-            rom[pc>>2] = i_type(16, 5'd24, 3'b101, 5'd27, OP_INT_IMM); pc += 4; // srai
-            rom[pc>>2] = r_type(7'b0000000, 5'd6, 5'd27, 3'b000, 5'd27, OP_INT); pc += 4; // add frame
-            rom[pc>>2] = i_type(1, 5'd27, 3'b111, 5'd27, OP_INT_IMM); pc += 4; // andi 1
+            rom[pc>>2] = r_type(7'b0000000, 5'd16, 5'd24, 3'b000, 5'd24, OP_REG); pc += 4; // xndc = dx + sphere_x
+            rom[pc>>2] = i_type(12'h410, 5'd24, 3'b101, 5'd27, OP_IMM); pc += 4; // SRAI xndc>>16
+            rom[pc>>2] = r_type(7'b0000000, 5'd6, 5'd27, 3'b000, 5'd27, OP_REG); pc += 4; // add frame
+            rom[pc>>2] = i_type(1, 5'd27, 3'b111, 5'd27, OP_IMM); pc += 4; // andi 1
             // if checker==0 -> dark else light
-            rom[pc>>2] = b_type(12, 5'd27, 5'd0, 3'b001, OP_BRANCH); pc += 4; // BNE checker,0 -> light
+            rom[pc>>2] = b_type(24, 5'd27, 5'd0, 3'b001, OP_BRANCH); pc += 4; // BNE checker,0 -> light
             rom[pc>>2] = nop(); pc += 4;
             // dark
             rom[pc>>2] = u_type(32'hFF_20_2000, 5'd31, OP_LUI); pc += 4;
-            rom[pc>>2] = i_type(12'h020, 5'd31, 3'b000, 5'd31, OP_INT_IMM); pc += 4; // ADDI low bits
+            rom[pc>>2] = i_type(12'h020, 5'd31, 3'b000, 5'd31, OP_IMM); pc += 4; // ADDI low bits
             bg_dark_jmp_pc = pc;
             rom[pc>>2] = b_type(0, 5'd0, 5'd0, 3'b000, OP_BRANCH); pc += 4; // patched to write
             rom[pc>>2] = nop(); pc += 4;
             // light
             rom[pc>>2] = u_type(32'hFF_E0_E000, 5'd31, OP_LUI); pc += 4;
-            rom[pc>>2] = i_type(12'h0E0, 5'd31, 3'b000, 5'd31, OP_INT_IMM); pc += 4; // ADDI low bits
+            rom[pc>>2] = i_type(12'h0E0, 5'd31, 3'b000, 5'd31, OP_IMM); pc += 4; // ADDI low bits
             bg_light_jmp_pc = pc;
             rom[pc>>2] = b_type(0, 5'd0, 5'd0, 3'b000, OP_BRANCH); pc += 4; // patched to write
             rom[pc>>2] = nop(); pc += 4;
@@ -529,40 +495,40 @@ module gfx_sw_rt_tb;
             // ---- Sphere path ----
             sphere_path_pc = pc;
             // z2 = r2_sphere - r2 -> x28
-            rom[pc>>2] = r_type(7'b0100000, 5'd25, 5'd17, 3'b000, 5'd28, OP_INT); pc += 4;
+            rom[pc>>2] = r_type(7'b0100000, 5'd25, 5'd17, 3'b000, 5'd28, OP_REG); pc += 4;
             // idx = z2 >> 6 -> x29
-            rom[pc>>2] = i_type(6, 5'd28, 3'b101, 5'd29, OP_INT_IMM); pc += 4; // SRAI
+            rom[pc>>2] = i_type(6, 5'd28, 3'b101, 5'd29, OP_IMM); pc += 4; // SRLI (z2 non-negative)
             // idx <<= 2 (word offset)
-            rom[pc>>2] = i_type(2, 5'd29, 3'b001, 5'd29, OP_INT_IMM); pc += 4; // SLLI
-            rom[pc>>2] = r_type(7'b0000000, 5'd22, 5'd29, 3'b000, 5'd29, OP_INT); pc += 4; // base + idx
+            rom[pc>>2] = i_type(2, 5'd29, 3'b001, 5'd29, OP_IMM); pc += 4; // SLLI
+            rom[pc>>2] = r_type(7'b0000000, 5'd22, 5'd29, 3'b000, 5'd29, OP_REG); pc += 4; // base + idx
             rom[pc>>2] = i_type(0, 5'd29, 3'b010, 5'd30, OP_LOAD); pc += 4; // inv
             // z = (z2 * inv) >> 16 -> x29
-            rom[pc>>2] = r_type(7'b0000001, 5'd30, 5'd28, 3'b000, 5'd29, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h410, 5'd29, 3'b101, 5'd29, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd30, 5'd28, 3'b000, 5'd29, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h410, 5'd29, 3'b101, 5'd29, OP_IMM); pc += 4;
             // inv_radius (Q16.16) ~= 1.6667 for radius 0.6 -> x7 (local scratch)
             rom[pc>>2] = u_type(32'h0001_B000, 5'd7, OP_LUI); pc += 4;
-            rom[pc>>2] = i_type(-1365, 5'd7, 3'b000, 5'd7, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(-1365, 5'd7, 3'b000, 5'd7, OP_IMM); pc += 4;
             // Normalize nx, ny, nz by inv_radius into temps (x14, x15, x29)
-            rom[pc>>2] = r_type(7'b0000001, 5'd7, 5'd24, 3'b000, 5'd14, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h410, 5'd14, 3'b101, 5'd14, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd7, 5'd10, 3'b000, 5'd15, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h410, 5'd15, 3'b101, 5'd15, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd7, 5'd29, 3'b000, 5'd29, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h410, 5'd29, 3'b101, 5'd29, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd7, 5'd24, 3'b000, 5'd14, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h410, 5'd14, 3'b101, 5'd14, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd7, 5'd10, 3'b000, 5'd15, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h410, 5'd15, 3'b101, 5'd15, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd7, 5'd29, 3'b000, 5'd29, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h410, 5'd29, 3'b101, 5'd29, OP_IMM); pc += 4;
             // tmp = (2 * nz) -> x30
-            rom[pc>>2] = i_type(1, 5'd29, 3'b001, 5'd30, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(1, 5'd29, 3'b001, 5'd30, OP_IMM); pc += 4;
             // r.x = -(tmp * nx) >> 16 -> x26
-            rom[pc>>2] = r_type(7'b0000001, 5'd14, 5'd30, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h410, 5'd26, 3'b101, 5'd26, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0100000, 5'd26, 5'd0, 3'b000, 5'd26, OP_INT); pc += 4; // neg
+            rom[pc>>2] = r_type(7'b0000001, 5'd14, 5'd30, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h410, 5'd26, 3'b101, 5'd26, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0100000, 5'd26, 5'd0, 3'b000, 5'd26, OP_REG); pc += 4; // neg
             // r.y = -(tmp * ny) >> 16 -> x27
-            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd30, 3'b000, 5'd27, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h410, 5'd27, 3'b101, 5'd27, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0100000, 5'd27, 5'd0, 3'b000, 5'd27, OP_INT); pc += 4; // neg
+            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd30, 3'b000, 5'd27, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h410, 5'd27, 3'b101, 5'd27, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0100000, 5'd27, 5'd0, 3'b000, 5'd27, OP_REG); pc += 4; // neg
             // r.z = one - (tmp * nz >>16) -> x30
-            rom[pc>>2] = r_type(7'b0000001, 5'd29, 5'd30, 3'b000, 5'd30, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h410, 5'd30, 3'b101, 5'd30, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0100000, 5'd30, 5'd5, 3'b000, 5'd30, OP_INT); pc += 4; // one - tmp
+            rom[pc>>2] = r_type(7'b0000001, 5'd29, 5'd30, 3'b000, 5'd30, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h410, 5'd30, 3'b101, 5'd30, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0100000, 5'd30, 5'd5, 3'b000, 5'd30, OP_REG); pc += 4; // one - tmp
 
             // if r.y < 0 -> ground else sky
             br_sphere_ground_pc = pc;
@@ -571,27 +537,27 @@ module gfx_sw_rt_tb;
 
             // sphere sky
             rom[pc>>2] = u_type(32'hFF_99_6000, 5'd31, OP_LUI); pc += 4;
-            rom[pc>>2] = i_type(12'h633, 5'd31, 3'b000, 5'd31, OP_INT_IMM); pc += 4; // ADDI low bits
+            rom[pc>>2] = i_type(12'h633, 5'd31, 3'b000, 5'd31, OP_IMM); pc += 4; // ADDI low bits
             sphere_sky_jmp_pc = pc;
             rom[pc>>2] = b_type(0, 5'd0, 5'd0, 3'b000, OP_BRANCH); pc += 4; // patched to write
             rom[pc>>2] = nop(); pc += 4;
 
             // sphere ground checker: (r.x>>16 + r.z>>16 + frame) & 1
             sphere_ground_pc = pc;
-            rom[pc>>2] = i_type(16, 5'd26, 3'b101, 5'd28, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(16, 5'd30, 3'b101, 5'd29, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd29, 5'd28, 3'b000, 5'd28, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd6, 5'd28, 3'b000, 5'd28, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(1, 5'd28, 3'b111, 5'd28, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = b_type(12, 5'd28, 5'd0, 3'b001, OP_BRANCH); pc += 4;
+            rom[pc>>2] = i_type(12'h410, 5'd26, 3'b101, 5'd28, OP_IMM); pc += 4; // SRAI r.x>>16
+            rom[pc>>2] = i_type(12'h410, 5'd30, 3'b101, 5'd29, OP_IMM); pc += 4; // SRAI r.z>>16
+            rom[pc>>2] = r_type(7'b0000000, 5'd29, 5'd28, 3'b000, 5'd28, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd6, 5'd28, 3'b000, 5'd28, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(1, 5'd28, 3'b111, 5'd28, OP_IMM); pc += 4;
+            rom[pc>>2] = b_type(24, 5'd28, 5'd0, 3'b001, OP_BRANCH); pc += 4; // BNE checker,0 -> light
             rom[pc>>2] = nop(); pc += 4;
             rom[pc>>2] = u_type(32'hFF_20_2000, 5'd31, OP_LUI); pc += 4;
-            rom[pc>>2] = i_type(12'h020, 5'd31, 3'b000, 5'd31, OP_INT_IMM); pc += 4; // ADDI low bits
+            rom[pc>>2] = i_type(12'h020, 5'd31, 3'b000, 5'd31, OP_IMM); pc += 4; // ADDI low bits
             sphere_dark_jmp_pc = pc;
             rom[pc>>2] = b_type(0, 5'd0, 5'd0, 3'b000, OP_BRANCH); pc += 4; // patched to write
             rom[pc>>2] = nop(); pc += 4;
             rom[pc>>2] = u_type(32'hFF_E0_E000, 5'd31, OP_LUI); pc += 4;
-            rom[pc>>2] = i_type(12'h0E0, 5'd31, 3'b000, 5'd31, OP_INT_IMM); pc += 4; // ADDI low bits
+            rom[pc>>2] = i_type(12'h0E0, 5'd31, 3'b000, 5'd31, OP_IMM); pc += 4; // ADDI low bits
             sphere_light_jmp_pc = pc;
             rom[pc>>2] = b_type(0, 5'd0, 5'd0, 3'b000, OP_BRANCH); pc += 4; // patched to write
             rom[pc>>2] = nop(); pc += 4;
@@ -599,44 +565,45 @@ module gfx_sw_rt_tb;
             // ---- Mirror tint (vector) ----
             mirror_tint_pc = pc;
             // VUNPACK.FP32 v1, x31 (ARGB8888 -> normalized lanes)
-            rom[pc>>2] = r_type(7'b0011110, 5'd31, 5'd0, 3'b011, 5'd1, OP_VEC_ALU); pc += 4;
+            rom[pc>>2] = r_type(7'b0011110, 5'd31, 5'd0, 3'b011, 5'd1, OP_CUSTOM1); pc += 4;
             // VMUL.FP32 v1 = v1 * v2 (mirror tint)
-            rom[pc>>2] = r_type(7'b0011000, 5'd2, 5'd1, 3'b011, 5'd1, OP_VEC_ALU); pc += 4;
+            rom[pc>>2] = r_type(7'b0011000, 5'd2, 5'd1, 3'b011, 5'd1, OP_CUSTOM1); pc += 4;
             // VPACK.FP32 x31 = pack(v1) -> ARGB8888
-            rom[pc>>2] = r_type(7'b0010000, 5'd0, 5'd1, 3'b011, 5'd31, OP_VEC_ALU); pc += 4;
+            rom[pc>>2] = r_type(7'b0010000, 5'd0, 5'd1, 3'b011, 5'd31, OP_CUSTOM1); pc += 4;
 
             // Write pixel to FB
             write_pc = pc;
             // addr = row_ptr + (x<<2)
-            rom[pc>>2] = i_type(2, 5'd11, 3'b001, 5'd28, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd28, 5'd23, 3'b000, 5'd28, OP_INT); pc += 4;
+            rom[pc>>2] = i_type(2, 5'd11, 3'b001, 5'd28, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd28, 5'd23, 3'b000, 5'd28, OP_REG); pc += 4;
             rom[pc>>2] = s_type(0, 5'd28, 5'd31, 3'b010, OP_STORE); pc += 4;
 
             // x++
-            rom[pc>>2] = i_type(1, 5'd11, 3'b000, 5'd11, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(1, 5'd11, 3'b000, 5'd11, OP_IMM); pc += 4;
             blt_x_pc = pc;
             rom[pc>>2] = b_type(0, 5'd11, 5'd19, 3'b100, OP_BRANCH); pc += 4; // BLT x, W-1 (patched)
             rom[pc>>2] = nop(); pc += 4;
 
             // y++
-            rom[pc>>2] = i_type(1, 5'd8, 3'b000, 5'd8, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(1, 5'd8, 3'b000, 5'd8, OP_IMM); pc += 4;
             blt_y_pc = pc;
             rom[pc>>2] = b_type(0, 5'd8, 5'd20, 3'b100, OP_BRANCH); pc += 4; // BLT y, H-1 (patched)
             rom[pc>>2] = nop(); pc += 4;
 
             // Signal frame done
-            rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd0, 3'b000, 5'd0, OP_SYSTEM); pc += 4; // MEMBAR
-            rom[pc>>2] = s_type(DONE_OFF, 5'd1, 5'd6, 3'b010, OP_STORE); pc += 4;
+            rom[pc>>2] = i_type(12'h0FF, 5'd0, 3'b000, 5'd0, OP_FENCE); pc += 4; // FENCE
+            rom[pc>>2] = i_type(1, 5'd6, 3'b000, 5'd7, OP_IMM); pc += 4; // x7 = frame + 1
+            rom[pc>>2] = s_type(DONE_OFF, 5'd1, 5'd7, 3'b010, OP_STORE); pc += 4; // SW x7 -> DONE
 
             // frame++
-            rom[pc>>2] = i_type(1, 5'd6, 3'b000, 5'd6, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(1, 5'd6, 3'b000, 5'd6, OP_IMM); pc += 4;
             // if (frame < FRAMES) loop
             blt_frame_pc = pc;
             rom[pc>>2] = b_type(0, 5'd6, 5'd13, 3'b100, OP_BRANCH); pc += 4; // patched
             rom[pc>>2] = nop(); pc += 4;
 
             // Done: WFI loop
-            rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd0, 3'b111, 5'd0, OP_SYSTEM); pc += 4; // WFI
+            rom[pc>>2] = i_type(12'h105, 5'd0, 3'b000, 5'd0, OP_SYSTEM); pc += 4; // WFI
             rom[pc>>2] = b_type(-4, 5'd0, 5'd0, 3'b000, OP_BRANCH); pc += 4;
             rom[pc>>2] = nop(); pc += 4;
 
@@ -789,14 +756,21 @@ module gfx_sw_rt_tb;
 
                     dcache_write_line(dcache_tx_addr, dcache_tx_wdata, dcache_tx_wstrb);
 
-                    if (mem[mem_index(BASE_ADDR + DONE_OFF)] != 32'h0) begin
-                        if (frame_seen < FRAMES) begin
-                            dump_fb_ppm(frame_seen);
-                            if (frame_seen == (FRAMES - 1)) begin
-                                $display("TB: reached %0d frames, finishing.", FRAMES);
-                                $finish;
+                    // Only check DONE on writes to the cache line containing DONE_OFF
+                    if ((dcache_tx_addr <= (BASE_ADDR + DONE_OFF)) &&
+                        ((dcache_tx_addr + 32'd64) > (BASE_ADDR + DONE_OFF))) begin
+                        if (mem[mem_index(BASE_ADDR + DONE_OFF)] != 32'h0) begin
+                            $display("TB: DONE value=%08h, dumping frame %0d",
+                                     mem[mem_index(BASE_ADDR + DONE_OFF)], frame_seen);
+                            if (frame_seen < FRAMES) begin
+                                dump_fb_ppm(frame_seen);
+                                if (frame_seen == (FRAMES - 1)) begin
+                                    $display("TB: reached %0d frames, finishing.", FRAMES);
+                                    $finish;
+                                end
+                                frame_seen <= frame_seen + 1;
                             end
-                            frame_seen <= frame_seen + 1;
+                            mem[mem_index(BASE_ADDR + DONE_OFF)] = 32'h0;
                         end
                     end
                 end

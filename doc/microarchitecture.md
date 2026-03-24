@@ -1,3 +1,5 @@
+> **DEPRECATED:** This is an outdated copy. See `docs/microarchitecture.md` for the current version.
+
 # Compute Unit Microarchitecture (As-Built RTL)
 
 This document describes the RTL currently implemented under `ip/compute unit/`.

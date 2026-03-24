@@ -1,3 +1,5 @@
+> **DEPRECATED:** This is an outdated copy. See `docs/isa.md` for the current version.
+
 # Simple GPGPU ISA Concept
 
 ## Goals

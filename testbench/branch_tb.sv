@@ -292,7 +292,7 @@ module branch_tb(
     endfunction
 
     function automatic [31:0] nop();
-        nop = i_type(0, 5'd0, 3'b000, 5'd0, OP_INT_IMM);
+        nop = i_type(0, 5'd0, 3'b000, 5'd0, OP_IMM);
     endfunction
 
     // -------------------------
@@ -312,7 +312,7 @@ module branch_tb(
         pc = 0;
 
         // x1 = BASE_ADDR (ADDI x1, x0, -2048)
-        rom[pc >> 2] = i_type(-2048, 5'd0, 3'b000, 5'd1, OP_INT_IMM); pc += 4;
+        rom[pc >> 2] = i_type(-2048, 5'd0, 3'b000, 5'd1, OP_IMM); pc += 4;
 
         // -------------------------
         // JAL/JALR redirect + delay-slot flush
@@ -332,7 +332,7 @@ module branch_tb(
         // sub:
         sub_pc = pc;
         // x4 = 0x11
-        rom[pc >> 2] = i_type(32'h11, 5'd0, 3'b000, 5'd4, OP_INT_IMM); pc += 4;
+        rom[pc >> 2] = i_type(32'h11, 5'd0, 3'b000, 5'd4, OP_IMM); pc += 4;
         // Store link (x9) to BASE+0x100
         rom[pc >> 2] = s_type(32'h100, 5'd1, 5'd9, 3'b010, OP_STORE); pc += 4;
         // Store marker that sub executed to BASE+0x104 (x4 should still be 0x11)
@@ -348,7 +348,7 @@ module branch_tb(
 
         after_pc = pc;
         // Marker after return
-        rom[pc >> 2] = i_type(32'h22, 5'd0, 3'b000, 5'd5, OP_INT_IMM); pc += 4; // x5=0x22
+        rom[pc >> 2] = i_type(32'h22, 5'd0, 3'b000, 5'd5, OP_IMM); pc += 4; // x5=0x22
         rom[pc >> 2] = s_type(32'h10C, 5'd1, 5'd5, 3'b010, OP_STORE); pc += 4;
 
         // Patch call + post-return jump
@@ -359,9 +359,9 @@ module branch_tb(
         // Conditional branches taken/not taken + sentinels
         // -------------------------
         // x2=7, x3=7, x6=8
-        rom[pc >> 2] = i_type(7, 5'd0, 3'b000, 5'd2, OP_INT_IMM); pc += 4;
-        rom[pc >> 2] = i_type(7, 5'd0, 3'b000, 5'd3, OP_INT_IMM); pc += 4;
-        rom[pc >> 2] = i_type(8, 5'd0, 3'b000, 5'd6, OP_INT_IMM); pc += 4;
+        rom[pc >> 2] = i_type(7, 5'd0, 3'b000, 5'd2, OP_IMM); pc += 4;
+        rom[pc >> 2] = i_type(7, 5'd0, 3'b000, 5'd3, OP_IMM); pc += 4;
+        rom[pc >> 2] = i_type(8, 5'd0, 3'b000, 5'd6, OP_IMM); pc += 4;
 
         // BEQ x2,x3,+8 (taken)
         rom[pc >> 2] = b_type(8, 5'd2, 5'd3, 3'b000, OP_BRANCH); pc += 4;
@@ -387,12 +387,12 @@ module branch_tb(
             rom[pc >> 2] = nop(); pc += 4;
         end
         // inst0: x20=0xAA ; inst1: BEQ x0,x0,+8 (taken)
-        rom[pc >> 2] = i_type(32'hAA, 5'd0, 3'b000, 5'd20, OP_INT_IMM); pc += 4;
+        rom[pc >> 2] = i_type(32'hAA, 5'd0, 3'b000, 5'd20, OP_IMM); pc += 4;
         rom[pc >> 2] = b_type(8, 5'd0, 5'd0, 3'b000, OP_BRANCH); pc += 4;
         // fall-through sentinel (must NOT execute)
         rom[pc >> 2] = s_type(32'h220, 5'd1, 5'd20, 3'b010, OP_STORE); pc += 4;
         // target marker (must execute)
-        rom[pc >> 2] = i_type(32'hBB, 5'd0, 3'b000, 5'd21, OP_INT_IMM); pc += 4;
+        rom[pc >> 2] = i_type(32'hBB, 5'd0, 3'b000, 5'd21, OP_IMM); pc += 4;
         rom[pc >> 2] = s_type(32'h224, 5'd1, 5'd21, 3'b010, OP_STORE); pc += 4;
 
         // -------------------------
@@ -409,7 +409,7 @@ module branch_tb(
         // -------------------------
         // DONE
         // -------------------------
-        rom[pc >> 2] = i_type(1, 5'd0, 3'b000, 5'd10, OP_INT_IMM); pc += 4; // x10=1
+        rom[pc >> 2] = i_type(1, 5'd0, 3'b000, 5'd10, OP_IMM); pc += 4; // x10=1
         rom[pc >> 2] = s_type(DONE_OFF, 5'd1, 5'd10, 3'b010, OP_STORE); pc += 4;
         rom[pc >> 2] = i_type(0, 5'd0, 3'b000, 5'd0, OP_SYSTEM); pc += 4; // MEMBAR
         rom[pc >> 2] = j_type(0, 5'd0, OP_JAL);

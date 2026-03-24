@@ -150,14 +150,18 @@ loop_start:
     SW      s3, 8(s2)
     SW      s3, 12(s2)
 
-    VLD     v1, 0(s2)
+    # RVV: vsetvli x0, x0, e32,m1  (SEW=32, LMUL=1, VL=4)
+    # ADDI  t0, s2, 0       # address for VLE32
+    # vle32.v v1, (t0)
+    # vle32.v v2, (t0)
+    VLD     v1, 0(s2)       # legacy pseudo; actual encoding is ADDI+VLE32
     VLD     v2, 0(s2)
 
-    # Vector add (1 + 1 = 2 per lane)
+    # vadd.vv v3, v1, v2 (1 + 1 = 2 per lane)
     VADD    v3, v1, v2
 
-    # Store result vector and check lane0
-    VST     v3, 0(s2)
+    # vse32.v v3, (t0)
+    VST     v3, 0(s2)       # legacy pseudo; actual encoding is ADDI+VSE32
     MEMBAR  s0, s0, 0
     LW      s4, s2, 0
 

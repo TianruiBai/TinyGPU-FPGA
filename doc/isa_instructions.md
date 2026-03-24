@@ -1,3 +1,5 @@
+> **DEPRECATED:** This is an outdated copy. See `docs/isa_instructions.md` for the current ISA reference (RV32IMA_Zicsr + RVV v1.0 + Xgpu).
+
 # Instruction Set Architecture Reference
 
 This document provides a detailed reference for the Instruction Set Architecture (ISA) of the tinyGPU. It is organized by instruction class with encoding and usage details.

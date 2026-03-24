@@ -30,17 +30,17 @@ module branch_unit (
 
     logic is_jump;
     always_comb begin
-        // JAL/JALR are unconditional in this ISA.
-        is_jump = ctrl.is_branch && ((ctrl.funct3 == 3'b011) || (ctrl.funct3 == 3'b010));
+        // JAL (forced funct3=011) and JALR (separate opcode) are unconditional.
+        is_jump = (ctrl.is_branch && (ctrl.funct3 == 3'b011)) || ctrl.is_jalr;
 
         taken = 1'b0;
-        if (valid && ctrl.is_branch) begin
+        if (valid && (ctrl.is_branch || ctrl.is_jalr)) begin
             taken = is_jump ? 1'b1 : cond_taken;
         end
 
         target = 32'h0;
-        if (valid && ctrl.is_branch) begin
-            if (ctrl.funct3 == 3'b010) begin
+        if (valid && (ctrl.is_branch || ctrl.is_jalr)) begin
+            if (ctrl.is_jalr) begin
                 // JALR: (rs1 + imm12) & ~1
                 target = (rs1_val + ctrl.imm) & 32'hFFFF_FFFE;
             end else begin

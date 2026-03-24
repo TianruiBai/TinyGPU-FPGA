@@ -1,5 +1,7 @@
 # Simple GPGPU ISA Concept
 
+> **NOTE:** This document describes the original custom ISA concept. The compute unit has since been migrated to **RV32IMA_Zicsr + RVV v1.0 + Xgpu**. See `docs/isa_instructions.md` for the current ISA reference and `docs/riscv_isa_migration_plan.md` for migration details.
+
 ## Goals
 - SIMD-first ISA for four independent cores in a tile-based renderer on ESP32S3 + FPGA over OSPI.
 - Fixed register files: 32 scalar `s0–s31` (32-bit), 32 floating-point `f0–f31` (hold FP16 operands, optionally widened internally), 32 vector `v0–v31` (128-bit: 4xFP32 / 8xFP16 / packed int), optional 32 constant `c0–c31` (128-bit read-only uniforms). A cost-reduced implementation may halve these to 16, but the baseline assumes 32 to reduce OSPI spills.

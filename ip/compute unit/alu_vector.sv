@@ -5,7 +5,8 @@ module alu_vector #(
     input  logic            rst_n,
     input  logic            valid,
     input  logic [5:0]      funct6,
-    input  logic [2:0]      funct3,
+    input  logic [2:0]      funct3,     // sub-op selector (e.g. add/sll/xor for funct6=0; min/max; eq/lt/ltu)
+    input  logic [2:0]      type_sel,   // element type: TYPE_I32/I16/I8/FP32/FP16/FP8
     input  logic            vm_enable,
     input  logic [15:0]     vmask,
     input  logic [4:0]      rd_idx,
@@ -564,7 +565,7 @@ module alu_vector #(
     logic [15:0] cmp_mask;
     always_comb begin
         int w; int lanes;
-        w = elem_width(funct3);
+        w = elem_width(type_sel);
         lanes = lane_count(w);
         cmp_mask = 16'h0;
         for (i = 0; i < 16; i++) begin
@@ -608,20 +609,31 @@ module alu_vector #(
                         default: r_elem[i] = a_elem[i] + b_elem[i];
                     endcase
                 end
-                6'b000001: r_elem[i] = a_elem[i] - b_elem[i]; // VSUB
-                6'b000010: begin // VMIN/VMAX signed
+                6'b000001: begin // VSUB / VRSUB
+                    if (funct3 == 3'b001)
+                        r_elem[i] = b_elem[i] - a_elem[i]; // VRSUB
+                    else
+                        r_elem[i] = a_elem[i] - b_elem[i]; // VSUB
+                end
+                6'b000010: begin // VMIN/VMAX (signed: sub=010/011, unsigned: sub=000/001)
                     case (funct3)
-                        3'b010: r_elem[i] = (sa < sb) ? a_elem[i] : b_elem[i];
-                        3'b011: r_elem[i] = (sa > sb) ? a_elem[i] : b_elem[i];
+                        3'b000: r_elem[i] = (a_elem[i] < b_elem[i]) ? a_elem[i] : b_elem[i]; // unsigned min
+                        3'b001: r_elem[i] = (a_elem[i] > b_elem[i]) ? a_elem[i] : b_elem[i]; // unsigned max
+                        3'b010: r_elem[i] = (sa < sb) ? a_elem[i] : b_elem[i]; // signed min
+                        3'b011: r_elem[i] = (sa > sb) ? a_elem[i] : b_elem[i]; // signed max
                         default: r_elem[i] = a_elem[i];
                     endcase
                 end
                 6'b000011: begin // VCMP -> mask
                     case (funct3)
-                        3'b000: begin r_elem[i] = (a_elem[i] == b_elem[i]) ? {32{1'b1}} : 32'h0; cmp_mask[i] = (a_elem[i] == b_elem[i]); end
-                        3'b001: begin r_elem[i] = (sa < sb) ? {32{1'b1}} : 32'h0; cmp_mask[i] = (sa < sb); end
-                        3'b010: begin r_elem[i] = (a_elem[i] < b_elem[i]) ? {32{1'b1}} : 32'h0; cmp_mask[i] = (a_elem[i] < b_elem[i]); end
-                        default: begin r_elem[i] = 32'h0; cmp_mask[i] = 1'b0; end
+                        3'b000: begin r_elem[i] = (a_elem[i] == b_elem[i]) ? {32{1'b1}} : 32'h0; cmp_mask[i] = (a_elem[i] == b_elem[i]); end       // eq
+                        3'b001: begin r_elem[i] = (sa < sb) ? {32{1'b1}} : 32'h0; cmp_mask[i] = (sa < sb); end                                       // slt
+                        3'b010: begin r_elem[i] = (a_elem[i] < b_elem[i]) ? {32{1'b1}} : 32'h0; cmp_mask[i] = (a_elem[i] < b_elem[i]); end           // sltu
+                        3'b011: begin r_elem[i] = (a_elem[i] != b_elem[i]) ? {32{1'b1}} : 32'h0; cmp_mask[i] = (a_elem[i] != b_elem[i]); end         // ne
+                        3'b100: begin r_elem[i] = (a_elem[i] > b_elem[i]) ? {32{1'b1}} : 32'h0; cmp_mask[i] = (a_elem[i] > b_elem[i]); end           // gtu
+                        3'b101: begin r_elem[i] = (sa <= sb) ? {32{1'b1}} : 32'h0; cmp_mask[i] = (sa <= sb); end                                     // sle
+                        3'b110: begin r_elem[i] = (a_elem[i] <= b_elem[i]) ? {32{1'b1}} : 32'h0; cmp_mask[i] = (a_elem[i] <= b_elem[i]); end         // sleu
+                        3'b111: begin r_elem[i] = (sa > sb) ? {32{1'b1}} : 32'h0; cmp_mask[i] = (sa > sb); end                                       // sgt
                     endcase
                 end
                 6'b000100: begin // VDOT (int), accumulate later
@@ -651,7 +663,7 @@ module alu_vector #(
                     else if (i == 2) r_elem[i] = a_elem[0]*b_elem[1] - a_elem[1]*b_elem[0];
                     else r_elem[i] = 32'h0;
                 end
-                VEC_F6_VXOR: begin // VXOR: raw-bit XOR (funct3 still selects element width)
+                VEC_F6_VXOR: begin // VXOR: raw-bit XOR
                     r_elem[i] = a_elem[i] ^ b_elem[i];
                 end
                 VEC_F6_VAND: begin // VAND: raw-bit AND
@@ -661,14 +673,14 @@ module alu_vector #(
                     r_elem[i] = a_elem[i] | b_elem[i];
                 end
                 VEC_F6_VRCP: begin
-                    if (funct3 == TYPE_I32) begin
+                    if (type_sel == TYPE_FP32) begin
                         r_elem[i] = fp32_rcp_nr1(a_elem[i]);
                     end else begin
                         r_elem[i] = a_elem[i] + b_elem[i];
                     end
                 end
                 VEC_F6_VRSQRT: begin
-                    if (funct3 == TYPE_I32) begin
+                    if (type_sel == TYPE_FP32) begin
                         r_elem[i] = fp32_rsqrt_nr1(a_elem[i]);
                     end else begin
                         r_elem[i] = a_elem[i] + b_elem[i];
@@ -698,28 +710,54 @@ module alu_vector #(
         end
 
         // FP32/FP16/FP8 handling (override for math ops)
-        if ((funct3 == TYPE_FP32 || funct3 == TYPE_FP16 || funct3 == TYPE_FP8)
+        if ((type_sel == TYPE_FP32 || type_sel == TYPE_FP16 || type_sel == TYPE_FP8)
             && (funct6 != VEC_F6_VXOR) && (funct6 != VEC_F6_VAND) && (funct6 != VEC_F6_VOR)) begin
             for (i = 0; i < lanes; i++) begin
                 int lsb;
-                if (funct3 == TYPE_FP32) begin
+                if (type_sel == TYPE_FP32) begin
                     logic [31:0] a32, b32, r32;
                     lsb = i * 32;
                     a32 = src_a[lsb +: 32];
                     b32 = src_b[lsb +: 32];
                     case (funct6)
                         6'b000000: r32 = fp32_addsub(a32, b32, 1'b0);
-                        6'b000001: r32 = fp32_addsub(a32, b32, 1'b1);
-                        6'b000010: r32 = fp32_minmax(a32, b32, 1'b0);
-                        6'b000011: r32 = fp32_minmax(a32, b32, 1'b1);
-                        VEC_F6_VMUL: r32 = fp32_mul(a32, b32);
+                        6'b000001: begin // VSUB / VRSUB
+                            if (funct3 == 3'b001)
+                                r32 = fp32_addsub(b32, a32, 1'b1); // VRSUB: b-a
+                            else
+                                r32 = fp32_addsub(a32, b32, 1'b1); // VSUB: a-b
+                        end
+                        6'b000010: r32 = fp32_minmax(a32, b32, funct3[0]); // funct3[0]: 0=min, 1=max
+                        6'b000011: begin // FP CMP -> mask
+                            logic fp_eq_flag, fp_lt_flag;
+                            fp_eq_flag = !fp32_is_nan(a32) && !fp32_is_nan(b32)
+                                         && ((a32 == b32) || (a32[30:0] == 0 && b32[30:0] == 0));
+                            fp_lt_flag = !fp32_is_nan(a32) && !fp32_is_nan(b32) && fp32_minmax(a32, b32, 1'b0) == a32 && !fp_eq_flag;
+                            case (funct3)
+                                3'b000: begin cmp_mask[i] = fp_eq_flag; end                                     // feq
+                                3'b001: begin cmp_mask[i] = fp_lt_flag; end                                     // flt
+                                3'b010: begin cmp_mask[i] = fp_lt_flag; end                                     // fltu (same as flt for FP)
+                                3'b011: begin cmp_mask[i] = !fp_eq_flag; end                                    // fne
+                                3'b101: begin cmp_mask[i] = fp_lt_flag || fp_eq_flag; end                       // fle
+                                3'b110: begin cmp_mask[i] = fp_lt_flag || fp_eq_flag; end                       // fleu
+                                3'b100: begin cmp_mask[i] = !fp_lt_flag && !fp_eq_flag; end                     // fgt
+                                3'b111: begin cmp_mask[i] = !fp_lt_flag && !fp_eq_flag; end                     // fge
+                            endcase
+                            r32 = cmp_mask[i] ? {32{1'b1}} : 32'h0;
+                        end
+                        VEC_F6_VMUL: begin
+                            if (funct3 == 3'b001)
+                                r32 = fp32_mul(a32, fp32_rcp_nr1(b32)); // VFDIV via mul(a, rcp(b))
+                            else
+                                r32 = fp32_mul(a32, b32);
+                        end
                         VEC_F6_VRCP: r32 = fp32_rcp_nr1(a32);
                         VEC_F6_VRSQRT: r32 = fp32_rsqrt_nr1(a32);
                         default:   r32 = fp32_addsub(a32, b32, 1'b0);
                     endcase
                     if (vm_enable && !vmask[i]) r32 = a32;
                     r_elem[i] = r32;
-                end else if (funct3 == TYPE_FP16) begin
+                end else if (type_sel == TYPE_FP16) begin
                     logic [15:0] a16, b16, r16;
                     logic [31:0] a32, b32, r32;
                     lsb = i * 16;
@@ -727,13 +765,35 @@ module alu_vector #(
                     b16 = src_b[lsb +: 16];
                     case (funct6)
                         6'b000000: r16 = fp16_addsub(a16, b16, 1'b0);
-                        6'b000001: r16 = fp16_addsub(a16, b16, 1'b1);
-                        6'b000010: r16 = fp16_minmax(a16, b16, 1'b0);
-                        6'b000011: r16 = fp16_minmax(a16, b16, 1'b1);
+                        6'b000001: begin
+                            if (funct3 == 3'b001) r16 = fp16_addsub(b16, a16, 1'b1); // VRSUB
+                            else                  r16 = fp16_addsub(a16, b16, 1'b1);
+                        end
+                        6'b000010: r16 = fp16_minmax(a16, b16, funct3[0]); // 0=min, 1=max
+                        6'b000011: begin // FP16 CMP -> mask
+                            logic fp_eq16, fp_lt16;
+                            a32 = fp16_to_fp32(a16);
+                            b32 = fp16_to_fp32(b16);
+                            fp_eq16 = !fp32_is_nan(a32) && !fp32_is_nan(b32)
+                                      && ((a32 == b32) || (a32[30:0] == 0 && b32[30:0] == 0));
+                            fp_lt16 = !fp32_is_nan(a32) && !fp32_is_nan(b32) && fp32_minmax(a32, b32, 1'b0) == a32 && !fp_eq16;
+                            case (funct3)
+                                3'b000: cmp_mask[i] = fp_eq16;
+                                3'b001, 3'b010: cmp_mask[i] = fp_lt16;
+                                3'b011: cmp_mask[i] = !fp_eq16;
+                                3'b101, 3'b110: cmp_mask[i] = fp_lt16 || fp_eq16;
+                                3'b100, 3'b111: cmp_mask[i] = !fp_lt16 && !fp_eq16;
+                                default: cmp_mask[i] = 1'b0;
+                            endcase
+                            r16 = cmp_mask[i] ? 16'hFFFF : 16'h0;
+                        end
                         VEC_F6_VMUL: begin
                             a32 = fp16_to_fp32(a16);
                             b32 = fp16_to_fp32(b16);
-                            r16 = fp32_to_fp16(fp32_mul(a32, b32));
+                            if (funct3 == 3'b001)
+                                r16 = fp32_to_fp16(fp32_mul(a32, fp32_rcp_nr1(b32))); // VFDIV
+                            else
+                                r16 = fp32_to_fp16(fp32_mul(a32, b32));
                         end
                         VEC_F6_VRCP: begin
                             a32 = fp16_to_fp32(a16);
@@ -755,13 +815,35 @@ module alu_vector #(
                     b8 = src_b[lsb +: 8];
                     case (funct6)
                         6'b000000: r8 = fp8_addsub(a8, b8, 1'b0);
-                        6'b000001: r8 = fp8_addsub(a8, b8, 1'b1);
-                        6'b000010: r8 = fp8_minmax(a8, b8, 1'b0);
-                        6'b000011: r8 = fp8_minmax(a8, b8, 1'b1);
+                        6'b000001: begin
+                            if (funct3 == 3'b001) r8 = fp8_addsub(b8, a8, 1'b1); // VRSUB
+                            else                  r8 = fp8_addsub(a8, b8, 1'b1);
+                        end
+                        6'b000010: r8 = fp8_minmax(a8, b8, funct3[0]); // 0=min, 1=max
+                        6'b000011: begin // FP8 CMP -> mask
+                            logic fp_eq8, fp_lt8;
+                            a32 = fp8_to_fp32(a8);
+                            b32 = fp8_to_fp32(b8);
+                            fp_eq8 = !fp32_is_nan(a32) && !fp32_is_nan(b32)
+                                     && ((a32 == b32) || (a32[30:0] == 0 && b32[30:0] == 0));
+                            fp_lt8 = !fp32_is_nan(a32) && !fp32_is_nan(b32) && fp32_minmax(a32, b32, 1'b0) == a32 && !fp_eq8;
+                            case (funct3)
+                                3'b000: cmp_mask[i] = fp_eq8;
+                                3'b001, 3'b010: cmp_mask[i] = fp_lt8;
+                                3'b011: cmp_mask[i] = !fp_eq8;
+                                3'b101, 3'b110: cmp_mask[i] = fp_lt8 || fp_eq8;
+                                3'b100, 3'b111: cmp_mask[i] = !fp_lt8 && !fp_eq8;
+                                default: cmp_mask[i] = 1'b0;
+                            endcase
+                            r8 = cmp_mask[i] ? 8'hFF : 8'h0;
+                        end
                         VEC_F6_VMUL: begin
                             a32 = fp8_to_fp32(a8);
                             b32 = fp8_to_fp32(b8);
-                            r8 = fp32_to_fp8(fp32_mul(a32, b32));
+                            if (funct3 == 3'b001)
+                                r8 = fp32_to_fp8(fp32_mul(a32, fp32_rcp_nr1(b32))); // VFDIV
+                            else
+                                r8 = fp32_to_fp8(fp32_mul(a32, b32));
                         end
                         VEC_F6_VRCP: begin
                             a32 = fp8_to_fp32(a8);
@@ -780,22 +862,22 @@ module alu_vector #(
         end
 
         // VCROSS for FP types: compute in FP32 then convert back (lanes 0..2)
-        if (funct6 == 6'b000101 && (funct3 == TYPE_FP32 || funct3 == TYPE_FP16 || funct3 == TYPE_FP8)) begin
+        if (funct6 == 6'b000101 && (type_sel == TYPE_FP32 || type_sel == TYPE_FP16 || type_sel == TYPE_FP8)) begin
             logic [31:0] a0, a1, a2, b0, b1, b2;
             logic [31:0] r0, r1, r2;
             int lsb0, lsb1, lsb2;
             lsb0 = 0;
-            lsb1 = (funct3 == TYPE_FP32) ? 32 : (funct3 == TYPE_FP16 ? 16 : 8);
+            lsb1 = (type_sel == TYPE_FP32) ? 32 : (type_sel == TYPE_FP16 ? 16 : 8);
             lsb2 = lsb1 * 2;
 
-            if (funct3 == TYPE_FP32) begin
+            if (type_sel == TYPE_FP32) begin
                 a0 = src_a[lsb0 +: 32];
                 a1 = src_a[lsb1 +: 32];
                 a2 = src_a[lsb2 +: 32];
                 b0 = src_b[lsb0 +: 32];
                 b1 = src_b[lsb1 +: 32];
                 b2 = src_b[lsb2 +: 32];
-            end else if (funct3 == TYPE_FP16) begin
+            end else if (type_sel == TYPE_FP16) begin
                 a0 = fp16_to_fp32(src_a[lsb0 +: 16]);
                 a1 = fp16_to_fp32(src_a[lsb1 +: 16]);
                 a2 = fp16_to_fp32(src_a[lsb2 +: 16]);
@@ -816,11 +898,11 @@ module alu_vector #(
             r2 = fp32_addsub(fp32_mul(a0, b1), fp32_mul(a1, b0), 1'b1);
 
             for (i = 0; i < lanes; i++) r_elem[i] = 32'h0;
-            if (funct3 == TYPE_FP32) begin
+            if (type_sel == TYPE_FP32) begin
                 r_elem[0] = r0;
                 r_elem[1] = r1;
                 r_elem[2] = r2;
-            end else if (funct3 == TYPE_FP16) begin
+            end else if (type_sel == TYPE_FP16) begin
                 r_elem[0] = {16'h0, fp32_to_fp16(r0)};
                 r_elem[1] = {16'h0, fp32_to_fp16(r1)};
                 r_elem[2] = {16'h0, fp32_to_fp16(r2)};
@@ -832,14 +914,14 @@ module alu_vector #(
 
             // Predication: masked lanes pass through src_a
             if (vm_enable) begin
-                if (!vmask[0]) r_elem[0] = (funct3 == TYPE_FP32) ? src_a[lsb0 +: 32]
-                                   : (funct3 == TYPE_FP16) ? {16'h0, src_a[lsb0 +: 16]}
+                if (!vmask[0]) r_elem[0] = (type_sel == TYPE_FP32) ? src_a[lsb0 +: 32]
+                                   : (type_sel == TYPE_FP16) ? {16'h0, src_a[lsb0 +: 16]}
                                    : {24'h0, src_a[lsb0 +: 8]};
-                if (!vmask[1]) r_elem[1] = (funct3 == TYPE_FP32) ? src_a[lsb1 +: 32]
-                                   : (funct3 == TYPE_FP16) ? {16'h0, src_a[lsb1 +: 16]}
+                if (!vmask[1]) r_elem[1] = (type_sel == TYPE_FP32) ? src_a[lsb1 +: 32]
+                                   : (type_sel == TYPE_FP16) ? {16'h0, src_a[lsb1 +: 16]}
                                    : {24'h0, src_a[lsb1 +: 8]};
-                if (!vmask[2]) r_elem[2] = (funct3 == TYPE_FP32) ? src_a[lsb2 +: 32]
-                                   : (funct3 == TYPE_FP16) ? {16'h0, src_a[lsb2 +: 16]}
+                if (!vmask[2]) r_elem[2] = (type_sel == TYPE_FP32) ? src_a[lsb2 +: 32]
+                                   : (type_sel == TYPE_FP16) ? {16'h0, src_a[lsb2 +: 16]}
                                    : {24'h0, src_a[lsb2 +: 8]};
             end
         end
@@ -856,14 +938,14 @@ module alu_vector #(
             a8 = scalar_mask[31:24];
 
             for (i = 0; i < 16; i++) r_elem[i] = 32'h0;
-            if (funct3 == TYPE_FP32) begin
+            if (type_sel == TYPE_FP32) begin
                 logic [31:0] k;
                 k = 32'h3b80_8081; // 1/255
                 r_elem[0] = fp32_mul(fp32_from_u8(r8), k);
                 r_elem[1] = fp32_mul(fp32_from_u8(g8), k);
                 r_elem[2] = fp32_mul(fp32_from_u8(b8), k);
                 r_elem[3] = fp32_mul(fp32_from_u8(a8), k);
-            end else if (funct3 == TYPE_FP16) begin
+            end else if (type_sel == TYPE_FP16) begin
                 logic [31:0] k;
                 logic [31:0] rr, gg, bb, aa;
                 k = 32'h3b80_8081; // 1/255
@@ -875,7 +957,7 @@ module alu_vector #(
                 r_elem[1] = {16'h0, fp32_to_fp16(gg)};
                 r_elem[2] = {16'h0, fp32_to_fp16(bb)};
                 r_elem[3] = {16'h0, fp32_to_fp16(aa)};
-            end else if (funct3 == TYPE_FP8) begin
+            end else if (type_sel == TYPE_FP8) begin
                 logic [31:0] k;
                 logic [31:0] rr, gg, bb, aa;
                 k = 32'h3b80_8081; // 1/255
@@ -887,7 +969,7 @@ module alu_vector #(
                 r_elem[1] = {24'h0, fp32_to_fp8(gg)};
                 r_elem[2] = {24'h0, fp32_to_fp8(bb)};
                 r_elem[3] = {24'h0, fp32_to_fp8(aa)};
-            end else if (funct3 == TYPE_I32) begin
+            end else if (type_sel == TYPE_I32) begin
                 r_elem[0] = {24'h0, r8};
                 r_elem[1] = {24'h0, g8};
                 r_elem[2] = {24'h0, b8};
@@ -902,7 +984,7 @@ module alu_vector #(
         end
 
         // VRSQRT FP32: ensure negative finite inputs produce qNaN on active lanes.
-        if (funct6 == VEC_F6_VRSQRT && funct3 == TYPE_FP32) begin
+        if (funct6 == VEC_F6_VRSQRT && type_sel == TYPE_FP32) begin
             for (i = 0; i < 4; i++) begin
                 logic [31:0] a32;
                 a32 = src_a[(i*32) +: 32];
@@ -923,14 +1005,14 @@ module alu_vector #(
             // Default 0
             r8 = 8'h0; g8 = 8'h0; b8 = 8'h0; a8 = 8'h0;
 
-            if (funct3 == TYPE_FP32) begin
+            if (type_sel == TYPE_FP32) begin
                 logic [31:0] k255;
                 k255 = 32'h437f_0000; // 255.0
                 r_i = fp32_to_u32_trunc(fp32_mul(src_a[31:0],   k255));
                 g_i = fp32_to_u32_trunc(fp32_mul(src_a[63:32],  k255));
                 b_i = fp32_to_u32_trunc(fp32_mul(src_a[95:64],  k255));
                 a_i = fp32_to_u32_trunc(fp32_mul(src_a[127:96], k255));
-            end else if (funct3 == TYPE_FP16) begin
+            end else if (type_sel == TYPE_FP16) begin
                 logic [31:0] k255;
                 logic [31:0] rr, gg, bb, aa;
                 k255 = 32'h437f_0000; // 255.0
@@ -942,7 +1024,7 @@ module alu_vector #(
                 g_i = fp32_to_u32_trunc(fp32_mul(gg, k255));
                 b_i = fp32_to_u32_trunc(fp32_mul(bb, k255));
                 a_i = fp32_to_u32_trunc(fp32_mul(aa, k255));
-            end else if (funct3 == TYPE_FP8) begin
+            end else if (type_sel == TYPE_FP8) begin
                 logic [31:0] k255;
                 logic [31:0] rr, gg, bb, aa;
                 k255 = 32'h437f_0000; // 255.0
@@ -954,7 +1036,7 @@ module alu_vector #(
                 g_i = fp32_to_u32_trunc(fp32_mul(gg, k255));
                 b_i = fp32_to_u32_trunc(fp32_mul(bb, k255));
                 a_i = fp32_to_u32_trunc(fp32_mul(aa, k255));
-            end else if (funct3 == TYPE_I32) begin
+            end else if (type_sel == TYPE_I32) begin
                 r_i = a_elem[0];
                 g_i = a_elem[1];
                 b_i = a_elem[2];
@@ -969,7 +1051,7 @@ module alu_vector #(
                 r_elem[0] = {a8, b8, g8, r8};
             end
 
-            if (funct3 != TYPE_I16) begin
+            if (type_sel != TYPE_I16) begin
                 if (r_i[31]) r8 = 8'h00; else if (r_i > 32'd255) r8 = 8'hFF; else r8 = r_i[7:0];
                 if (g_i[31]) g8 = 8'h00; else if (g_i > 32'd255) g8 = 8'hFF; else g8 = g_i[7:0];
                 if (b_i[31]) b8 = 8'h00; else if (b_i > 32'd255) b8 = 8'hFF; else b8 = b_i[7:0];
@@ -981,15 +1063,15 @@ module alu_vector #(
 
         // VDOT reduction: FP and INT paths
         if (funct6 == 6'b000100) begin
-            if (funct3 == TYPE_FP32 || funct3 == TYPE_FP16 || funct3 == TYPE_FP8) begin
+            if (type_sel == TYPE_FP32 || type_sel == TYPE_FP16 || type_sel == TYPE_FP8) begin
                 logic [31:0] acc;
                 acc = 32'h0000_0000;
                 for (i = 0; i < lanes; i++) begin
                     if (vm_enable && !vmask[i]) begin
                         // masked-off lane contributes 0
-                    end else if (funct3 == TYPE_FP32) begin
+                    end else if (type_sel == TYPE_FP32) begin
                         acc = fp32_addsub(acc, fp32_mul(src_a[(i*32)+:32], src_b[(i*32)+:32]), 1'b0);
-                    end else if (funct3 == TYPE_FP16) begin
+                    end else if (type_sel == TYPE_FP16) begin
                         logic [31:0] a32, b32;
                         a32 = fp16_to_fp32(src_a[(i*16)+:16]);
                         b32 = fp16_to_fp32(src_b[(i*16)+:16]);
@@ -1002,9 +1084,9 @@ module alu_vector #(
                     end
                 end
                 for (i = 0; i < lanes; i++) r_elem[i] = 32'h0;
-                if (funct3 == TYPE_FP32) begin
+                if (type_sel == TYPE_FP32) begin
                     r_elem[0] = acc;
-                end else if (funct3 == TYPE_FP16) begin
+                end else if (type_sel == TYPE_FP16) begin
                     r_elem[0] = {16'h0, fp32_to_fp16(acc)};
                 end else begin
                     r_elem[0] = {24'h0, fp32_to_fp8(acc)};
@@ -1031,7 +1113,7 @@ module alu_vector #(
         end else begin
             int w; int lanes; int lsb;
             logic op_uses_rs2;
-            w = elem_width(funct3);
+            w = elem_width(type_sel);
             lanes = lane_count(w);
             wb_valid <= valid;
             wb_rd    <= rd_idx;
@@ -1049,21 +1131,21 @@ module alu_vector #(
                 endcase
 
                 // Error detection for FP lanes
-                if (funct3 == TYPE_FP16) begin
+                if (type_sel == TYPE_FP16) begin
                     logic [15:0] lane_a, lane_b, lane_r;
                     lane_a = src_a[lsb +: 16];
                     lane_b = src_b[lsb +: 16];
                     lane_r = r_elem[j][15:0];
                     wb_err_invalid  <= wb_err_invalid  || ((lane_a[14:10] == 5'h1F && lane_a[9:0] != 0) || (op_uses_rs2 && (lane_b[14:10] == 5'h1F && lane_b[9:0] != 0)));
                     wb_err_overflow <= wb_err_overflow || ((lane_r[14:10] == 5'h1F) && (lane_r[9:0] == 0));
-                end else if (funct3 == TYPE_FP8) begin
+                end else if (type_sel == TYPE_FP8) begin
                     logic [7:0] lane_a8, lane_b8, lane_r8;
                     lane_a8 = src_a[lsb +: 8];
                     lane_b8 = src_b[lsb +: 8];
                     lane_r8 = r_elem[j][7:0];
                     wb_err_invalid  <= wb_err_invalid  || ((lane_a8[6:3] == 4'hF && lane_a8[2:0] != 0) || (op_uses_rs2 && (lane_b8[6:3] == 4'hF && lane_b8[2:0] != 0)));
                     wb_err_overflow <= wb_err_overflow || ((lane_r8[6:3] == 4'hF) && (lane_r8[2:0] == 0));
-                end else if (funct3 == TYPE_FP32) begin
+                end else if (type_sel == TYPE_FP32) begin
                     logic [31:0] lane_a32, lane_b32, lane_r32;
                     lane_a32 = src_a[lsb +: 32];
                     lane_b32 = src_b[lsb +: 32];

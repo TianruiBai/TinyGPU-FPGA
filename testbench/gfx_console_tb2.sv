@@ -34,7 +34,7 @@ module gfx_console_tb;
 
     // Console color modes (overridable via +color=N)
     // 0 = mono
-    // 1 = truecolor foreground (prints "█")
+    // 1 = truecolor foreground (prints "閳?)
     // 2 = truecolor background (prints spaces) [default]
     // 3 = ANSI 256-color background (prints spaces)
 
@@ -163,7 +163,7 @@ module gfx_console_tb;
     endfunction
 
     function automatic [31:0] nop();
-        nop = i_type(12'd0, 5'd0, 3'b000, 5'd0, OP_INT_IMM);
+        nop = i_type(12'd0, 5'd0, 3'b000, 5'd0, OP_IMM);
     endfunction
 
     // ---------------------------------------------------------------------
@@ -355,7 +355,7 @@ module gfx_console_tb;
                             end
 
                             if (console_color_mode == 1) begin
-                                $write("█");
+                                $write("閳?);
                             end else begin
                                 for (p = 0; p < console_pixel_w; p++) $write(" ");
                             end
@@ -870,7 +870,7 @@ module gfx_console_tb;
     //
     // This program is *data-driven*: the cube + teapot live in the per-frame
     // triangle table at FRAME_TABLE_OFF (each triangle = 96B = 3 vertices * 32B).
-    // The teapot “lighting” is baked as a flat per-triangle color in vertex0.
+    // The teapot 閳ユ笓ighting閳?is baked as a flat per-triangle color in vertex0.
     // The ROM simply:
     //   1) Select main FB state + clear
     //   2) Loop over all triangles (cube + teapot) and issue RSETUP/RDRAW
@@ -878,7 +878,7 @@ module gfx_console_tb;
     //   4) Poll SYNC_FB[0] until it matches the expected sentinel color
     //   5) Store DONE=frame_idx (for the TB to dump the framebuffer)
     //
-    // Custom macro-ops (encoded via OP_ATOM_SC with funct3):
+    // Custom macro-ops (encoded via OP_CUSTOM0 with funct3):
     //   funct3=0: RSTATE  rs1 = ptr to 32B state descriptor
     //   funct3=1: RSETUP  rs1 = ptr to 96B triangle vertex block
     //   funct3=2: RDRAW   (no operands)
@@ -984,59 +984,59 @@ module gfx_console_tb;
 
 
         // x2 = &RSTATE(main), x20 = &RSTATE(sync), x4 = &RRECT, x5 = &FRAME_TABLE, x18 = SENT_TABLE base
-        rom[pc>>2] = i_type(RSTATE_OFF,  5'd1, 3'b000, 5'd2,  OP_INT_IMM); pc += 4;
-        rom[pc>>2] = i_type(RSTATE2_OFF, 5'd1, 3'b000, 5'd20, OP_INT_IMM); pc += 4;
-        rom[pc>>2] = i_type(RRECT_OFF,  5'd1, 3'b000, 5'd4, OP_INT_IMM); pc += 4;
-        rom[pc>>2] = i_type(FRAME_TABLE_OFF, 5'd1, 3'b000, 5'd5, OP_INT_IMM); pc += 4;
+        rom[pc>>2] = i_type(RSTATE_OFF,  5'd1, 3'b000, 5'd2,  OP_IMM); pc += 4;
+        rom[pc>>2] = i_type(RSTATE2_OFF, 5'd1, 3'b000, 5'd20, OP_IMM); pc += 4;
+        rom[pc>>2] = i_type(RRECT_OFF,  5'd1, 3'b000, 5'd4, OP_IMM); pc += 4;
+        rom[pc>>2] = i_type(FRAME_TABLE_OFF, 5'd1, 3'b000, 5'd5, OP_IMM); pc += 4;
         rom[pc>>2] = u_type(BASE_ADDR + SENT_TABLE_OFF,  5'd18, OP_LUI); pc += 4;
 
         // Set initial RSTATE(main)
-        rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd2, 3'b000, 5'd0, OP_ATOM_SC); pc += 4; // RSTATE(x2)
+        rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd2, 3'b000, 5'd0, OP_CUSTOM0); pc += 4; // RSTATE(x2)
 
         // x6 = frame index
-        rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd6, OP_INT_IMM); pc += 4;
+        rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd6, OP_IMM); pc += 4;
         // x9 = FRAMES
-        rom[pc>>2] = i_type(FRAMES, 5'd0, 3'b000, 5'd9, OP_INT_IMM); pc += 4;
+        rom[pc>>2] = i_type(FRAMES, 5'd0, 3'b000, 5'd9, OP_IMM); pc += 4;
         // x12 = TRIS
-        rom[pc>>2] = i_type(TRIS, 5'd0, 3'b000, 5'd12, OP_INT_IMM); pc += 4;
+        rom[pc>>2] = i_type(TRIS, 5'd0, 3'b000, 5'd12, OP_IMM); pc += 4;
 
         loop_frame_pc = pc;
 
         // Ensure we're rendering to the main framebuffer for this frame.
-        rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd2, 3'b000, 5'd0, OP_ATOM_SC); pc += 4; // RSTATE(x2)
+        rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd2, 3'b000, 5'd0, OP_CUSTOM0); pc += 4; // RSTATE(x2)
 
         // Clear framebuffer
-        rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd4, 3'b011, 5'd0, OP_ATOM_SC); pc += 4; // RRECT(x4)
+        rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd4, 3'b011, 5'd0, OP_CUSTOM0); pc += 4; // RRECT(x4)
 
         // Compute frame_ptr in x7 = x5 + frame_idx * FRAME_STRIDE_BYTES
         // FRAME_STRIDE_BYTES = TRIS*96.
         // For current params: TRIS=72 => 6912 = 4096 + 2048 + 512 + 256
-        rom[pc>>2] = i_type(12, 5'd6, 3'b001, 5'd7,  OP_INT_IMM); pc += 4; // SLLI x7,x6,12
-        rom[pc>>2] = i_type(11, 5'd6, 3'b001, 5'd11, OP_INT_IMM); pc += 4; // SLLI x11,x6,11
-        rom[pc>>2] = r_type(7'b0000000, 5'd11, 5'd7,  3'b000, 5'd7, OP_INT); pc += 4; // ADD x7,x7,x11
-        rom[pc>>2] = i_type(9,  5'd6, 3'b001, 5'd11, OP_INT_IMM); pc += 4; // SLLI x11,x6,9
-        rom[pc>>2] = r_type(7'b0000000, 5'd11, 5'd7,  3'b000, 5'd7, OP_INT); pc += 4; // ADD x7,x7,x11
-        rom[pc>>2] = i_type(8,  5'd6, 3'b001, 5'd11, OP_INT_IMM); pc += 4; // SLLI x11,x6,8
-        rom[pc>>2] = r_type(7'b0000000, 5'd11, 5'd7,  3'b000, 5'd7, OP_INT); pc += 4; // ADD x7,x7,x11
-        rom[pc>>2] = r_type(7'b0000000, 5'd7,  5'd5,  3'b000, 5'd7, OP_INT); pc += 4; // ADD x7,x5,x7
+        rom[pc>>2] = i_type(12, 5'd6, 3'b001, 5'd7,  OP_IMM); pc += 4; // SLLI x7,x6,12
+        rom[pc>>2] = i_type(11, 5'd6, 3'b001, 5'd11, OP_IMM); pc += 4; // SLLI x11,x6,11
+        rom[pc>>2] = r_type(7'b0000000, 5'd11, 5'd7,  3'b000, 5'd7, OP_REG); pc += 4; // ADD x7,x7,x11
+        rom[pc>>2] = i_type(9,  5'd6, 3'b001, 5'd11, OP_IMM); pc += 4; // SLLI x11,x6,9
+        rom[pc>>2] = r_type(7'b0000000, 5'd11, 5'd7,  3'b000, 5'd7, OP_REG); pc += 4; // ADD x7,x7,x11
+        rom[pc>>2] = i_type(8,  5'd6, 3'b001, 5'd11, OP_IMM); pc += 4; // SLLI x11,x6,8
+        rom[pc>>2] = r_type(7'b0000000, 5'd11, 5'd7,  3'b000, 5'd7, OP_REG); pc += 4; // ADD x7,x7,x11
+        rom[pc>>2] = r_type(7'b0000000, 5'd7,  5'd5,  3'b000, 5'd7, OP_REG); pc += 4; // ADD x7,x5,x7
 
         // tri_idx in x8 = 0
-        rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd8, OP_INT_IMM); pc += 4;
+        rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd8, OP_IMM); pc += 4;
         loop_tri_pc = pc;
 
         // tri_ptr in x3 = frame_ptr + tri_idx * TRI_STRIDE_BYTES
         // TRI_STRIDE_BYTES = 96 = 64 + 32
-        rom[pc>>2] = i_type(6, 5'd8, 3'b001, 5'd10, OP_INT_IMM); pc += 4; // SLLI x10,x8,6
-        rom[pc>>2] = i_type(5, 5'd8, 3'b001, 5'd11, OP_INT_IMM); pc += 4; // SLLI x11,x8,5
-        rom[pc>>2] = r_type(7'b0000000, 5'd11, 5'd10, 3'b000, 5'd10, OP_INT); pc += 4; // ADD x10,x10,x11
-        rom[pc>>2] = r_type(7'b0000000, 5'd10, 5'd7,  3'b000, 5'd3,  OP_INT); pc += 4; // ADD x3,x7,x10
+        rom[pc>>2] = i_type(6, 5'd8, 3'b001, 5'd10, OP_IMM); pc += 4; // SLLI x10,x8,6
+        rom[pc>>2] = i_type(5, 5'd8, 3'b001, 5'd11, OP_IMM); pc += 4; // SLLI x11,x8,5
+        rom[pc>>2] = r_type(7'b0000000, 5'd11, 5'd10, 3'b000, 5'd10, OP_REG); pc += 4; // ADD x10,x10,x11
+        rom[pc>>2] = r_type(7'b0000000, 5'd10, 5'd7,  3'b000, 5'd3,  OP_REG); pc += 4; // ADD x3,x7,x10
 
         // Kick graphics for this triangle: RSETUP(tri_ptr), RDRAW()
-        rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd3, 3'b001, 5'd0, OP_ATOM_SC); pc += 4;
-        rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd0, 3'b010, 5'd0, OP_ATOM_SC); pc += 4;
+        rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd3, 3'b001, 5'd0, OP_CUSTOM0); pc += 4;
+        rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd0, 3'b010, 5'd0, OP_CUSTOM0); pc += 4;
 
         // tri_idx++
-        rom[pc>>2] = i_type(1, 5'd8, 3'b000, 5'd8, OP_INT_IMM); pc += 4;
+        rom[pc>>2] = i_type(1, 5'd8, 3'b000, 5'd8, OP_IMM); pc += 4;
         // if (tri_idx < TRIS) goto loop_tri
         blt_tri_pc = pc;
         // Branch target base is PC (see branch_unit: target = pc + imm).
@@ -1047,16 +1047,16 @@ module gfx_console_tb;
         // Switch to sync buffer, then draw per-frame sentinel rectangle.
         // This avoids being overwritten by any late-draining main-FB clear stores.
         // x19 = sent_base + (frame_idx << 5)
-        rom[pc>>2] = i_type(5, 5'd6, 3'b001, 5'd19, OP_INT_IMM); pc += 4; // SLLI x19,x6,5
-        rom[pc>>2] = r_type(7'b0000000, 5'd19, 5'd18, 3'b000, 5'd19, OP_INT); pc += 4; // ADD x19,x18,x19
+        rom[pc>>2] = i_type(5, 5'd6, 3'b001, 5'd19, OP_IMM); pc += 4; // SLLI x19,x6,5
+        rom[pc>>2] = r_type(7'b0000000, 5'd19, 5'd18, 3'b000, 5'd19, OP_REG); pc += 4; // ADD x19,x18,x19
 
         // x21 = expected color = 0xFF00_0000 | (frame+1)
-        rom[pc>>2] = i_type(1, 5'd6, 3'b000, 5'd21, OP_INT_IMM); pc += 4; // ADDI x21,x6,1
+        rom[pc>>2] = i_type(1, 5'd6, 3'b000, 5'd21, OP_IMM); pc += 4; // ADDI x21,x6,1
         rom[pc>>2] = u_type(32'hFF00_0000, 5'd22, OP_LUI); pc += 4;       // LUI x22,0xFF000
-        rom[pc>>2] = r_type(7'b0000000, 5'd22, 5'd21, 3'b110, 5'd21, OP_INT); pc += 4; // OR x21,x21,x22
+        rom[pc>>2] = r_type(7'b0000000, 5'd22, 5'd21, 3'b110, 5'd21, OP_REG); pc += 4; // OR x21,x21,x22
 
-        rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd20, 3'b000, 5'd0, OP_ATOM_SC); pc += 4; // RSTATE(x20)
-        rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd19, 3'b011, 5'd0, OP_ATOM_SC); pc += 4; // RRECT(x19)
+        rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd20, 3'b000, 5'd0, OP_CUSTOM0); pc += 4; // RSTATE(x20)
+        rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd19, 3'b011, 5'd0, OP_CUSTOM0); pc += 4; // RRECT(x19)
 
         // Busy-wait until SYNC_FB[0] matches expected (GPU completed sentinel draw).
         // Keep the loop simple to ensure forward progress on this core/ISA.
@@ -1088,7 +1088,7 @@ module gfx_console_tb;
         rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd0, 3'b000, 5'd0, OP_SYSTEM); pc += 4; // MEMBAR
 
         // x6++
-        rom[pc>>2] = i_type(1, 5'd6, 3'b000, 5'd6, OP_INT_IMM); pc += 4;
+        rom[pc>>2] = i_type(1, 5'd6, 3'b000, 5'd6, OP_IMM); pc += 4;
 
         // if (x6 < x9) goto loop_frame
         blt_frame_pc = pc;

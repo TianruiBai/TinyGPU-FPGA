@@ -92,7 +92,7 @@ module dhrystone_tb(
         int unsigned idx;
         idx = addr >> 2;
         if (idx < ROM_WORDS) rom_word_at = rom[idx];
-        else rom_word_at = 32'h0000_0017; // tinyGPU NOP (ADDI x0,x0,0 under OP_INT_IMM)
+        else rom_word_at = 32'h0000_0017; // tinyGPU NOP (ADDI x0,x0,0 under OP_IMM)
     endfunction
 
     // inst_addr is 8B aligned; read low/high words.
@@ -1153,7 +1153,7 @@ module dhrystone_tb(
         void'($value$plusargs("rom=%s", rom_file));
         void'($value$plusargs("mem_init=%s", mem_file));
 
-        // Default ROM fill must be a tinyGPU NOP; 0x00000013 decodes as OP_TEX in tinyGPU.
+        // Default ROM fill must be a tinyGPU NOP; 0x00000013 decodes as OP_CUSTOM0 in tinyGPU.
         for (int i = 0; i < ROM_WORDS; i++) rom[i] = 32'h0000_0017;
         for (int i = 0; i < MEM_WORDS; i++) mem[i] = 32'h0;
 

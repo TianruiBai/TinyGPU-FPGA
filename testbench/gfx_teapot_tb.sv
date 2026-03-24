@@ -60,19 +60,66 @@ module gfx_teapot_tb;
     // ---------------------------------------------------------------------
     // DUT interfaces
     // ---------------------------------------------------------------------
+    // I-cache miss interface
+    logic        inst_miss_req_valid;
+    logic [31:0] inst_miss_req_addr;
+    logic        inst_miss_req_ready;
+    logic        inst_miss_resp_valid;
+    logic [63:0] inst_miss_resp_data;
+
     logic [63:0] inst_rdata;
     logic [31:0] inst_addr;
 
+    // Legacy data interface (unused, kept for tie-off)
     logic        data_req_valid;
     logic        data_req_is_load;
     logic [31:0] data_req_addr;
     logic [31:0] data_req_wdata;
     logic [4:0]  data_req_rd;
     logic        data_req_ready;
-
     logic        data_resp_valid;
     logic [4:0]  data_resp_rd;
     logic [31:0] data_resp_data;
+
+    // D-cache memory side
+    logic        dcache_mem_req_valid;
+    logic        dcache_mem_req_rw;
+    logic [31:0] dcache_mem_req_addr;
+    logic [7:0]  dcache_mem_req_size;
+    logic [3:0]  dcache_mem_req_qos;
+    logic [7:0]  dcache_mem_req_id;
+    logic [511:0] dcache_mem_req_wdata;
+    logic [7:0]  dcache_mem_req_wstrb;
+    logic        dcache_mem_req_ready;
+    logic        dcache_mem_resp_valid;
+    logic [63:0] dcache_mem_resp_data;
+    logic [7:0]  dcache_mem_resp_id;
+
+    // Framebuffer AXI (unused)
+    logic        fb_aw_valid;
+    logic [31:0] fb_aw_addr;
+    logic [7:0]  fb_aw_len;
+    logic [2:0]  fb_aw_size;
+    logic [1:0]  fb_aw_burst;
+    logic        fb_aw_ready;
+    logic [31:0] fb_w_data;
+    logic [3:0]  fb_w_strb;
+    logic        fb_w_last;
+    logic        fb_w_valid;
+    logic        fb_w_ready;
+    logic        fb_b_valid;
+    logic        fb_b_ready;
+
+    // Mailbox (tied off)
+    import mailbox_pkg::*;
+    mailbox_pkg::mailbox_flit_t mailbox_tx_data;
+    mailbox_pkg::mailbox_flit_t mailbox_rx_data;
+    logic mailbox_tx_valid;
+    logic mailbox_tx_ready;
+    logic [mailbox_pkg::NODE_ID_WIDTH-1:0] mailbox_tx_dest_id;
+    logic mailbox_rx_valid;
+    logic mailbox_rx_ready;
+    logic [mailbox_pkg::NODE_ID_WIDTH-1:0] mailbox_rx_dest_id;
 
     logic err_fp_overflow;
     logic err_fp_invalid;
@@ -86,8 +133,11 @@ module gfx_teapot_tb;
     compute_unit_top dut (
         .clk(clk),
         .rst_n(rst_n),
-        .inst_rdata(inst_rdata),
-        .inst_addr(inst_addr),
+        .inst_miss_req_valid(inst_miss_req_valid),
+        .inst_miss_req_addr(inst_miss_req_addr),
+        .inst_miss_req_ready(inst_miss_req_ready),
+        .inst_miss_resp_valid(inst_miss_resp_valid),
+        .inst_miss_resp_data(inst_miss_resp_data),
         .data_req_valid(data_req_valid),
         .data_req_is_load(data_req_is_load),
         .data_req_addr(data_req_addr),
@@ -103,7 +153,40 @@ module gfx_teapot_tb;
         .data_req_ready(data_req_ready),
         .data_resp_valid(data_resp_valid),
         .data_resp_rd(data_resp_rd),
-        .data_resp_data(data_resp_data)
+        .data_resp_data(data_resp_data),
+        .dcache_mem_req_valid(dcache_mem_req_valid),
+        .dcache_mem_req_rw(dcache_mem_req_rw),
+        .dcache_mem_req_addr(dcache_mem_req_addr),
+        .dcache_mem_req_size(dcache_mem_req_size),
+        .dcache_mem_req_qos(dcache_mem_req_qos),
+        .dcache_mem_req_id(dcache_mem_req_id),
+        .dcache_mem_req_wdata(dcache_mem_req_wdata),
+        .dcache_mem_req_wstrb(dcache_mem_req_wstrb),
+        .dcache_mem_req_ready(dcache_mem_req_ready),
+        .dcache_mem_resp_valid(dcache_mem_resp_valid),
+        .dcache_mem_resp_data(dcache_mem_resp_data),
+        .dcache_mem_resp_id(dcache_mem_resp_id),
+        .fb_aw_valid(fb_aw_valid),
+        .fb_aw_addr(fb_aw_addr),
+        .fb_aw_len(fb_aw_len),
+        .fb_aw_size(fb_aw_size),
+        .fb_aw_burst(fb_aw_burst),
+        .fb_aw_ready(fb_aw_ready),
+        .fb_w_data(fb_w_data),
+        .fb_w_strb(fb_w_strb),
+        .fb_w_last(fb_w_last),
+        .fb_w_valid(fb_w_valid),
+        .fb_w_ready(fb_w_ready),
+        .fb_b_valid(fb_b_valid),
+        .fb_b_ready(fb_b_ready),
+        .mailbox_tx_valid(mailbox_tx_valid),
+        .mailbox_tx_ready(mailbox_tx_ready),
+        .mailbox_tx_data(mailbox_tx_data),
+        .mailbox_tx_dest_id(mailbox_tx_dest_id),
+        .mailbox_rx_valid(mailbox_rx_valid),
+        .mailbox_rx_ready(mailbox_rx_ready),
+        .mailbox_rx_data(mailbox_rx_data),
+        .mailbox_rx_dest_id(mailbox_rx_dest_id)
     );
 
     // ---------------------------------------------------------------------
@@ -138,7 +221,7 @@ module gfx_teapot_tb;
     endfunction
 
     function automatic [31:0] nop();
-        nop = i_type(12'd0, 5'd0, 3'b000, 5'd0, OP_INT_IMM);
+        nop = i_type(12'd0, 5'd0, 3'b000, 5'd0, OP_IMM);
     endfunction
 
     // ---------------------------------------------------------------------
@@ -146,27 +229,70 @@ module gfx_teapot_tb;
     // ---------------------------------------------------------------------
     localparam int ROM_WORDS = 8192;
     logic [31:0] rom [0:ROM_WORDS-1];
-    assign inst_rdata = {rom[{inst_addr[13:3], 1'b1}], rom[{inst_addr[13:3], 1'b0}]};
+
+    // I-cache miss handler (1-cycle latency)
+    assign inst_miss_req_ready = 1'b1;
+    always_ff @(posedge clk) begin
+        if (!rst_n) begin
+            inst_miss_resp_valid <= 1'b0;
+            inst_miss_resp_data  <= 64'h0;
+            inst_addr            <= 32'h0;
+            inst_rdata           <= 64'h0;
+        end else begin
+            inst_miss_resp_valid <= 1'b0;
+            if (inst_miss_req_valid && inst_miss_req_ready) begin
+                automatic logic [12:0] pair_idx;
+                automatic logic [13:0] idx0, idx1;
+                pair_idx = inst_miss_req_addr[15:3];
+                idx0 = {pair_idx, 1'b0};
+                idx1 = {pair_idx, 1'b1};
+                inst_addr  <= inst_miss_req_addr;
+                inst_rdata <= {rom[idx1], rom[idx0]};
+                inst_miss_resp_data  <= {rom[idx1], rom[idx0]};
+                inst_miss_resp_valid <= 1'b1;
+            end
+        end
+    end
 
     // ---------------------------------------------------------------------
-    // Global memory model
+    // Global memory model (backing store for D-cache)
     // ---------------------------------------------------------------------
     localparam int MEM_WORDS = 262144; // 1MB backing store
+    localparam int DCACHE_BEATS = 8;
     logic [31:0] mem [0:MEM_WORDS-1];
 
     function automatic int mem_index(input logic [31:0] addr);
         mem_index = (addr - BASE_ADDR) >> 2;
     endfunction
 
-    // Simple response FIFO
-    localparam int RESP_DEPTH = 256;
-    logic        resp_valid   [0:RESP_DEPTH-1];
-    logic [4:0]  resp_rd_q    [0:RESP_DEPTH-1];
-    logic [31:0] resp_data_q  [0:RESP_DEPTH-1];
-    logic [$clog2(RESP_DEPTH)-1:0] resp_wp;
-    logic [$clog2(RESP_DEPTH)-1:0] resp_rp;
+    function automatic logic [63:0] dcache_read_beat(input logic [31:0] base, input logic [2:0] beat);
+        automatic int idx = ((base & ~32'h3F) - BASE_ADDR) >> 2;
+        dcache_read_beat = {mem[idx + beat*2 + 1], mem[idx + beat*2]};
+    endfunction
 
-    assign data_req_ready = 1'b1;
+    task automatic dcache_write_line(input logic [31:0] base, input logic [511:0] wdata, input logic [7:0] wstrb);
+        automatic int idx = ((base & ~32'h3F) - BASE_ADDR) >> 2;
+        for (int b = 0; b < 8; b++) begin
+            if (wstrb[b]) begin
+                mem[idx + b*2]     = wdata[b*64 +: 32];
+                mem[idx + b*2 + 1] = wdata[b*64 + 32 +: 32];
+            end
+        end
+    endtask
+
+    // Tie off unused interfaces
+    assign data_req_ready  = 1'b1;
+    assign data_resp_valid = 1'b0;
+    assign data_resp_rd    = 5'd0;
+    assign data_resp_data  = 32'h0;
+    assign fb_aw_ready     = 1'b1;
+    assign fb_w_ready      = 1'b1;
+    assign fb_b_valid      = 1'b0;
+    assign mailbox_tx_ready   = 1'b1;
+    assign mailbox_rx_valid   = 1'b0;
+    assign mailbox_rx_data    = '0;
+    assign mailbox_rx_dest_id = '0;
+    assign dcache_mem_req_ready = 1'b1;
     
     // Task to Dump Framebuffer to PPM
     task automatic dump_fb_ppm(input int frame_idx);
@@ -199,34 +325,43 @@ module gfx_teapot_tb;
     
     int frame_seen = 0;
 
-    always @(posedge clk) begin
-        if (!rst_n) begin
-            data_resp_valid <= 1'b0;
-            resp_wp <= '0;
-            resp_rp <= '0;
-            frame_seen <= 0;
-            for (int i = 0; i < RESP_DEPTH; i++) begin
-                resp_valid[i] <= 1'b0;
-                resp_rd_q[i] <= '0;
-                resp_data_q[i] <= '0;
-            end
-        end else begin
-            data_resp_valid <= 1'b0;
-            if (data_req_valid) begin
-                if (data_req_is_load) begin
-                    int idx;
-                    idx = mem_index(data_req_addr);
-                    resp_valid[resp_wp] <= 1'b1;
-                    resp_rd_q[resp_wp] <= data_req_rd;
-                    resp_data_q[resp_wp] <= mem[idx];
-                    resp_wp <= resp_wp + 1'b1;
-                end else begin
-                    int idx;
-                    idx = mem_index(data_req_addr);
-                    mem[idx] <= data_req_wdata;
+    // D-cache memory responder
+    logic        dcache_tx_active;
+    logic        dcache_tx_rw;
+    logic [31:0] dcache_tx_addr;
+    logic [7:0]  dcache_tx_id_q;
+    logic [2:0]  dcache_tx_beat;
 
-                    if (data_req_addr == (BASE_ADDR + DONE_OFF)) begin
-                         $display("Frame %0d DONE signaled at time %t", frame_seen, $time);
+    always_ff @(posedge clk) begin
+        if (!rst_n) begin
+            dcache_tx_active      <= 1'b0;
+            dcache_tx_rw          <= 1'b0;
+            dcache_tx_addr        <= 32'h0;
+            dcache_tx_id_q        <= 8'h0;
+            dcache_tx_beat        <= 3'd0;
+            dcache_mem_resp_valid <= 1'b0;
+            dcache_mem_resp_data  <= 64'h0;
+            dcache_mem_resp_id    <= 8'h0;
+            frame_seen            <= 0;
+        end else begin
+            dcache_mem_resp_valid <= 1'b0;
+
+            if (dcache_mem_req_valid && dcache_mem_req_ready) begin
+                dcache_tx_active <= !dcache_mem_req_rw;
+                dcache_tx_rw     <= dcache_mem_req_rw;
+                dcache_tx_addr   <= dcache_mem_req_addr;
+                dcache_tx_id_q   <= dcache_mem_req_id;
+                dcache_tx_beat   <= 3'd0;
+
+                if (dcache_mem_req_rw) begin
+                    dcache_write_line(dcache_mem_req_addr, dcache_mem_req_wdata, dcache_mem_req_wstrb);
+                    dcache_mem_resp_valid <= 1'b1;
+                    dcache_mem_resp_id    <= dcache_mem_req_id;
+                    dcache_mem_resp_data  <= 64'h0;
+
+                    // Check for DONE signal
+                    if ((dcache_mem_req_addr & ~32'h3F) == ((BASE_ADDR + DONE_OFF) & ~32'h3F)) begin
+                        $display("Frame %0d DONE signaled at time %t", frame_seen, $time);
                         if (frame_seen < FRAMES) begin
                             dump_fb_ppm(frame_seen);
                             frame_seen <= frame_seen + 1;
@@ -235,14 +370,16 @@ module gfx_teapot_tb;
                         end
                     end
                 end
-            end
+            end else if (dcache_tx_active) begin
+                dcache_mem_resp_valid <= 1'b1;
+                dcache_mem_resp_id    <= dcache_tx_id_q;
+                dcache_mem_resp_data  <= dcache_read_beat(dcache_tx_addr, dcache_tx_beat);
 
-            if (resp_valid[resp_rp]) begin
-                data_resp_valid <= 1'b1;
-                data_resp_rd <= resp_rd_q[resp_rp];
-                data_resp_data <= resp_data_q[resp_rp];
-                resp_valid[resp_rp] <= 1'b0;
-                resp_rp <= resp_rp + 1'b1;
+                if (dcache_tx_beat == DCACHE_BEATS-1) begin
+                    dcache_tx_active <= 1'b0;
+                end else begin
+                    dcache_tx_beat <= dcache_tx_beat + 1'b1;
+                end
             end
         end
     end
@@ -422,9 +559,9 @@ module gfx_teapot_tb;
             // x1 = BASE_ADDR
             rom[pc>>2] = u_type(BASE_ADDR, 5'd1, OP_LUI); pc += 4;
             // x2 = RSTATE ptr
-            rom[pc>>2] = i_type(RSTATE_OFF, 5'd1, 3'b000, 5'd2, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(RSTATE_OFF, 5'd1, 3'b000, 5'd2, OP_IMM); pc += 4;
             // x3 = RRECT ptr
-            rom[pc>>2] = i_type(RRECT_OFF, 5'd1, 3'b000, 5'd3, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(RRECT_OFF, 5'd1, 3'b000, 5'd3, OP_IMM); pc += 4;
             // x4 = TRI_BUF base
             rom[pc>>2] = u_type(BASE_ADDR + TRI_BUF_OFF, 5'd4, OP_LUI); pc += 4;
             // x5 = trig LUT base
@@ -442,22 +579,22 @@ module gfx_teapot_tb;
             rom[pc>>2] = i_type(8, 5'd12, 3'b010, 5'd11, OP_LOAD); pc += 4;
 
             // Constants: cx=W/2, cy=60, scale=1
-            rom[pc>>2] = i_type((W/2), 5'd0, 3'b000, 5'd20, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(60,    5'd0, 3'b000, 5'd21, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(1,     5'd0, 3'b000, 5'd22, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type((W/2), 5'd0, 3'b000, 5'd20, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(60,    5'd0, 3'b000, 5'd21, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(1,     5'd0, 3'b000, 5'd22, OP_IMM); pc += 4;
 
             // Pitch angle (fixed ~45 deg)
-            rom[pc>>2] = i_type(32, 5'd0, 3'b000, 5'd23, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(3, 5'd23, 3'b001, 5'd23, OP_INT_IMM); pc += 4; // idx<<3
-            rom[pc>>2] = r_type(7'b0000000, 5'd5, 5'd23, 3'b000, 5'd23, OP_INT); pc += 4; // base+offset
+            rom[pc>>2] = i_type(32, 5'd0, 3'b000, 5'd23, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(3, 5'd23, 3'b001, 5'd23, OP_IMM); pc += 4; // idx<<3
+            rom[pc>>2] = r_type(7'b0000000, 5'd5, 5'd23, 3'b000, 5'd23, OP_REG); pc += 4; // base+offset
             rom[pc>>2] = i_type(0, 5'd23, 3'b010, 5'd24, OP_LOAD); pc += 4; // sin45
             rom[pc>>2] = i_type(4, 5'd23, 3'b010, 5'd25, OP_LOAD); pc += 4; // cos45
 
             // Issue RSTATE
-            rom[pc>>2] = i_type(0, 5'd2, 3'b000, 5'd0, OP_ATOM_SC); pc += 4; // RSTATE (rs1=x2)
+            rom[pc>>2] = i_type(0, 5'd2, 3'b000, 5'd0, OP_CUSTOM0); pc += 4; // RSTATE (rs1=x2)
 
             // frame = 0
-            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd13, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd13, OP_IMM); pc += 4;
 
             // -------------------------
             // Frame Loop
@@ -465,44 +602,44 @@ module gfx_teapot_tb;
             loop_frame_pc = pc;
 
             // Update Animation Angle (frame & 0xFF)
-            rom[pc>>2] = i_type(255, 5'd13, 3'b111, 5'd14, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(3, 5'd14, 3'b001, 5'd14, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd5, 5'd14, 3'b000, 5'd14, OP_INT); pc += 4;
+            rom[pc>>2] = i_type(255, 5'd13, 3'b111, 5'd14, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(3, 5'd14, 3'b001, 5'd14, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd5, 5'd14, 3'b000, 5'd14, OP_REG); pc += 4;
             rom[pc>>2] = i_type(0, 5'd14, 3'b010, 5'd15, OP_LOAD); pc += 4; // sin(yaw)
             rom[pc>>2] = i_type(4, 5'd14, 3'b010, 5'd16, OP_LOAD); pc += 4; // cos(yaw)
 
             // Clear Screen (Sky)
             rom[pc>>2] = u_type(32'hFF_90_70_40, 5'd26, OP_LUI); pc += 4; // Color
             rom[pc>>2] = s_type(16, 5'd3, 5'd26, 3'b010, OP_STORE); pc += 4; // Write to RRECT desc
-            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd26, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd26, OP_IMM); pc += 4;
             rom[pc>>2] = s_type(0, 5'd3, 5'd26, 3'b010, OP_STORE); pc += 4; // x0=0
             rom[pc>>2] = s_type(4, 5'd3, 5'd26, 3'b010, OP_STORE); pc += 4; // y0=0
-            rom[pc>>2] = i_type(W, 5'd0, 3'b000, 5'd26, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(W, 5'd0, 3'b000, 5'd26, OP_IMM); pc += 4;
             rom[pc>>2] = s_type(8, 5'd3, 5'd26, 3'b010, OP_STORE); pc += 4; // x1=W
-            rom[pc>>2] = i_type(H, 5'd0, 3'b000, 5'd26, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(H, 5'd0, 3'b000, 5'd26, OP_IMM); pc += 4;
             rom[pc>>2] = s_type(12, 5'd3, 5'd26, 3'b010, OP_STORE); pc += 4; // y1=H
-            rom[pc>>2] = i_type(0, 5'd3, 3'b011, 5'd0, OP_ATOM_SC); pc += 4; // RRECT
+            rom[pc>>2] = i_type(0, 5'd3, 3'b011, 5'd0, OP_CUSTOM0); pc += 4; // RRECT
 
             // Draw Checkerboard
-            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd27, OP_INT_IMM); pc += 4; // ty
+            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd27, OP_IMM); pc += 4; // ty
             loop_ty_pc = pc;
-            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd28, OP_INT_IMM); pc += 4; // tx
+            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd28, OP_IMM); pc += 4; // tx
             loop_tx_pc = pc;
 
             // Setup RRECT for tile
-            rom[pc>>2] = i_type(4, 5'd28, 3'b001, 5'd29, OP_INT_IMM); pc += 4; // tx<<4
+            rom[pc>>2] = i_type(4, 5'd28, 3'b001, 5'd29, OP_IMM); pc += 4; // tx<<4
             rom[pc>>2] = s_type(0, 5'd3, 5'd29, 3'b010, OP_STORE); pc += 4; // x0
-            rom[pc>>2] = i_type(4, 5'd27, 3'b001, 5'd30, OP_INT_IMM); pc += 4; // ty<<4
-            rom[pc>>2] = i_type(64, 5'd30, 3'b000, 5'd30, OP_INT_IMM); pc += 4; // +64
+            rom[pc>>2] = i_type(4, 5'd27, 3'b001, 5'd30, OP_IMM); pc += 4; // ty<<4
+            rom[pc>>2] = i_type(64, 5'd30, 3'b000, 5'd30, OP_IMM); pc += 4; // +64
             rom[pc>>2] = s_type(4, 5'd3, 5'd30, 3'b010, OP_STORE); pc += 4; // y0
-            rom[pc>>2] = i_type(16, 5'd29, 3'b000, 5'd31, OP_INT_IMM); pc += 4; 
+            rom[pc>>2] = i_type(16, 5'd29, 3'b000, 5'd31, OP_IMM); pc += 4; 
             rom[pc>>2] = s_type(8, 5'd3, 5'd31, 3'b010, OP_STORE); pc += 4; // x1
-            rom[pc>>2] = i_type(16, 5'd30, 3'b000, 5'd31, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(16, 5'd30, 3'b000, 5'd31, OP_IMM); pc += 4;
             rom[pc>>2] = s_type(12, 5'd3, 5'd31, 3'b010, OP_STORE); pc += 4; // y1
             
             // Tile Color selection
-            rom[pc>>2] = r_type(7'b0000000, 5'd27, 5'd28, 3'b000, 5'd31, OP_INT); pc += 4; // tx+ty
-            rom[pc>>2] = i_type(1, 5'd31, 3'b111, 5'd31, OP_INT_IMM); pc += 4; // &1
+            rom[pc>>2] = r_type(7'b0000000, 5'd27, 5'd28, 3'b000, 5'd31, OP_REG); pc += 4; // tx+ty
+            rom[pc>>2] = i_type(1, 5'd31, 3'b111, 5'd31, OP_IMM); pc += 4; // &1
             rom[pc>>2] = b_type(8, 5'd31, 5'd0, 3'b001, OP_BRANCH); pc += 4; // BNE (skip dark)
             rom[pc>>2] = nop(); pc += 4;
             rom[pc>>2] = u_type(32'hFF_30_30_30, 5'd31, OP_LUI); pc += 4; // Dark
@@ -510,17 +647,17 @@ module gfx_teapot_tb;
             rom[pc>>2] = nop(); pc += 4;
             rom[pc>>2] = u_type(32'hFF_E0_E0_E0, 5'd31, OP_LUI); pc += 4; // Light
             rom[pc>>2] = s_type(16, 5'd3, 5'd31, 3'b010, OP_STORE); pc += 4;
-            rom[pc>>2] = i_type(0, 5'd3, 3'b011, 5'd0, OP_ATOM_SC); pc += 4; // RRECT
+            rom[pc>>2] = i_type(0, 5'd3, 3'b011, 5'd0, OP_CUSTOM0); pc += 4; // RRECT
 
             // Loop Controls (Checkerboard)
-            rom[pc>>2] = i_type(1, 5'd28, 3'b000, 5'd28, OP_INT_IMM); pc += 4; // tx++
-            rom[pc>>2] = i_type(8, 5'd0, 3'b000, 5'd26, OP_INT_IMM); pc += 4; // limit
+            rom[pc>>2] = i_type(1, 5'd28, 3'b000, 5'd28, OP_IMM); pc += 4; // tx++
+            rom[pc>>2] = i_type(8, 5'd0, 3'b000, 5'd26, OP_IMM); pc += 4; // limit
             blt_tx_pc = pc;
             rom[pc>>2] = b_type(loop_tx_pc - pc, 5'd28, 5'd26, 3'b100, OP_BRANCH); pc += 4;
             rom[pc>>2] = nop(); pc += 4;
 
-            rom[pc>>2] = i_type(1, 5'd27, 3'b000, 5'd27, OP_INT_IMM); pc += 4; // ty++
-            rom[pc>>2] = i_type(4, 5'd0, 3'b000, 5'd26, OP_INT_IMM); pc += 4; // limit
+            rom[pc>>2] = i_type(1, 5'd27, 3'b000, 5'd27, OP_IMM); pc += 4; // ty++
+            rom[pc>>2] = i_type(4, 5'd0, 3'b000, 5'd26, OP_IMM); pc += 4; // limit
             blt_ty_pc = pc;
             rom[pc>>2] = b_type(loop_ty_pc - pc, 5'd27, 5'd26, 3'b100, OP_BRANCH); pc += 4;
             rom[pc>>2] = nop(); pc += 4;
@@ -528,144 +665,144 @@ module gfx_teapot_tb;
             // -------------------------
             // Teapot Render Loop
             // -------------------------
-            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd17, OP_INT_IMM); pc += 4; // tri_idx = 0
+            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd17, OP_IMM); pc += 4; // tri_idx = 0
             loop_tri_pc = pc;
 
             // --- Load Normals & Rotate ---
-            rom[pc>>2] = i_type(3, 5'd17, 3'b001, 5'd26, OP_INT_IMM); pc += 4; // *8
-            rom[pc>>2] = i_type(2, 5'd17, 3'b001, 5'd27, OP_INT_IMM); pc += 4; // *4 -> *12
-            rom[pc>>2] = r_type(7'b0000000, 5'd27, 5'd26, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd8, 5'd26, 3'b000, 5'd26, OP_INT); pc += 4; // Addr
+            rom[pc>>2] = i_type(3, 5'd17, 3'b001, 5'd26, OP_IMM); pc += 4; // *8
+            rom[pc>>2] = i_type(2, 5'd17, 3'b001, 5'd27, OP_IMM); pc += 4; // *4 -> *12
+            rom[pc>>2] = r_type(7'b0000000, 5'd27, 5'd26, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd8, 5'd26, 3'b000, 5'd26, OP_REG); pc += 4; // Addr
             rom[pc>>2] = i_type(0, 5'd26, 3'b010, 5'd26, OP_LOAD); pc += 4; // nx
             rom[pc>>2] = i_type(4, 5'd26, 3'b010, 5'd27, OP_LOAD); pc += 4; // ny
             rom[pc>>2] = i_type(8, 5'd26, 3'b010, 5'd28, OP_LOAD); pc += 4; // nz
 
             // Rotate Yaw: nxr=(nx*c + nz*s)>>15, nzr=(nz*c - nx*s)>>15
-            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd26, 3'b000, 5'd29, OP_INT); pc += 4; // nx*c
-            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd28, 3'b000, 5'd30, OP_INT); pc += 4; // nz*s
-            rom[pc>>2] = r_type(7'b0000000, 5'd30, 5'd29, 3'b000, 5'd29, OP_INT); pc += 4; // +
-            rom[pc>>2] = i_type(12'h40F, 5'd29, 3'b101, 5'd29, OP_INT_IMM); pc += 4; // >>15 (nxr)
+            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd26, 3'b000, 5'd29, OP_REG); pc += 4; // nx*c
+            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd28, 3'b000, 5'd30, OP_REG); pc += 4; // nz*s
+            rom[pc>>2] = r_type(7'b0000000, 5'd30, 5'd29, 3'b000, 5'd29, OP_REG); pc += 4; // +
+            rom[pc>>2] = i_type(12'h40F, 5'd29, 3'b101, 5'd29, OP_IMM); pc += 4; // >>15 (nxr)
             
-            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd28, 3'b000, 5'd30, OP_INT); pc += 4; // nz*c
-            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd26, 3'b000, 5'd31, OP_INT); pc += 4; // nx*s
-            rom[pc>>2] = r_type(7'b0100000, 5'd31, 5'd30, 3'b000, 5'd30, OP_INT); pc += 4; // -
-            rom[pc>>2] = i_type(12'h40F, 5'd30, 3'b101, 5'd30, OP_INT_IMM); pc += 4; // >>15 (nzr)
+            rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd28, 3'b000, 5'd30, OP_REG); pc += 4; // nz*c
+            rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd26, 3'b000, 5'd31, OP_REG); pc += 4; // nx*s
+            rom[pc>>2] = r_type(7'b0100000, 5'd31, 5'd30, 3'b000, 5'd30, OP_REG); pc += 4; // -
+            rom[pc>>2] = i_type(12'h40F, 5'd30, 3'b101, 5'd30, OP_IMM); pc += 4; // >>15 (nzr)
 
             // Pitch Normals: ny2=(ny*c45 - nzr*s45)>>15, nz2=(ny*s45 + nzr*c45)>>15
-            rom[pc>>2] = r_type(7'b0000001, 5'd25, 5'd27, 3'b000, 5'd31, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd24, 5'd30, 3'b000, 5'd28, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0100000, 5'd28, 5'd31, 3'b000, 5'd27, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h40F, 5'd27, 3'b101, 5'd27, OP_INT_IMM); pc += 4; // ny2
+            rom[pc>>2] = r_type(7'b0000001, 5'd25, 5'd27, 3'b000, 5'd31, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd24, 5'd30, 3'b000, 5'd28, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0100000, 5'd28, 5'd31, 3'b000, 5'd27, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h40F, 5'd27, 3'b101, 5'd27, OP_IMM); pc += 4; // ny2
 
-            rom[pc>>2] = r_type(7'b0000001, 5'd24, 5'd27, 3'b000, 5'd31, OP_INT); pc += 4; 
-            rom[pc>>2] = r_type(7'b0000001, 5'd25, 5'd30, 3'b000, 5'd28, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd28, 5'd31, 3'b000, 5'd30, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h40F, 5'd30, 3'b101, 5'd30, OP_INT_IMM); pc += 4; // nz2
+            rom[pc>>2] = r_type(7'b0000001, 5'd24, 5'd27, 3'b000, 5'd31, OP_REG); pc += 4; 
+            rom[pc>>2] = r_type(7'b0000001, 5'd25, 5'd30, 3'b000, 5'd28, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd28, 5'd31, 3'b000, 5'd30, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h40F, 5'd30, 3'b101, 5'd30, OP_IMM); pc += 4; // nz2
             
             // Lighting Dot Product: (nxr*lx + ny2*ly + nz2*lz) >> 15
-            rom[pc>>2] = r_type(7'b0000001, 5'd9, 5'd29, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd10, 5'd27, 3'b000, 5'd28, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd28, 5'd26, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000001, 5'd11, 5'd30, 3'b000, 5'd28, OP_INT); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd28, 5'd26, 3'b000, 5'd26, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(12'h40F, 5'd26, 3'b101, 5'd26, OP_INT_IMM); pc += 4; // dot
+            rom[pc>>2] = r_type(7'b0000001, 5'd9, 5'd29, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd10, 5'd27, 3'b000, 5'd28, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd28, 5'd26, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd11, 5'd30, 3'b000, 5'd28, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd28, 5'd26, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h40F, 5'd26, 3'b101, 5'd26, OP_IMM); pc += 4; // dot
 
             // Clamp Color & Pack ARGB
-            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd27, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000010, 5'd27, 5'd26, 3'b000, 5'd0, OP_INT); pc += 4; // CMP dot, 0
+            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd27, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000010, 5'd27, 5'd26, 3'b000, 5'd0, OP_REG); pc += 4; // CMP dot, 0
             rom[pc>>2] = b_type(8, 5'd0, 5'd0, 3'b101, OP_BRANCH); pc += 4; // BGE 0
             rom[pc>>2] = nop(); pc += 4;
-            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd26, OP_INT_IMM); pc += 4; // dot=0
-            rom[pc>>2] = i_type(255, 5'd0, 3'b000, 5'd27, OP_INT_IMM); pc += 4; 
-            rom[pc>>2] = r_type(7'b0000010, 5'd26, 5'd27, 3'b000, 5'd0, OP_INT); pc += 4; // CMP dot, 255
+            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd26, OP_IMM); pc += 4; // dot=0
+            rom[pc>>2] = i_type(255, 5'd0, 3'b000, 5'd27, OP_IMM); pc += 4; 
+            rom[pc>>2] = r_type(7'b0000010, 5'd26, 5'd27, 3'b000, 5'd0, OP_REG); pc += 4; // CMP dot, 255
             rom[pc>>2] = b_type(8, 5'd0, 5'd0, 3'b100, OP_BRANCH); pc += 4; // BLT 255
             rom[pc>>2] = nop(); pc += 4;
-            rom[pc>>2] = i_type(255, 5'd0, 3'b000, 5'd26, OP_INT_IMM); pc += 4; // dot=255
+            rom[pc>>2] = i_type(255, 5'd0, 3'b000, 5'd26, OP_IMM); pc += 4; // dot=255
             
             // Pack: 0xFF000000 | (dot<<16) | (dot<<8) | dot
-            rom[pc>>2] = i_type(8, 5'd26, 3'b001, 5'd27, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd26, 5'd27, 3'b110, 5'd27, OP_INT); pc += 4;
-            rom[pc>>2] = i_type(8, 5'd27, 3'b001, 5'd27, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd26, 5'd27, 3'b110, 5'd27, OP_INT); pc += 4;
+            rom[pc>>2] = i_type(8, 5'd26, 3'b001, 5'd27, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd26, 5'd27, 3'b110, 5'd27, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(8, 5'd27, 3'b001, 5'd27, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd26, 5'd27, 3'b110, 5'd27, OP_REG); pc += 4;
             rom[pc>>2] = u_type(32'hFF000000, 5'd28, OP_LUI); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd28, 5'd27, 3'b110, 5'd27, OP_INT); pc += 4; // x27 = Color
+            rom[pc>>2] = r_type(7'b0000000, 5'd28, 5'd27, 3'b110, 5'd27, OP_REG); pc += 4; // x27 = Color
             
             // --- Process 3 Vertices ---
             // Unrolling 3 iterations for v=0,1,2
             for (int v = 0; v < 3; v++) begin
                 // Load vertex index from TRI_BUF
                 // Offset = tri_idx*12 + v*4
-                rom[pc>>2] = i_type(12, 5'd0, 3'b000, 5'd28, OP_INT_IMM); pc += 4;
-                rom[pc>>2] = r_type(7'b0000001, 5'd17, 5'd28, 3'b000, 5'd28, OP_INT); pc += 4; // idx*12
-                rom[pc>>2] = i_type(v*4, 5'd28, 3'b000, 5'd28, OP_INT_IMM); pc += 4;
-                rom[pc>>2] = r_type(7'b0000000, 5'd7, 5'd28, 3'b000, 5'd28, OP_INT); pc += 4; // Addr
+                rom[pc>>2] = i_type(12, 5'd0, 3'b000, 5'd28, OP_IMM); pc += 4;
+                rom[pc>>2] = r_type(7'b0000001, 5'd17, 5'd28, 3'b000, 5'd28, OP_REG); pc += 4; // idx*12
+                rom[pc>>2] = i_type(v*4, 5'd28, 3'b000, 5'd28, OP_IMM); pc += 4;
+                rom[pc>>2] = r_type(7'b0000000, 5'd7, 5'd28, 3'b000, 5'd28, OP_REG); pc += 4; // Addr
                 rom[pc>>2] = i_type(0, 5'd28, 3'b010, 5'd28, OP_LOAD); pc += 4; // v_idx
                 
                 // Load Vertex Data
                 // Offset = v_idx*12
-                rom[pc>>2] = i_type(12, 5'd0, 3'b000, 5'd29, OP_INT_IMM); pc += 4;
-                rom[pc>>2] = r_type(7'b0000001, 5'd28, 5'd29, 3'b000, 5'd29, OP_INT); pc += 4;
-                rom[pc>>2] = r_type(7'b0000000, 5'd6, 5'd29, 3'b000, 5'd29, OP_INT); pc += 4; // Addr
+                rom[pc>>2] = i_type(12, 5'd0, 3'b000, 5'd29, OP_IMM); pc += 4;
+                rom[pc>>2] = r_type(7'b0000001, 5'd28, 5'd29, 3'b000, 5'd29, OP_REG); pc += 4;
+                rom[pc>>2] = r_type(7'b0000000, 5'd6, 5'd29, 3'b000, 5'd29, OP_REG); pc += 4; // Addr
                 rom[pc>>2] = i_type(0, 5'd29, 3'b010, 5'd28, OP_LOAD); pc += 4; // vx
                 rom[pc>>2] = i_type(4, 5'd29, 3'b010, 5'd29, OP_LOAD); pc += 4; // vy (x29 reused addr? No! load overwrites)
                 // Wait, need to preserve base addr if reuse. Here I used 29 as dest.
                 // Re-calculate addr or use offset. But offset is max 2048. 4 is fine.
                 // But x29 is overwritten by first load!
                 // Fix:
-                rom[pc>>2] = i_type(12, 5'd0, 3'b000, 5'd29, OP_INT_IMM); pc += 4;
-                rom[pc>>2] = r_type(7'b0000001, 5'd28, 5'd29, 3'b000, 5'd29, OP_INT); pc += 4;
-                rom[pc>>2] = r_type(7'b0000000, 5'd6, 5'd29, 3'b000, 5'd29, OP_INT); pc += 4; // x29 = Addr
+                rom[pc>>2] = i_type(12, 5'd0, 3'b000, 5'd29, OP_IMM); pc += 4;
+                rom[pc>>2] = r_type(7'b0000001, 5'd28, 5'd29, 3'b000, 5'd29, OP_REG); pc += 4;
+                rom[pc>>2] = r_type(7'b0000000, 5'd6, 5'd29, 3'b000, 5'd29, OP_REG); pc += 4; // x29 = Addr
                 rom[pc>>2] = i_type(0, 5'd29, 3'b010, 5'd28, OP_LOAD); pc += 4; // x28 = vx
                 rom[pc>>2] = i_type(8, 5'd29, 3'b010, 5'd31, OP_LOAD); pc += 4; // x31 = vz
                 rom[pc>>2] = i_type(4, 5'd29, 3'b010, 5'd29, OP_LOAD); pc += 4; // x29 = vy
                 
                 // Rotate Vertex (Yaw) -> x28(vx), x29(vy), x31(vz)
-                rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd28, 3'b000, 5'd30, OP_INT); pc += 4; // vx*c
-                rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd31, 3'b000, 5'd26, OP_INT); pc += 4; // vz*s
-                rom[pc>>2] = r_type(7'b0000000, 5'd26, 5'd30, 3'b000, 5'd30, OP_INT); pc += 4; // +
-                rom[pc>>2] = i_type(12'h40F, 5'd30, 3'b101, 5'd30, OP_INT_IMM); pc += 4; // vxr
+                rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd28, 3'b000, 5'd30, OP_REG); pc += 4; // vx*c
+                rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd31, 3'b000, 5'd26, OP_REG); pc += 4; // vz*s
+                rom[pc>>2] = r_type(7'b0000000, 5'd26, 5'd30, 3'b000, 5'd30, OP_REG); pc += 4; // +
+                rom[pc>>2] = i_type(12'h40F, 5'd30, 3'b101, 5'd30, OP_IMM); pc += 4; // vxr
                 
-                rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd31, 3'b000, 5'd26, OP_INT); pc += 4; // vz*c
-                rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd28, 3'b000, 5'd31, OP_INT); pc += 4; // vx*s
-                rom[pc>>2] = r_type(7'b0100000, 5'd31, 5'd26, 3'b000, 5'd31, OP_INT); pc += 4; // -
-                rom[pc>>2] = i_type(12'h40F, 5'd31, 3'b101, 5'd31, OP_INT_IMM); pc += 4; // vzr
+                rom[pc>>2] = r_type(7'b0000001, 5'd16, 5'd31, 3'b000, 5'd26, OP_REG); pc += 4; // vz*c
+                rom[pc>>2] = r_type(7'b0000001, 5'd15, 5'd28, 3'b000, 5'd31, OP_REG); pc += 4; // vx*s
+                rom[pc>>2] = r_type(7'b0100000, 5'd31, 5'd26, 3'b000, 5'd31, OP_REG); pc += 4; // -
+                rom[pc>>2] = i_type(12'h40F, 5'd31, 3'b101, 5'd31, OP_IMM); pc += 4; // vzr
                 
                 // Pitch Vertex: vy2=(vy*c45 - vzr*s45), vz2=...
-                rom[pc>>2] = r_type(7'b0000001, 5'd25, 5'd29, 3'b000, 5'd28, OP_INT); pc += 4; 
-                rom[pc>>2] = r_type(7'b0000001, 5'd24, 5'd31, 3'b000, 5'd26, OP_INT); pc += 4;
-                rom[pc>>2] = r_type(7'b0100000, 5'd26, 5'd28, 3'b000, 5'd29, OP_INT); pc += 4;
-                rom[pc>>2] = i_type(12'h40F, 5'd29, 3'b101, 5'd29, OP_INT_IMM); pc += 4; // vy2
+                rom[pc>>2] = r_type(7'b0000001, 5'd25, 5'd29, 3'b000, 5'd28, OP_REG); pc += 4; 
+                rom[pc>>2] = r_type(7'b0000001, 5'd24, 5'd31, 3'b000, 5'd26, OP_REG); pc += 4;
+                rom[pc>>2] = r_type(7'b0100000, 5'd26, 5'd28, 3'b000, 5'd29, OP_REG); pc += 4;
+                rom[pc>>2] = i_type(12'h40F, 5'd29, 3'b101, 5'd29, OP_IMM); pc += 4; // vy2
                 
                 // Project (Scale + Center)
-                rom[pc>>2] = r_type(7'b0000000, 5'd20, 5'd30, 3'b000, 5'd30, OP_INT); pc += 4; // sx = vxr + cx
-                rom[pc>>2] = r_type(7'b0000000, 5'd21, 5'd29, 3'b000, 5'd29, OP_INT); pc += 4; // sy = vy2 + cy (invert Y done in model?)
+                rom[pc>>2] = r_type(7'b0000000, 5'd20, 5'd30, 3'b000, 5'd30, OP_REG); pc += 4; // sx = vxr + cx
+                rom[pc>>2] = r_type(7'b0000000, 5'd21, 5'd29, 3'b000, 5'd29, OP_REG); pc += 4; // sy = vy2 + cy (invert Y done in model?)
                 // Actually model Y up is positive. Screen Y down is positive. 
                 // Let's do sy = cy - vy2
-                rom[pc>>2] = r_type(7'b0100000, 5'd29, 5'd21, 3'b000, 5'd29, OP_INT); pc += 4;
+                rom[pc>>2] = r_type(7'b0100000, 5'd29, 5'd21, 3'b000, 5'd29, OP_REG); pc += 4;
                 
                 // Write to TRI_BUF (Stride 32 bytes per vert)
                 // x4 is base. offset = v*32
                 rom[pc>>2] = s_type(v*32 + 0, 5'd4, 5'd30, 3'b010, OP_STORE); pc += 4; // X
                 rom[pc>>2] = s_type(v*32 + 4, 5'd4, 5'd29, 3'b010, OP_STORE); pc += 4; // Y
-                rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd26, OP_INT_IMM); pc += 4; 
+                rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd26, OP_IMM); pc += 4; 
                 rom[pc>>2] = s_type(v*32 + 8, 5'd4, 5'd26, 3'b010, OP_STORE); pc += 4; // Z=0
-                rom[pc>>2] = i_type(1, 5'd0, 3'b000, 5'd26, OP_INT_IMM); pc += 4;
+                rom[pc>>2] = i_type(1, 5'd0, 3'b000, 5'd26, OP_IMM); pc += 4;
                 rom[pc>>2] = s_type(v*32 + 12, 5'd4, 5'd26, 3'b010, OP_STORE); pc += 4; // W=1
                 rom[pc>>2] = s_type(v*32 + 24, 5'd4, 5'd27, 3'b010, OP_STORE); pc += 4; // Color
             end
 
             // Issue RSETUP (rs1=x4)
-            rom[pc>>2] = i_type(0, 5'd4, 3'b001, 5'd0, OP_ATOM_SC); pc += 4;
+            rom[pc>>2] = i_type(0, 5'd4, 3'b001, 5'd0, OP_CUSTOM0); pc += 4;
 
             // Issue RDRAW (rs1=0? No, just kick)
             // RDRAW rs1 is GDRAW pointer for geometry, but here we used RSETUP.
             // Actually RDRAW with RSETUP state kicks the triangle. 
             // ISA: RDRAW rs1 unused? Or rs1=0? "Kick triangle using last setup data".
-            rom[pc>>2] = i_type(0, 5'd0, 3'b010, 5'd0, OP_ATOM_SC); pc += 4;
+            rom[pc>>2] = i_type(0, 5'd0, 3'b010, 5'd0, OP_CUSTOM0); pc += 4;
 
             // Loop Triangles
-            rom[pc>>2] = i_type(1, 5'd17, 3'b000, 5'd17, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(TEA_TRIS, 5'd0, 3'b000, 5'd26, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(1, 5'd17, 3'b000, 5'd17, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(TEA_TRIS, 5'd0, 3'b000, 5'd26, OP_IMM); pc += 4;
             blt_tri_pc = pc;
             rom[pc>>2] = b_type(loop_tri_pc - pc, 5'd17, 5'd26, 3'b100, OP_BRANCH); pc += 4;
             rom[pc>>2] = nop(); pc += 4;
@@ -675,8 +812,8 @@ module gfx_teapot_tb;
             rom[pc>>2] = i_type(1, 5'd28, 3'b000, 5'd0, OP_STORE); pc += 4;
 
             // Loop Frame
-            rom[pc>>2] = i_type(1, 5'd13, 3'b000, 5'd13, OP_INT_IMM); pc += 4;
-            rom[pc>>2] = i_type(FRAMES, 5'd0, 3'b000, 5'd26, OP_INT_IMM); pc += 4;
+            rom[pc>>2] = i_type(1, 5'd13, 3'b000, 5'd13, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(FRAMES, 5'd0, 3'b000, 5'd26, OP_IMM); pc += 4;
             blt_frame_pc = pc;
             rom[pc>>2] = b_type(loop_frame_pc - pc, 5'd13, 5'd26, 3'b100, OP_BRANCH); pc += 4;
             rom[pc>>2] = nop(); pc += 4;

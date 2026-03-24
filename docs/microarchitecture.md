@@ -2,13 +2,19 @@
 
 This document describes the RTL currently implemented under `ip/compute unit/`.
 
+> **ISA:** RV32IMA_Zicsr base + RVV v1.0 vector extension + Xgpu custom extension (FP16/Graphics/Texture/GPU vector ops). See `docs/isa_instructions.md` for full encoding reference.
+
 ## 1. Top-Level
 `compute_unit_top.sv` integrates scalar/FP/vector execution, a unified LSU, and a decoupled graphics pipeline.
 
 **External interfaces** (top ports):
-- Instruction fetch: `inst_addr` + `inst_rdata` (64-bit, two 32-bit instructions per fetch)
-- Unified global memory: `data_req_*` / `data_resp_*` (32-bit)
-- Optional CSR visibility: `csr_status/csr_fstatus/csr_vstatus`
+- **I-cache miss path:** `inst_miss_req_valid/addr/ready` + `inst_miss_resp_valid/data` (64-bit). The fetch unit reads from an internal L1 I-cache; misses are forwarded to the external memory system via this interface. Each response returns 64 bits (two 32-bit instructions).
+- **Legacy scalar data interface:** `data_req_*` / `data_resp_*` (32-bit). Kept for backward compatibility but superseded by the D-cache interface.
+- **L1 D-cache external memory:** `dcache_mem_req_*` / `dcache_mem_resp_*`. Cache-line-based interface (512-bit lines via 8 beats × 64-bit). Supports QoS (`dcache_mem_req_qos`), transaction IDs (`dcache_mem_req_id`), and read/write with byte strobes.
+- **Framebuffer AXI4 write:** `fb_aw_*` / `fb_w_*` / `fb_b_*`. Dedicated AXI4 write channel for graphics (ROP) direct framebuffer writes, bypassing the D-cache.
+- **Mailbox AXI-Fabric stream:** `mailbox_tx_*` / `mailbox_rx_*`. Flit-based mailbox interconnect for inter-node communication (parameterized via `MAILBOX_ENABLE`).
+- **CSR sideband outputs:** `csr_status` / `csr_fstatus` / `csr_vstatus` (optional external visibility).
+- **Error reporting:** `err_fp_overflow`, `err_fp_invalid`, `err_vec_overflow`, `err_vec_invalid`.
 
 ## 2. Front-End + Issue
 The front-end fetches two 32-bit instructions per 64-bit beat and decodes both (`decoder.sv`).

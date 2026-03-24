@@ -27,12 +27,17 @@ This document converts your 7‑point proposal into a structured roadmap with ra
 ## 2) Switch to RISC‑V + custom graphics extension ⚖️
 **Why:** leverage LLVM, toolchain and ecosystem; enables OpenCL/POCL-style portability later.
 
-**Phased approach:**
-- Phase 1: add a small RISC‑V control MCU for mailbox/firmware tasks (low risk).
-- Phase 2: design minimal ISA extensions (doorbell, mailboxes, fast atomics) and define CSRs.
-- Phase 3: gradually replace control microcode with RISC‑V decode or add a translator frontend.
+> **📋 Detailed plan:** See [`docs/riscv_isa_migration_plan.md`](riscv_isa_migration_plan.md) for the comprehensive migration plan covering opcode mapping, Xgpu custom extension design, RTL file change list, testbench migration strategy, and phased implementation roadmap.
 
-**Files/areas:** `control_proc/` (softcore integration), `docs/` (ISA extension spec), toolchain glue.
+**Summary of phased approach:**
+- Phase 1: **ISA Package + Decoder** — Rewrite `isa_pkg.sv` with RV32IMA_Zicsr standard opcodes + Xgpu custom slots (`custom-0` through `custom-2`). Rewrite `decoder.sv` for standard RV32 opcode routing. *(Control MCU already done — `ip/control_proc/mcu_core.sv` implements RV32IMA_Zicsr)*
+- Phase 2: **Execution Unit Updates** — Update `alu_scalar.sv`, `branch_unit.sv`, `lsu.sv`, `csr_file.sv`, `compute_unit_top.sv`; add AUIPC, JALR (dedicated opcode), LBU/LHU, standard FENCE.
+- Phase 3: **Custom Extension Opcodes** — Move FP16 to `custom-0` (0x0B), vector ALU to `custom-1` (0x2B), vector mem/atomics to `custom-2` (0x5B), graphics/texture to `custom-0`. Standard AMO replaces custom scalar atomics.
+- Phase 4: **Testbench Migration** — Update all ~25 testbench files with new opcode constants; run full regression.
+- Phase 5: **Documentation + Toolchain** — GNU as + `.insn` for Xgpu; riscv-tests compliance suite; rewrite ISA docs.
+- Phase 6: **Optimization** — Optional C extension, F extension upgrade, shared ISA package with control processor.
+
+**Files/areas:** `ip/compute unit/isa_pkg.sv` (rewrite), `ip/compute unit/decoder.sv` (major), all execution units, ~25 testbenches, ~15 documentation files. See migration plan for complete file list.
 
 ---
 

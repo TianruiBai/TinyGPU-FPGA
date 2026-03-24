@@ -306,7 +306,7 @@ module coremark_tb(
 
 
     function automatic [31:0] nop();
-        nop = i_type(12'd0, 5'd0, 3'b000, 5'd0, OP_INT_IMM);
+        nop = i_type(12'd0, 5'd0, 3'b000, 5'd0, OP_IMM);
     endfunction
 
     // -------------------------
@@ -376,7 +376,7 @@ module coremark_tb(
             pc = 0;
 
             // x1 = 0xFFFFF800 (BASE)
-            rom[pc >> 2] = i_type(-2048, 5'd0, 3'b000, 5'd1, OP_INT_IMM); pc += 4;
+            rom[pc >> 2] = i_type(-2048, 5'd0, 3'b000, 5'd1, OP_IMM); pc += 4;
 
             // Reserve: JAL x9, sub
             jal_slot = (pc >> 2);
@@ -396,7 +396,7 @@ module coremark_tb(
             // sub:
             sub_pc = pc;
             // x2 = 1
-            rom[pc >> 2] = i_type(1, 5'd0, 3'b000, 5'd2, OP_INT_IMM); pc += 4;
+            rom[pc >> 2] = i_type(1, 5'd0, 3'b000, 5'd2, OP_IMM); pc += 4;
             // SW x2 -> [x1+done_off]
             rom[pc >> 2] = s_type(done_off, 5'd1, 5'd2, 3'b010, OP_STORE); pc += 4;
             // MEMBAR (flush WMB so DONE store becomes externally visible)

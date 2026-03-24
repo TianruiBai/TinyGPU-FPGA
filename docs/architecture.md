@@ -22,9 +22,14 @@ UML diagram (implemented vs planned): `docs/diagrams/system_architecture.puml`
 
 ## System Overview
 ### As-built (current RTL scope)
-- **Host-facing link**: not integrated in RTL here; testbenches model the global memory interface directly.
-- **Compute Unit**: `compute_unit_top.sv` with scalar/FP/vector, LSU, and graphics pipeline.
-- **Global memory**: 32-bit request/response interface (`data_req_*` / `data_resp_*`).
+- **Host-facing link**: not integrated in RTL here; testbenches model the I-cache miss + D-cache memory interfaces directly.
+- **Compute Unit**: `compute_unit_top.sv` with scalar/FP/vector (RV32IMA_Zicsr + RVV + Xgpu), LSU, and graphics pipeline.
+- **ISA**: RV32IMA_Zicsr base + RVV v1.0 (VLEN=128, LMUL=1 only) + Xgpu custom extension.
+- **I-cache miss interface**: `inst_miss_req_*` / `inst_miss_resp_*` (64-bit per response, two instructions).
+- **D-cache memory interface**: `dcache_mem_req_*` / `dcache_mem_resp_*` (cache-line based, 8×64-bit beats = 512-bit lines, with QoS + ID fields).
+- **Legacy scalar data interface**: `data_req_*` / `data_resp_*` (32-bit) — kept for completeness but superseded by D-cache.
+- **Framebuffer AXI4 write channel**: `fb_aw_*`/`fb_w_*`/`fb_b_*` for graphics direct path.
+- **Mailbox stream**: `mailbox_tx_*`/`mailbox_rx_*` flit-based interconnect.
 - **Local memory**: on-chip BRAM via `local_mem_banked.sv` (selected when `addr[31]==0`).
 - **Global memory selection**: `addr[31]==1` selects the external/global path (OSPI/PSRAM in the full system).
 
@@ -45,9 +50,11 @@ UML diagram (implemented vs planned): `docs/diagrams/system_architecture.puml`
 
 ## Data Flow
 ### As-built (current RTL)
-1. Testbench/host model provides instruction fetch and global memory responses.
-2. CU executes scalar/FP/vector and graphics ops.
-3. LSU targets local BRAM when `addr[31]==0`, and global interface when `addr[31]==1`.
+1. Testbench/host model provides I-cache miss responses and D-cache memory responses.
+2. CU fetches instructions via L1 I-cache (misses go to external `inst_miss_*` interface).
+3. CU executes scalar (RV32IMA_Zicsr)/FP16/vector (RVV+Xgpu) and graphics ops.
+4. LSU targets local BRAM when `addr[31]==0`, and D-cache/global interface when `addr[31]==1`.
+5. Graphics ROP writes use the dedicated framebuffer AXI4 write channel (`fb_*`).
 
 ### Planned (full system)
 1. **Host** writes packet stream via QSPI/OSPI.

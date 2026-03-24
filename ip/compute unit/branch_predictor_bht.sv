@@ -38,8 +38,8 @@ module branch_predictor_bht #(
     endfunction
 
     wire query_is_jal  = query_valid && query_ctrl.is_branch && (query_ctrl.funct3 == 3'b011);
-    wire query_is_jalr = query_valid && query_ctrl.is_branch && (query_ctrl.funct3 == 3'b010);
-    wire query_is_cond = query_valid && query_ctrl.is_branch && !query_is_jal && !query_is_jalr;
+    wire query_is_jalr = query_valid && query_ctrl.is_jalr;
+    wire query_is_cond = query_valid && query_ctrl.is_branch && !query_is_jal;
 
     wire [IDX_BITS-1:0] q_idx = idx_of(query_pc);
     wire [31-(2+IDX_BITS):0] q_tag = tag_of(query_pc);
@@ -51,8 +51,9 @@ module branch_predictor_bht #(
         pred_taken  = 1'b0;
         pred_target = 32'h0;
 
-        // Target for direct control-flow is PC-relative.
-        if (query_valid && query_ctrl.is_branch && !query_is_jalr) begin
+        // Target for direct control-flow is PC-relative (conditional branches + JAL).
+        // JALR targets are register-indirect and cannot be predicted here.
+        if (query_valid && query_ctrl.is_branch) begin
             pred_target = query_pc + query_ctrl.imm;
         end
 
@@ -68,8 +69,8 @@ module branch_predictor_bht #(
     end
 
     wire update_is_jal  = update_valid && update_ctrl.is_branch && (update_ctrl.funct3 == 3'b011);
-    wire update_is_jalr = update_valid && update_ctrl.is_branch && (update_ctrl.funct3 == 3'b010);
-    wire update_is_cond = update_valid && update_ctrl.is_branch && !update_is_jal && !update_is_jalr;
+    wire update_is_jalr = update_valid && update_ctrl.is_jalr;
+    wire update_is_cond = update_valid && (update_ctrl.is_branch || update_ctrl.is_jalr) && !update_is_jal && !update_is_jalr;
 
     wire [IDX_BITS-1:0] u_idx = idx_of(update_pc);
     wire [31-(2+IDX_BITS):0] u_tag = tag_of(update_pc);
