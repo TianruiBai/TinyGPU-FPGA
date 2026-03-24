@@ -418,11 +418,13 @@ module compute_unit_top #(
     logic [31:0]  mem_addr;
     logic [127:0] mem_vec_wdata;
     logic [31:0]  mem_scalar_wdata;
+    logic         mem_lsu_submitted;   // Tracks whether load/store in MEM was accepted by LSU0
     decode_ctrl_t mem1_ctrl;
     logic         mem1_valid;
     logic [31:0]  mem1_scalar_res;
     logic [31:0]  mem1_addr;
     logic [31:0]  mem1_scalar_wdata;
+    logic         mem1_lsu_submitted;  // Tracks whether load/store in MEM1 was accepted by LSU1
 
     // WB stage
     decode_ctrl_t wb_ctrl;
@@ -2388,6 +2390,7 @@ module compute_unit_top #(
             mem_addr         <= 32'h0;
             mem_vec_wdata    <= '0;
             mem_scalar_wdata <= 32'h0;
+            mem_lsu_submitted <= 1'b0;
         end else if (!stall_pipe) begin
             mem_valid        <= ex_valid;
             mem_ctrl         <= ex_ctrl;
@@ -2399,8 +2402,10 @@ module compute_unit_top #(
             mem_addr         <= ex_addr;
             mem_vec_wdata    <= ex_vec_b;
             mem_scalar_wdata <= ex_op_b_fwd;
-        end else if (lsu_wb_valid && mem_valid && mem_ctrl.is_load && !mem_ctrl.is_vector) begin
-            // Drop the in-flight scalar load once its response returns to avoid re-issuing it
+            mem_lsu_submitted <= 1'b0;
+        end else if (lsu_wb_valid && mem_valid && mem_ctrl.is_load && !mem_ctrl.is_vector && mem_lsu_submitted) begin
+            // Drop the in-flight scalar load once its response returns to avoid re-issuing it.
+            // Only drop if this instruction was actually submitted to the LSU (mem_lsu_submitted).
             mem_valid        <= 1'b0;
             mem_ctrl         <= '0;
             mem_scalar_res   <= 32'h0;
@@ -2409,6 +2414,10 @@ module compute_unit_top #(
             mem_addr         <= 32'h0;
             mem_vec_wdata    <= '0;
             mem_scalar_wdata <= 32'h0;
+            mem_lsu_submitted <= 1'b0;
+        end else if (!mem_lsu_submitted && mem_valid && (mem_ctrl.is_load || mem_ctrl.is_store || mem_ctrl.is_atomic) && lsu0_req_ready) begin
+            // Mark submitted once the LSU0 handshake fires (combinational req_valid && req_ready)
+            mem_lsu_submitted <= 1'b1;
         end
     end
 
@@ -2420,24 +2429,30 @@ module compute_unit_top #(
             mem1_scalar_res <= 32'h0;
             mem1_addr       <= 32'h0;
             mem1_scalar_wdata <= 32'h0;
+            mem1_lsu_submitted <= 1'b0;
         end else if (ex_redirect_valid) begin
             mem1_valid      <= 1'b0;
             mem1_ctrl       <= '0;
             mem1_scalar_res <= 32'h0;
             mem1_addr       <= 32'h0;
             mem1_scalar_wdata <= 32'h0;
+            mem1_lsu_submitted <= 1'b0;
         end else if (!stall_pipe && !lane1_hold) begin
             mem1_valid      <= ex1_valid;
             mem1_ctrl       <= ex1_ctrl;
             mem1_scalar_res <= ex1_scalar_res;
             mem1_addr       <= ex1_addr;
             mem1_scalar_wdata <= ex1_op_b_fwd;
-        end else if (lsu1_wb_valid && mem1_valid && mem1_ctrl.is_load && !mem1_ctrl.is_vector) begin
+            mem1_lsu_submitted <= 1'b0;
+        end else if (lsu1_wb_valid && mem1_valid && mem1_ctrl.is_load && !mem1_ctrl.is_vector && mem1_lsu_submitted) begin
             mem1_valid      <= 1'b0;
             mem1_ctrl       <= '0;
             mem1_scalar_res <= 32'h0;
             mem1_addr       <= 32'h0;
             mem1_scalar_wdata <= 32'h0;
+            mem1_lsu_submitted <= 1'b0;
+        end else if (!mem1_lsu_submitted && mem1_valid && (mem1_ctrl.is_load || mem1_ctrl.is_store || mem1_ctrl.is_atomic) && lsu1c_req_ready) begin
+            mem1_lsu_submitted <= 1'b1;
         end
     end
 

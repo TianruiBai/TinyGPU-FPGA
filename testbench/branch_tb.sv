@@ -227,15 +227,21 @@ module branch_tb(
                 if (dcache_mem_req_rw) begin
                     logic [31:0] done_word_next;
                     done_word_next = mem_read_word(BASE_ADDR + DONE_OFF);
-                    for (int b = 0; b < 64; b++) begin
-                        if (dcache_mem_req_wstrb[b]) begin
-                            mem_bytes[base + b] <= dcache_mem_req_wdata[b*8 +: 8];
-                            if ((BASE_ADDR + DONE_OFF) >= (dcache_mem_req_addr & 32'hFFFF_FFC0)
-                                && (BASE_ADDR + DONE_OFF) < ((dcache_mem_req_addr & 32'hFFFF_FFC0) + 32'h40)) begin
-                                int done_bi;
-                                done_bi = mem_byte_index(BASE_ADDR + DONE_OFF);
-                                if ((base + b) >= done_bi && (base + b) <= (done_bi + 3)) begin
-                                    done_word_next[((base + b - done_bi) * 8) +: 8] = dcache_mem_req_wdata[b*8 +: 8];
+                    // wstrb is 8 bits: 1 bit per 64-bit (8-byte) beat
+                    for (int beat = 0; beat < 8; beat++) begin
+                        if (dcache_mem_req_wstrb[beat]) begin
+                            for (int bi = 0; bi < 8; bi++) begin
+                                int addr_byte;
+                                addr_byte = base + beat * 8 + bi;
+                                mem_bytes[addr_byte] <= dcache_mem_req_wdata[(beat * 64) + (bi * 8) +: 8];
+                                // Track DONE word byte writes
+                                if ((BASE_ADDR + DONE_OFF) >= (dcache_mem_req_addr & 32'hFFFF_FFC0)
+                                    && (BASE_ADDR + DONE_OFF) < ((dcache_mem_req_addr & 32'hFFFF_FFC0) + 32'h40)) begin
+                                    int done_bi;
+                                    done_bi = mem_byte_index(BASE_ADDR + DONE_OFF);
+                                    if (addr_byte >= done_bi && addr_byte <= (done_bi + 3)) begin
+                                        done_word_next[((addr_byte - done_bi) * 8) +: 8] = dcache_mem_req_wdata[(beat * 64) + (bi * 8) +: 8];
+                                    end
                                 end
                             end
                         end

@@ -28,19 +28,63 @@ module dhrystone_tb(
     // -------------------------
     // DUT interfaces
     // -------------------------
-    logic [63:0] inst_rdata;
-    logic [31:0] inst_addr;
+    // Instruction miss interface (I-cache -> memory)
+    logic        inst_miss_req_valid;
+    logic [31:0] inst_miss_req_addr;
+    logic        inst_miss_req_ready;
+    logic        inst_miss_resp_valid;
+    logic [63:0] inst_miss_resp_data;
 
+    // Legacy data interface (unused — CU routes all loads/stores through D-cache)
     logic        data_req_valid;
     logic        data_req_is_load;
     logic [31:0] data_req_addr;
     logic [31:0] data_req_wdata;
     logic [4:0]  data_req_rd;
-
     logic        data_req_ready;
     logic        data_resp_valid;
     logic [4:0]  data_resp_rd;
     logic [31:0] data_resp_data;
+
+    // D-cache memory interface (L1 -> memory)
+    logic        dcache_mem_req_valid;
+    logic        dcache_mem_req_rw;
+    logic [31:0] dcache_mem_req_addr;
+    logic [7:0]  dcache_mem_req_size;
+    logic [3:0]  dcache_mem_req_qos;
+    logic [7:0]  dcache_mem_req_id;
+    logic [511:0] dcache_mem_req_wdata;
+    logic [7:0]  dcache_mem_req_wstrb;
+    logic        dcache_mem_req_ready;
+    logic        dcache_mem_resp_valid;
+    logic [63:0] dcache_mem_resp_data;
+    logic [7:0]  dcache_mem_resp_id;
+
+    // Framebuffer AXI (unused)
+    logic        fb_aw_valid;
+    logic [31:0] fb_aw_addr;
+    logic [7:0]  fb_aw_len;
+    logic [2:0]  fb_aw_size;
+    logic [1:0]  fb_aw_burst;
+    logic        fb_aw_ready;
+    logic [31:0] fb_w_data;
+    logic [3:0]  fb_w_strb;
+    logic        fb_w_last;
+    logic        fb_w_valid;
+    logic        fb_w_ready;
+    logic        fb_b_valid;
+    logic        fb_b_ready;
+
+    // Mailbox (tied off)
+    import mailbox_pkg::*;
+    mailbox_pkg::mailbox_flit_t mailbox_tx_data;
+    mailbox_pkg::mailbox_flit_t mailbox_rx_data;
+    logic mailbox_tx_valid;
+    logic mailbox_tx_ready;
+    logic [mailbox_pkg::NODE_ID_WIDTH-1:0] mailbox_tx_dest_id;
+    logic mailbox_rx_valid;
+    logic mailbox_rx_ready;
+    logic [mailbox_pkg::NODE_ID_WIDTH-1:0] mailbox_rx_dest_id;
 
     logic        err_fp_overflow;
     logic        err_fp_invalid;
@@ -57,8 +101,11 @@ module dhrystone_tb(
     ) dut (
         .clk(clk),
         .rst_n(rst_n),
-        .inst_rdata(inst_rdata),
-        .inst_addr(inst_addr),
+        .inst_miss_req_valid(inst_miss_req_valid),
+        .inst_miss_req_addr(inst_miss_req_addr),
+        .inst_miss_req_ready(inst_miss_req_ready),
+        .inst_miss_resp_valid(inst_miss_resp_valid),
+        .inst_miss_resp_data(inst_miss_resp_data),
         .data_req_valid(data_req_valid),
         .data_req_is_load(data_req_is_load),
         .data_req_addr(data_req_addr),
@@ -74,13 +121,63 @@ module dhrystone_tb(
         .data_req_ready(data_req_ready),
         .data_resp_valid(data_resp_valid),
         .data_resp_rd(data_resp_rd),
-        .data_resp_data(data_resp_data)
+        .data_resp_data(data_resp_data),
+        .dcache_mem_req_valid(dcache_mem_req_valid),
+        .dcache_mem_req_rw(dcache_mem_req_rw),
+        .dcache_mem_req_addr(dcache_mem_req_addr),
+        .dcache_mem_req_size(dcache_mem_req_size),
+        .dcache_mem_req_qos(dcache_mem_req_qos),
+        .dcache_mem_req_id(dcache_mem_req_id),
+        .dcache_mem_req_wdata(dcache_mem_req_wdata),
+        .dcache_mem_req_wstrb(dcache_mem_req_wstrb),
+        .dcache_mem_req_ready(dcache_mem_req_ready),
+        .dcache_mem_resp_valid(dcache_mem_resp_valid),
+        .dcache_mem_resp_data(dcache_mem_resp_data),
+        .dcache_mem_resp_id(dcache_mem_resp_id),
+        .fb_aw_valid(fb_aw_valid),
+        .fb_aw_addr(fb_aw_addr),
+        .fb_aw_len(fb_aw_len),
+        .fb_aw_size(fb_aw_size),
+        .fb_aw_burst(fb_aw_burst),
+        .fb_aw_ready(fb_aw_ready),
+        .fb_w_data(fb_w_data),
+        .fb_w_strb(fb_w_strb),
+        .fb_w_last(fb_w_last),
+        .fb_w_valid(fb_w_valid),
+        .fb_w_ready(fb_w_ready),
+        .fb_b_valid(fb_b_valid),
+        .fb_b_ready(fb_b_ready),
+        .mailbox_tx_valid(mailbox_tx_valid),
+        .mailbox_tx_ready(mailbox_tx_ready),
+        .mailbox_tx_data(mailbox_tx_data),
+        .mailbox_tx_dest_id(mailbox_tx_dest_id),
+        .mailbox_rx_valid(mailbox_rx_valid),
+        .mailbox_rx_ready(mailbox_rx_ready),
+        .mailbox_rx_data(mailbox_rx_data),
+        .mailbox_rx_dest_id(mailbox_rx_dest_id)
     );
 
     // NOTE: Waveform dumping is configured in the init +args block.
 
-    // Always-ready memory model
-    initial data_req_ready = 1'b1;
+    // -------------------------
+    // Tie-offs for unused interfaces
+    // -------------------------
+    assign data_req_ready  = 1'b1;
+    assign data_resp_valid = 1'b0;
+    assign data_resp_rd    = '0;
+    assign data_resp_data  = 32'h0;
+
+    assign mailbox_tx_ready   = 1'b1;
+    assign mailbox_rx_valid   = 1'b0;
+    assign mailbox_rx_data    = '0;
+    assign mailbox_rx_dest_id = '0;
+
+    assign fb_aw_ready = 1'b1;
+    assign fb_w_ready  = 1'b1;
+    assign fb_b_valid  = 1'b0;
+
+    assign dcache_mem_req_ready = 1'b1;
+    assign inst_miss_req_ready  = 1'b1;
 
     // -------------------------
     // ROM (instruction memory)
@@ -88,15 +185,16 @@ module dhrystone_tb(
     localparam int ROM_WORDS = 65536; // 256KB of 32-bit instructions
     logic [31:0] rom [0:ROM_WORDS-1];
 
+    // I-cache miss handler
+    logic        inst_pending;
+    logic [31:0] inst_req_addr_q;
+
     function automatic logic [31:0] rom_word_at(input logic [31:0] addr);
         int unsigned idx;
         idx = addr >> 2;
         if (idx < ROM_WORDS) rom_word_at = rom[idx];
         else rom_word_at = 32'h0000_0017; // tinyGPU NOP (ADDI x0,x0,0 under OP_IMM)
     endfunction
-
-    // inst_addr is 8B aligned; read low/high words.
-    assign inst_rdata = {rom_word_at(inst_addr + 32'd4), rom_word_at(inst_addr)};
 
     // -------------------------
     // Global memory model (32-bit words)
@@ -142,16 +240,45 @@ module dhrystone_tb(
         end
     endfunction
 
-    // Simple response FIFO (in-order)
-    localparam int RESP_DEPTH = 32;
-    logic              resp_valid   [0:RESP_DEPTH-1];
-    logic [4:0]        resp_rd      [0:RESP_DEPTH-1];
-    logic [31:0]       resp_data_q  [0:RESP_DEPTH-1];
-    logic [4:0]        resp_wp;
-    logic [4:0]        resp_rp;
-    logic              resp_empty;
+    // D-cache backing memory responder
+    localparam int DCACHE_LINE_BYTES = 64;
+    localparam int DCACHE_BEATS      = DCACHE_LINE_BYTES / 8;
 
-    assign resp_empty = (resp_wp == resp_rp);
+    logic        dcache_tx_active;
+    logic        dcache_tx_rw;
+    logic [31:0] dcache_tx_addr;
+    logic [7:0]  dcache_tx_id_q;
+    logic [2:0]  dcache_tx_beat;
+
+    function automatic [63:0] dcache_read_beat(input logic [31:0] line_addr, input logic [2:0] beat);
+        int base_word;
+        begin
+            dcache_read_beat = 64'h0;
+            base_word = mem_index(line_addr) + (beat * 2);
+            if ((base_word >= 0) && ((base_word + 1) < MEM_WORDS)) begin
+                dcache_read_beat = {mem[base_word + 1], mem[base_word + 0]};
+            end
+        end
+    endfunction
+
+    task automatic dcache_write_line(
+        input logic [31:0] line_addr,
+        input logic [511:0] line_data,
+        input logic [7:0]  line_wstrb  // 1 strobe bit per 8-byte beat
+    );
+        int base_word;
+        begin
+            for (int b = 0; b < DCACHE_BEATS; b++) begin
+                if (line_wstrb[b]) begin
+                    base_word = mem_index(line_addr) + (b * 2);
+                    if ((base_word >= 0) && ((base_word + 1) < MEM_WORDS)) begin
+                        mem[base_word + 0] = line_data[(b*64) +: 32];
+                        mem[base_word + 1] = line_data[(b*64) + 32 +: 32];
+                    end
+                end
+            end
+        end
+    endtask
 
     // DONE tracking
     logic        done_seen;
@@ -349,9 +476,9 @@ module dhrystone_tb(
         );
 
         $display(
-            "%0t DHRY_TB: IF inst_addr=%08h inst0_v=%0d inst0=%08h inst1_v=%0d inst1=%08h pred_taken=%0d pred_tgt=%08h ex_redirect=%0d ex_tgt=%08h",
+            "%0t DHRY_TB: IF inst_miss_req=%08h inst0_v=%0d inst0=%08h inst1_v=%0d inst1=%08h pred_taken=%0d pred_tgt=%08h ex_redirect=%0d ex_tgt=%08h",
             $time,
-            inst_addr,
+            inst_miss_req_addr,
             dut.if_inst0_valid,
             dut.if_inst0,
             dut.if_inst1_valid,
@@ -522,10 +649,10 @@ module dhrystone_tb(
         );
 
         $display(
-            "DHRY_TB: PIPE IF  valid=%0d pc=%08h inst_addr=%08h inst0_v=%0d inst0=%08h inst1_v=%0d inst1=%08h",
+            "DHRY_TB: PIPE IF  valid=%0d pc=%08h inst_miss_req=%08h inst0_v=%0d inst0=%08h inst1_v=%0d inst1=%08h",
             dut.if_valid,
             dut.if_pc,
-            inst_addr,
+            inst_miss_req_addr,
             dut.if_inst0_valid,
             dut.if_inst0,
             dut.if_inst1_valid,
@@ -721,16 +848,20 @@ module dhrystone_tb(
 
     always_ff @(posedge clk) begin
         if (!rst_n) begin
-            resp_wp         <= '0;
-            resp_rp         <= '0;
-            data_resp_valid <= 1'b0;
-            data_resp_rd    <= '0;
-            data_resp_data  <= 32'h0;
-            for (int i = 0; i < RESP_DEPTH; i++) begin
-                resp_valid[i]  <= 1'b0;
-                resp_rd[i]     <= '0;
-                resp_data_q[i] <= 32'h0;
-            end
+            inst_miss_resp_valid <= 1'b0;
+            inst_miss_resp_data  <= 64'h0;
+            inst_pending         <= 1'b0;
+            inst_req_addr_q      <= 32'h0;
+
+            dcache_mem_resp_valid <= 1'b0;
+            dcache_mem_resp_data  <= 64'h0;
+            dcache_mem_resp_id    <= 8'h0;
+            dcache_tx_active      <= 1'b0;
+            dcache_tx_rw          <= 1'b0;
+            dcache_tx_addr        <= 32'h0;
+            dcache_tx_id_q        <= 8'h0;
+            dcache_tx_beat        <= 3'd0;
+
             done_seen   <= 1'b0;
             done_value  <= 32'h0;
             result_store_count <= 0;
@@ -772,6 +903,8 @@ module dhrystone_tb(
                 if_trace_cycle[k] <= 0;
             end
 
+            watch_prints <= 0;
+
             // If waveform dumping is enabled but configured to start later,
             // ensure we are not dumping during reset.
             if (waves_en && (waves_start_cycle != 0)) begin
@@ -811,7 +944,6 @@ module dhrystone_tb(
             end
 
             // Detect a big jump from high PC down into the low boot region.
-            // This is a strong hint that something returned to the _start/runtime.
             if ((prev_if_pc >= 32'h0000_0800) && (dut.if_pc < 32'h0000_0200)) begin
                 saw_return_to_start <= 1'b1;
                 last_return_to_start_cycle <= cycle_count;
@@ -827,200 +959,155 @@ module dhrystone_tb(
                 post_done_cycles <= post_done_cycles + 1;
             end
 
-            if (check_bounds && !ifetch_oob_seen) begin
-                int unsigned if_idx;
-                if_idx = inst_addr >> 2;
-                if (if_idx >= ROM_WORDS) begin
-                    ifetch_oob_seen <= 1'b1;
-                    $display(
-                        "%0t DHRY_TB: IFETCH OOB inst_addr=%08h (idx=%0d ROM_WORDS=%0d) if_pc=%08h",
-                        $time,
-                        inst_addr,
-                        if_idx,
-                        ROM_WORDS,
-                        dut.if_pc
-                    );
-                    dump_status();
-                    dump_req_trace();
-                    dump_ifetch_trace(80);
-                    $fatal(1);
-                end
+            // --------------------------------------------------
+            // I-cache miss responder (1-cycle latency, 64-bit)
+            // --------------------------------------------------
+            if (inst_miss_req_valid && inst_miss_req_ready) begin
+                inst_pending    <= 1'b1;
+                inst_req_addr_q <= inst_miss_req_addr;
             end
 
-            if (data_req_valid && data_req_ready) begin
-                int idx;
+            if (inst_pending) begin
+                inst_miss_resp_valid <= 1'b1;
+                inst_miss_resp_data  <= {rom_word_at(inst_req_addr_q + 32'd4),
+                                         rom_word_at(inst_req_addr_q)};
+                inst_pending <= 1'b0;
 
-                // After adding LB/LH/SB/SH fixups in the LSU, the external global interface
-                // should only observe word-aligned accesses.
-                if (check_bounds && (data_req_addr[1:0] != 2'b00)) begin
-                    $display(
-                        "%0t DHRY_TB: UNALIGNED global access addr=%08h is_load=%0d rd=%0d pc=%08h",
-                        $time,
-                        data_req_addr,
-                        data_req_is_load,
-                        data_req_rd,
-                        dut.if_pc
-                    );
-                    dump_status();
-                    dump_req_trace();
-                    $fatal(1);
-                end
-
-                req_trace_addr[req_trace_wp]  <= data_req_addr;
-                req_trace_is_ld[req_trace_wp] <= data_req_is_load;
-                req_trace_wdata[req_trace_wp] <= data_req_wdata;
-                req_trace_rd[req_trace_wp]    <= data_req_rd;
-                req_trace_pc[req_trace_wp]    <= dut.if_pc;
-                req_trace_cycle[req_trace_wp] <= cycle_count;
-                req_trace_wp <= req_trace_wp + 1'b1;
-
-                req_trace_total <= req_trace_total + 1;
-
-                if (debug_en && (req_trace_total < 200)) begin
-                    $display("%0t DHRY_TB: REQ[%0d] %s addr=%08h wdata=%08h rd=%0d pc=%08h", $time, req_trace_total, data_req_is_load ? "LD" : "ST", data_req_addr, data_req_wdata, data_req_rd, dut.if_pc);
-                end
-
-                if (check_bounds && (data_req_addr == 32'h0)) begin
-                    $display("%0t DHRY_TB: ZERO_ADDR access is_load=%0d rd=%0d wdata=%08h", $time, data_req_is_load, data_req_rd, data_req_wdata);
-                    dump_status();
-                    dump_req_trace();
-                    $fatal(1);
-                end
-
-                idx = mem_index(data_req_addr);
-
-                if (check_bounds && ((idx < 0) || (idx >= MEM_WORDS))) begin
-                    $display(
-                        "%0t DHRY_TB: OOB MEM access addr=%08h base=%08h idx=%0d words=%0d is_load=%0d",
-                        $time,
-                        data_req_addr,
-                        base_addr,
-                        idx,
-                        MEM_WORDS,
-                        data_req_is_load
-                    );
-                    dump_status();
-                    dump_req_trace();
-                    $fatal(1);
-                end
-
-                if (data_req_is_load) begin
-                    resp_valid[resp_wp]  <= 1'b1;
-                    resp_rd[resp_wp]     <= data_req_rd;
-                    resp_data_q[resp_wp] <= mem[idx];
-                    resp_wp <= resp_wp + 1'b1;
-
-                    if (watch_en && (watch_prints < watch_print_limit) && (data_req_addr == watch_addr)) begin
+                if (check_bounds && !ifetch_oob_seen) begin
+                    int unsigned if_idx;
+                    if_idx = inst_req_addr_q >> 2;
+                    if (if_idx >= ROM_WORDS) begin
+                        ifetch_oob_seen <= 1'b1;
                         $display(
-                            "%0t DHRY_TB: WATCH LD cyc=%0d pc=%08h addr=%08h -> mem=%08h rd=%0d (mem.addr=%08h mem.wdata=%08h mem.f3=%0h dut.lsu_stall=%0d dut.stall_pipe=%0d lsu.in_valid=%0d lsu.in_store=%0d lsu.in_addr=%08h lsu.in_wdata=%08h lsu.rmw_state=%0d rmw_f3=%0h rmw_addr=%08h rmw_st_data=%08h rmw_old=%08h rmw_new=%08h rmw_issued=%0d rf.sp=%08h rf.a0=%08h rf.a1=%08h rf.a3=%08h rf.a4=%08h rf.a5=%08h mem[a0]=%08h mem[a1]=%08h mem[a0+2]=%02h mem[a1+3]=%02h)",
+                            "%0t DHRY_TB: IFETCH OOB inst_req_addr=%08h (idx=%0d ROM_WORDS=%0d) if_pc=%08h",
                             $time,
-                            cycle_count,
-                            dut.mem_pc,
-                            data_req_addr,
-                            mem[idx],
-                            data_req_rd,
-                            dut.mem_addr,
-                            dut.mem_scalar_wdata,
-                            dut.mem_ctrl.funct3,
-                            dut.lsu_stall,
-                            dut.stall_pipe,
-                            dut.u_lsu.valid_in,
-                            dut.u_lsu.is_store,
-                            dut.u_lsu.addr,
-                            dut.u_lsu.write_data[31:0],
-                            dut.u_lsu.rmw_state,
-                            dut.u_lsu.rmw_funct3,
-                            dut.u_lsu.rmw_addr,
-                            dut.u_lsu.rmw_store_data,
-                            dut.u_lsu.rmw_old_word,
-                            dut.u_lsu.rmw_new_word,
-                            dut.u_lsu.rmw_load_issued,
-                            dut.u_regfile_scalar.mem[5'd2],
-                            dut.u_regfile_scalar.mem[5'd10],
-                            dut.u_regfile_scalar.mem[5'd11],
-                            dut.u_regfile_scalar.mem[5'd13],
-                            dut.u_regfile_scalar.mem[5'd14],
-                            dut.u_regfile_scalar.mem[5'd15],
-                            mem_word_at(dut.u_regfile_scalar.mem[5'd10]),
-                            mem_word_at(dut.u_regfile_scalar.mem[5'd11]),
-                            mem_byte_at(dut.u_regfile_scalar.mem[5'd10] + 32'd2),
-                            mem_byte_at(dut.u_regfile_scalar.mem[5'd11] + 32'd3)
+                            inst_req_addr_q,
+                            if_idx,
+                            ROM_WORDS,
+                            dut.if_pc
                         );
-                        watch_prints <= watch_prints + 1;
-
-                        if (dump_on_watch) begin
-                            dump_status();
-                            dump_scalar_pipeline();
-                            if (dump_regs_on_watch) dump_scalar_regfile();
-                        end
+                        dump_status();
+                        dump_req_trace();
+                        dump_ifetch_trace(80);
+                        $fatal(1);
                     end
-                end else begin
-                    if ((data_req_addr >= (base_addr + result_off)) && (data_req_addr < (base_addr + result_off + 32'd32))) begin
-                        result_store_count <= result_store_count + 1;
-                        if (result_store_count == 0) begin
-                            first_result_store_pc <= dut.mem_pc;
-                            first_result_store_cycle <= cycle_count;
-                        end
+                end
+            end else begin
+                inst_miss_resp_valid <= 1'b0;
+            end
+
+            // --------------------------------------------------
+            // D-cache memory responder (8-beat reads / 1-shot writes)
+            // --------------------------------------------------
+            if (!dcache_tx_active) begin
+                dcache_mem_resp_valid <= 1'b0;
+
+                if (dcache_mem_req_valid && dcache_mem_req_ready) begin
+                    if (dcache_mem_req_rw == 1'b0) begin
+                        // READ: start 8-beat burst
+                        dcache_tx_active <= 1'b1;
+                        dcache_tx_rw     <= 1'b0;
+                        dcache_tx_addr   <= {dcache_mem_req_addr[31:6], 6'd0};
+                        dcache_tx_id_q   <= dcache_mem_req_id;
+                        dcache_tx_beat   <= 3'd0;
+                        // First beat in same cycle
+                        dcache_mem_resp_valid <= 1'b1;
+                        dcache_mem_resp_data  <= dcache_read_beat({dcache_mem_req_addr[31:6], 6'd0}, 3'd0);
+                        dcache_mem_resp_id    <= dcache_mem_req_id;
+                    end else begin
+                        // WRITE: commit to mem[] and respond immediately
+                        dcache_write_line(
+                            {dcache_mem_req_addr[31:6], 6'd0},
+                            dcache_mem_req_wdata,
+                            dcache_mem_req_wstrb
+                        );
+                        dcache_mem_resp_valid <= 1'b1;
+                        dcache_mem_resp_data  <= 64'h0;
+                        dcache_mem_resp_id    <= dcache_mem_req_id;
+
+                        // Record trace for the write
+                        req_trace_addr[req_trace_wp]  <= dcache_mem_req_addr;
+                        req_trace_is_ld[req_trace_wp] <= 1'b0;
+                        req_trace_wdata[req_trace_wp] <= dcache_mem_req_wdata[31:0];
+                        req_trace_rd[req_trace_wp]    <= '0;
+                        req_trace_pc[req_trace_wp]    <= dut.if_pc;
+                        req_trace_cycle[req_trace_wp] <= cycle_count;
+                        req_trace_wp <= req_trace_wp + 1'b1;
+                        req_trace_total <= req_trace_total + 1;
+
                         if (debug_en) begin
-                            $display("%0t DHRY_TB: RESULT store cyc=%0d addr=%08h wdata=%08h", $time, cycle_count, data_req_addr, data_req_wdata);
+                            $display("%0t DHRY_TB: DCACHE WR addr=%08h wstrb=%02h cyc=%0d",
+                                     $time, dcache_mem_req_addr, dcache_mem_req_wstrb, cycle_count);
                         end
-                    end
-                    mem[idx] <= data_req_wdata;
 
-                    if (watch_en && (watch_prints < watch_print_limit) && (data_req_addr == watch_addr)) begin
-                        $display(
-                            "%0t DHRY_TB: WATCH ST cyc=%0d pc=%08h addr=%08h old=%08h new=%08h (mem.addr=%08h mem.wdata=%08h mem.f3=%0h dut.lsu_stall=%0d dut.stall_pipe=%0d lsu.in_valid=%0d lsu.in_store=%0d lsu.in_addr=%08h lsu.in_wdata=%08h lsu.rmw_state=%0d rmw_f3=%0h rmw_addr=%08h rmw_st_data=%08h rmw_old=%08h rmw_new=%08h rmw_issued=%0d rf.sp=%08h rf.a0=%08h rf.a1=%08h rf.a3=%08h rf.a4=%08h rf.a5=%08h mem[a0]=%08h mem[a1]=%08h mem[a0+2]=%02h mem[a1+3]=%02h)",
-                            $time,
-                            cycle_count,
-                            dut.mem_pc,
-                            data_req_addr,
-                            mem[idx],
-                            data_req_wdata,
-                            dut.mem_addr,
-                            dut.mem_scalar_wdata,
-                            dut.mem_ctrl.funct3,
-                            dut.lsu_stall,
-                            dut.stall_pipe,
-                            dut.u_lsu.valid_in,
-                            dut.u_lsu.is_store,
-                            dut.u_lsu.addr,
-                            dut.u_lsu.write_data[31:0],
-                            dut.u_lsu.rmw_state,
-                            dut.u_lsu.rmw_funct3,
-                            dut.u_lsu.rmw_addr,
-                            dut.u_lsu.rmw_store_data,
-                            dut.u_lsu.rmw_old_word,
-                            dut.u_lsu.rmw_new_word,
-                            dut.u_lsu.rmw_load_issued,
-                            dut.u_regfile_scalar.mem[5'd2],
-                            dut.u_regfile_scalar.mem[5'd10],
-                            dut.u_regfile_scalar.mem[5'd11],
-                            dut.u_regfile_scalar.mem[5'd13],
-                            dut.u_regfile_scalar.mem[5'd14],
-                            dut.u_regfile_scalar.mem[5'd15],
-                            mem_word_at(dut.u_regfile_scalar.mem[5'd10]),
-                            mem_word_at(dut.u_regfile_scalar.mem[5'd11]),
-                            mem_byte_at(dut.u_regfile_scalar.mem[5'd10] + 32'd2),
-                            mem_byte_at(dut.u_regfile_scalar.mem[5'd11] + 32'd3)
-                        );
-                        watch_prints <= watch_prints + 1;
+                        // Check if this write touches the DONE address
+                        begin
+                            logic [31:0] line_base;
+                            logic [31:0] done_addr;
+                            line_base = {dcache_mem_req_addr[31:6], 6'd0};
+                            done_addr = base_addr + done_off;
+                            if ((done_addr >= line_base) && (done_addr < (line_base + 32'd64))) begin
+                                int w_idx;
+                                w_idx = mem_index(done_addr);
+                                if ((w_idx >= 0) && (w_idx < MEM_WORDS)) begin
+                                    done_store_count <= done_store_count + 1;
+                                    if (done_store_count == 0) begin
+                                        first_done_store_pc <= dut.mem_pc;
+                                        first_done_store_cycle <= cycle_count;
+                                    end
+                                    done_seen  <= 1'b1;
+                                    done_value <= mem[w_idx];
+                                    $display("%0t DHRY_TB: DONE write value=%08h (via D-cache writeback)", $time, mem[w_idx]);
+                                end
+                            end
+                        end
 
-                        if (dump_on_watch) begin
-                            dump_status();
-                            dump_scalar_pipeline();
-                            if (dump_regs_on_watch) dump_scalar_regfile();
+                        // Check for result block writes
+                        begin
+                            logic [31:0] line_base;
+                            logic [31:0] res_start, res_end;
+                            line_base = {dcache_mem_req_addr[31:6], 6'd0};
+                            res_start = base_addr + result_off;
+                            res_end   = res_start + 32'd32;
+                            if ((res_start < (line_base + 32'd64)) && (res_end > line_base)) begin
+                                result_store_count <= result_store_count + 1;
+                                if (result_store_count == 0) begin
+                                    first_result_store_pc <= dut.mem_pc;
+                                    first_result_store_cycle <= cycle_count;
+                                end
+                                if (debug_en) begin
+                                    $display("%0t DHRY_TB: RESULT store (D-cache line) cyc=%0d addr=%08h",
+                                             $time, cycle_count, dcache_mem_req_addr);
+                                end
+                            end
+                        end
+
+                        // Watchpoint on D-cache writes
+                        if (watch_en && (watch_prints < watch_print_limit)) begin
+                            logic [31:0] line_base;
+                            line_base = {dcache_mem_req_addr[31:6], 6'd0};
+                            if ((watch_addr >= line_base) && (watch_addr < (line_base + 32'd64))) begin
+                                $display(
+                                    "%0t DHRY_TB: WATCH DCACHE_WR cyc=%0d addr=%08h line=%08h wstrb=%02h mem[watch]=%08h",
+                                    $time, cycle_count, dcache_mem_req_addr, line_base,
+                                    dcache_mem_req_wstrb, mem_word_at(watch_addr)
+                                );
+                                watch_prints <= watch_prints + 1;
+                            end
                         end
                     end
-                    if (data_req_addr == (base_addr + done_off)) begin
-                        done_store_count <= done_store_count + 1;
-                        if (done_store_count == 0) begin
-                            first_done_store_pc <= dut.mem_pc;
-                            first_done_store_cycle <= cycle_count;
-                        end
-                        done_seen  <= 1'b1;
-                        done_value <= data_req_wdata;
-                        $display("%0t DHRY_TB: DONE write value=%08h", $time, data_req_wdata);
-                    end
+                end
+            end else begin
+                // Ongoing read burst
+                if (dcache_tx_beat < 3'd7) begin
+                    dcache_tx_beat <= dcache_tx_beat + 3'd1;
+                    dcache_mem_resp_valid <= 1'b1;
+                    dcache_mem_resp_data  <= dcache_read_beat(dcache_tx_addr, dcache_tx_beat + 3'd1);
+                    dcache_mem_resp_id    <= dcache_tx_id_q;
+                end else begin
+                    // Last beat was delivered; finish transaction
+                    dcache_tx_active      <= 1'b0;
+                    dcache_mem_resp_valid <= 1'b0;
                 end
             end
 
@@ -1051,16 +1138,6 @@ module dhrystone_tb(
                         );
                     end
                 end
-            end
-
-            if (!resp_empty && resp_valid[resp_rp]) begin
-                data_resp_valid <= 1'b1;
-                data_resp_rd    <= resp_rd[resp_rp];
-                data_resp_data  <= resp_data_q[resp_rp];
-                resp_valid[resp_rp] <= 1'b0;
-                resp_rp <= resp_rp + 1'b1;
-            end else begin
-                data_resp_valid <= 1'b0;
             end
 
             if (!done_seen && (cycle_count >= max_cycles)) begin

@@ -13,19 +13,63 @@ module coremark_tb(
     // -------------------------
     // DUT interfaces
     // -------------------------
-    logic [63:0] inst_rdata;
-    logic [31:0] inst_addr;
+    // Instruction miss interface (I-cache -> memory)
+    logic        inst_miss_req_valid;
+    logic [31:0] inst_miss_req_addr;
+    logic        inst_miss_req_ready;
+    logic        inst_miss_resp_valid;
+    logic [63:0] inst_miss_resp_data;
 
+    // Legacy data interface (unused — CU routes all loads/stores through D-cache)
     logic        data_req_valid;
     logic        data_req_is_load;
     logic [31:0] data_req_addr;
     logic [31:0] data_req_wdata;
     logic [4:0]  data_req_rd;
-
     logic        data_req_ready;
     logic        data_resp_valid;
     logic [4:0]  data_resp_rd;
     logic [31:0] data_resp_data;
+
+    // D-cache memory interface (L1 -> memory)
+    logic        dcache_mem_req_valid;
+    logic        dcache_mem_req_rw;
+    logic [31:0] dcache_mem_req_addr;
+    logic [7:0]  dcache_mem_req_size;
+    logic [3:0]  dcache_mem_req_qos;
+    logic [7:0]  dcache_mem_req_id;
+    logic [511:0] dcache_mem_req_wdata;
+    logic [7:0]  dcache_mem_req_wstrb;
+    logic        dcache_mem_req_ready;
+    logic        dcache_mem_resp_valid;
+    logic [63:0] dcache_mem_resp_data;
+    logic [7:0]  dcache_mem_resp_id;
+
+    // Framebuffer AXI (unused)
+    logic        fb_aw_valid;
+    logic [31:0] fb_aw_addr;
+    logic [7:0]  fb_aw_len;
+    logic [2:0]  fb_aw_size;
+    logic [1:0]  fb_aw_burst;
+    logic        fb_aw_ready;
+    logic [31:0] fb_w_data;
+    logic [3:0]  fb_w_strb;
+    logic        fb_w_last;
+    logic        fb_w_valid;
+    logic        fb_w_ready;
+    logic        fb_b_valid;
+    logic        fb_b_ready;
+
+    // Mailbox (tied off)
+    import mailbox_pkg::*;
+    mailbox_pkg::mailbox_flit_t mailbox_tx_data;
+    mailbox_pkg::mailbox_flit_t mailbox_rx_data;
+    logic mailbox_tx_valid;
+    logic mailbox_tx_ready;
+    logic [mailbox_pkg::NODE_ID_WIDTH-1:0] mailbox_tx_dest_id;
+    logic mailbox_rx_valid;
+    logic mailbox_rx_ready;
+    logic [mailbox_pkg::NODE_ID_WIDTH-1:0] mailbox_rx_dest_id;
 
     logic        err_fp_overflow;
     logic        err_fp_invalid;
@@ -42,8 +86,11 @@ module coremark_tb(
     ) dut (
         .clk(clk),
         .rst_n(rst_n),
-        .inst_rdata(inst_rdata),
-        .inst_addr(inst_addr),
+        .inst_miss_req_valid(inst_miss_req_valid),
+        .inst_miss_req_addr(inst_miss_req_addr),
+        .inst_miss_req_ready(inst_miss_req_ready),
+        .inst_miss_resp_valid(inst_miss_resp_valid),
+        .inst_miss_resp_data(inst_miss_resp_data),
         .data_req_valid(data_req_valid),
         .data_req_is_load(data_req_is_load),
         .data_req_addr(data_req_addr),
@@ -59,13 +106,61 @@ module coremark_tb(
         .data_req_ready(data_req_ready),
         .data_resp_valid(data_resp_valid),
         .data_resp_rd(data_resp_rd),
-        .data_resp_data(data_resp_data)
+        .data_resp_data(data_resp_data),
+        .dcache_mem_req_valid(dcache_mem_req_valid),
+        .dcache_mem_req_rw(dcache_mem_req_rw),
+        .dcache_mem_req_addr(dcache_mem_req_addr),
+        .dcache_mem_req_size(dcache_mem_req_size),
+        .dcache_mem_req_qos(dcache_mem_req_qos),
+        .dcache_mem_req_id(dcache_mem_req_id),
+        .dcache_mem_req_wdata(dcache_mem_req_wdata),
+        .dcache_mem_req_wstrb(dcache_mem_req_wstrb),
+        .dcache_mem_req_ready(dcache_mem_req_ready),
+        .dcache_mem_resp_valid(dcache_mem_resp_valid),
+        .dcache_mem_resp_data(dcache_mem_resp_data),
+        .dcache_mem_resp_id(dcache_mem_resp_id),
+        .fb_aw_valid(fb_aw_valid),
+        .fb_aw_addr(fb_aw_addr),
+        .fb_aw_len(fb_aw_len),
+        .fb_aw_size(fb_aw_size),
+        .fb_aw_burst(fb_aw_burst),
+        .fb_aw_ready(fb_aw_ready),
+        .fb_w_data(fb_w_data),
+        .fb_w_strb(fb_w_strb),
+        .fb_w_last(fb_w_last),
+        .fb_w_valid(fb_w_valid),
+        .fb_w_ready(fb_w_ready),
+        .fb_b_valid(fb_b_valid),
+        .fb_b_ready(fb_b_ready),
+        .mailbox_tx_valid(mailbox_tx_valid),
+        .mailbox_tx_ready(mailbox_tx_ready),
+        .mailbox_tx_data(mailbox_tx_data),
+        .mailbox_tx_dest_id(mailbox_tx_dest_id),
+        .mailbox_rx_valid(mailbox_rx_valid),
+        .mailbox_rx_ready(mailbox_rx_ready),
+        .mailbox_rx_data(mailbox_rx_data),
+        .mailbox_rx_dest_id(mailbox_rx_dest_id)
     );
 
-    // Always-ready memory model
-    initial begin
-        data_req_ready = 1'b1;
-    end
+    // -------------------------
+    // Tie-offs for unused interfaces
+    // -------------------------
+    assign data_req_ready  = 1'b1;
+    assign data_resp_valid = 1'b0;
+    assign data_resp_rd    = '0;
+    assign data_resp_data  = 32'h0;
+
+    assign mailbox_tx_ready   = 1'b1;
+    assign mailbox_rx_valid   = 1'b0;
+    assign mailbox_rx_data    = '0;
+    assign mailbox_rx_dest_id = '0;
+
+    assign fb_aw_ready = 1'b1;
+    assign fb_w_ready  = 1'b1;
+    assign fb_b_valid  = 1'b0;
+
+    assign dcache_mem_req_ready = 1'b1;
+    assign inst_miss_req_ready  = 1'b1;
 
 
 
@@ -76,12 +171,9 @@ module coremark_tb(
     localparam int ROM_AW    = $clog2(ROM_WORDS);
     logic [31:0] rom [0:ROM_WORDS-1];
 
-    // 64-bit fetch aligned to 8 bytes: low word at +0, high word at +4
-    localparam int ROM_BUNDLES = (ROM_WORDS / 2);
-    localparam int BUNDLE_AW   = $clog2(ROM_BUNDLES);
-    logic [BUNDLE_AW-1:0] bundle_idx;
-    assign bundle_idx = inst_addr[BUNDLE_AW+2:3];
-    assign inst_rdata = {rom[{bundle_idx, 1'b1}], rom[{bundle_idx, 1'b0}]};
+    // I-cache miss handler
+    logic        inst_pending;
+    logic [31:0] inst_req_addr_q;
 
     // -------------------------
     // Global memory model (32-bit words)
@@ -98,16 +190,47 @@ module coremark_tb(
         mem_index = (addr - base_addr) >> 2;
     endfunction
 
-    // Simple response FIFO (in-order)
-    localparam int RESP_DEPTH = 32;
-    logic              resp_valid   [0:RESP_DEPTH-1];
-    logic [4:0]        resp_rd      [0:RESP_DEPTH-1];
-    logic [31:0]       resp_data_q  [0:RESP_DEPTH-1];
-    logic [4:0]        resp_wp;
-    logic [4:0]        resp_rp;
-    logic              resp_empty;
+    // D-cache backing memory responder
+    localparam int DCACHE_LINE_BYTES = 64;
+    localparam int DCACHE_BEATS      = DCACHE_LINE_BYTES / 8;
 
-    assign resp_empty = (resp_wp == resp_rp);
+    logic        dcache_tx_active;
+    logic        dcache_tx_rw;
+    logic [31:0] dcache_tx_addr;
+    logic [7:0]  dcache_tx_id_q;
+    logic [2:0]  dcache_tx_beat;
+    logic [511:0] dcache_tx_wdata;
+    logic [7:0]  dcache_tx_wstrb;
+
+    function automatic [63:0] dcache_read_beat(input logic [31:0] line_addr, input logic [2:0] beat);
+        int base_word;
+        begin
+            dcache_read_beat = 64'h0;
+            if ((line_addr >= base_addr) && ((line_addr - base_addr) < (MEM_WORDS*4))) begin
+                base_word = mem_index(line_addr) + (beat * 2);
+                dcache_read_beat = {mem[base_word + 1], mem[base_word + 0]};
+            end
+        end
+    endfunction
+
+    task automatic dcache_write_line(
+        input logic [31:0] line_addr,
+        input logic [511:0] line_data,
+        input logic [7:0]  line_wstrb  // 1 strobe bit per 8-byte beat
+    );
+        int base_word;
+        begin
+            for (int b = 0; b < DCACHE_BEATS; b++) begin
+                if (line_wstrb[b]) begin
+                    base_word = mem_index(line_addr) + (b * 2);
+                    if ((line_addr >= base_addr) && ((line_addr - base_addr) < (MEM_WORDS*4))) begin
+                        mem[base_word + 0] = line_data[(b*64) +: 32];
+                        mem[base_word + 1] = line_data[(b*64) + 32 +: 32];
+                    end
+                end
+            end
+        end
+    endtask
 
     // DONE tracking
     logic        done_seen;
@@ -189,18 +312,27 @@ module coremark_tb(
         );
     endtask
 
+    // -------------------------
+    // I-cache miss + D-cache memory responder
+    // -------------------------
     always @(posedge clk) begin
         if (!rst_n) begin
-            resp_wp         <= '0;
-            resp_rp         <= '0;
-            data_resp_valid <= 1'b0;
-            data_resp_rd    <= '0;
-            data_resp_data  <= 32'h0;
-            for (int i = 0; i < RESP_DEPTH; i++) begin
-                resp_valid[i]  <= 1'b0;
-                resp_rd[i]     <= '0;
-                resp_data_q[i] <= 32'h0;
-            end
+            inst_miss_resp_valid <= 1'b0;
+            inst_miss_resp_data  <= 64'h0;
+            inst_pending         <= 1'b0;
+            inst_req_addr_q      <= 32'h0;
+
+            dcache_mem_resp_valid <= 1'b0;
+            dcache_mem_resp_data  <= 64'h0;
+            dcache_mem_resp_id    <= 8'h0;
+            dcache_tx_active      <= 1'b0;
+            dcache_tx_rw          <= 1'b0;
+            dcache_tx_addr        <= 32'h0;
+            dcache_tx_id_q        <= 8'h0;
+            dcache_tx_beat        <= 3'd0;
+            dcache_tx_wdata       <= '0;
+            dcache_tx_wstrb       <= '0;
+
             done_seen   <= 1'b0;
             done_value  <= 32'h0;
             cycle_count <= 0;
@@ -215,67 +347,71 @@ module coremark_tb(
                 end
             end
 
-            if (data_req_valid && data_req_ready) begin
-                int idx;
-                idx = mem_index(data_req_addr);
-
-                if (check_bounds && ((idx < 0) || (idx >= MEM_WORDS))) begin
-                    $display(
-                        "%0t COREMARK_TB: OOB MEM access addr=%08h base=%08h idx=%0d words=%0d is_load=%0d",
-                        $time,
-                        data_req_addr,
-                        base_addr,
-                        idx,
-                        MEM_WORDS,
-                        data_req_is_load
-                    );
-                    dump_status();
+            // I-cache miss response (1-cycle latency)
+            inst_miss_resp_valid <= 1'b0;
+            if (inst_miss_req_valid && inst_miss_req_ready && !inst_pending) begin
+                inst_pending    <= 1'b1;
+                inst_req_addr_q <= {inst_miss_req_addr[31:3], 3'b000};
+            end
+            if (inst_pending) begin
+                int widx;
+                widx = int'(inst_req_addr_q >> 2);
+                if ((widx < 0) || (widx + 1 >= ROM_WORDS)) begin
+                    $display("%0t COREMARK_TB: OOB IROM access addr=%08h", $time, inst_req_addr_q);
                     $fatal(1);
                 end
-
-                if (data_req_is_load) begin
-                    resp_valid[resp_wp]  <= 1'b1;
-                    resp_rd[resp_wp]     <= data_req_rd;
-                    resp_data_q[resp_wp] <= mem[idx];
-                    resp_wp <= resp_wp + 1'b1;
-                end else begin
-                    mem[idx] <= data_req_wdata;
-                    if (data_req_addr == (base_addr + done_off)) begin
-                        done_seen  <= 1'b1;
-                        done_value <= data_req_wdata;
-                        $display("%0t COREMARK_TB: DONE write value=%08h", $time, data_req_wdata);
-                    end
-                end
-
-                if (debug_en && debug_mem && dbg_in_window()) begin
-                    $display(
-                        "%0t COREMARK_TB: MEM %s addr=%08h wdata=%08h rd=%0d",
-                        $time,
-                        data_req_is_load ? "LD" : "ST",
-                        data_req_addr,
-                        data_req_wdata,
-                        data_req_rd
-                    );
-                end
+                inst_miss_resp_valid <= 1'b1;
+                inst_miss_resp_data  <= {rom[widx + 1], rom[widx]};
+                inst_pending <= 1'b0;
             end
 
-            if (!resp_empty && resp_valid[resp_rp]) begin
-                data_resp_valid <= 1'b1;
-                data_resp_rd    <= resp_rd[resp_rp];
-                data_resp_data  <= resp_data_q[resp_rp];
-                resp_valid[resp_rp] <= 1'b0;
-                resp_rp <= resp_rp + 1'b1;
+            // D-cache responder (64B line, 8 beats)
+            dcache_mem_resp_valid <= 1'b0;
+            if (dcache_mem_req_valid && dcache_mem_req_ready) begin
+                logic [31:0] line_addr;
+                line_addr = {dcache_mem_req_addr[31:6], 6'b0};
 
-                if (debug_en && debug_mem && dbg_in_window()) begin
-                    $display(
-                        "%0t COREMARK_TB: RESP rd=%0d data=%08h",
-                        $time,
-                        resp_rd[resp_rp],
-                        resp_data_q[resp_rp]
-                    );
+                if (dcache_mem_req_rw) begin
+                    // Write: immediate response, commit line to memory
+                    dcache_write_line(line_addr, dcache_mem_req_wdata, dcache_mem_req_wstrb);
+                    dcache_mem_resp_valid <= 1'b1;
+                    dcache_mem_resp_id    <= dcache_mem_req_id;
+                    dcache_mem_resp_data  <= 64'h0;
+                    dcache_tx_active      <= 1'b0;
+
+                    // Check for DONE write
+                    if ((line_addr <= (base_addr + done_off)) &&
+                        ((line_addr + 32'd64) > (base_addr + done_off))) begin
+                        logic [31:0] done_w;
+                        done_w = mem[mem_index(base_addr + done_off)];
+                        if (done_w != 32'h0) begin
+                            done_seen  <= 1'b1;
+                            done_value <= done_w;
+                            $display("%0t COREMARK_TB: DONE write value=%08h (cycles=%0d)", $time, done_w, cycle_count);
+                        end
+                    end
+
+                    if (debug_en && debug_mem && dbg_in_window()) begin
+                        $display("%0t COREMARK_TB: D$ WRITE addr=%08h wstrb=%02h", $time, line_addr, dcache_mem_req_wstrb);
+                    end
+                end else begin
+                    // Read: start beat-by-beat response
+                    dcache_tx_active <= 1'b1;
+                    dcache_tx_rw     <= 1'b0;
+                    dcache_tx_addr   <= line_addr;
+                    dcache_tx_id_q   <= dcache_mem_req_id;
+                    dcache_tx_beat   <= 3'd0;
                 end
-            end else begin
-                data_resp_valid <= 1'b0;
+            end else if (dcache_tx_active) begin
+                dcache_mem_resp_valid <= 1'b1;
+                dcache_mem_resp_data  <= dcache_read_beat(dcache_tx_addr, dcache_tx_beat);
+                dcache_mem_resp_id    <= dcache_tx_id_q;
+                if (dcache_tx_beat == (DCACHE_BEATS - 1)) begin
+                    dcache_tx_active <= 1'b0;
+                    dcache_tx_beat   <= 3'd0;
+                end else begin
+                    dcache_tx_beat <= dcache_tx_beat + 1'b1;
+                end
             end
 
             if (!done_seen && (cycle_count >= max_cycles)) begin
@@ -458,12 +594,9 @@ module coremark_tb(
     always @(posedge clk) begin
         if (debug_en && rst_n && dbg_in_window() && (cycle_count < 40)) begin
             $display(
-                "%0t COREMARK_TB: pc=%08h hw=%0d inst_addr=%08h inst_rdata=%016h",
+                "%0t COREMARK_TB: pc=%08h",
                 $time,
-                dut.if_pc,
-                dut.u_fetch.pc_halfword,
-                inst_addr,
-                inst_rdata
+                dut.if_pc
             );
         end
 

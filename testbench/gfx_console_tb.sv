@@ -259,8 +259,11 @@ module gfx_console_tb;
     function automatic [63:0] dcache_read_beat(input logic [31:0] line_addr, input logic [2:0] beat);
         int base_word;
         begin
+            dcache_read_beat = 64'h0;
             base_word = mem_index(line_addr) + (beat * 2);
-            dcache_read_beat = {mem[base_word + 1], mem[base_word + 0]};
+            if ((base_word >= 0) && ((base_word + 1) < MEM_WORDS)) begin
+                dcache_read_beat = {mem[base_word + 1], mem[base_word + 0]};
+            end
         end
     endfunction
 
