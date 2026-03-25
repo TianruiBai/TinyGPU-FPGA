@@ -1,0 +1,2164 @@
+%Warning-EOFNEWLINE: ip/compute unit\lsu.sv:797:10: Missing newline at end of file (POSIX 3.206).
+                                                  : ... Suggest add newline.
+  797 | endmodule
+      |          ^
+                     ... For warning description see https://verilator.org/warn/EOFNEWLINE?v=5.041
+                     ... Use "/* verilator lint_off EOFNEWLINE */" and lint_on around source to disable this message.
+%Warning-MODDUP: ip/compute unit\cluster_top_v2.sv:31:8: Duplicate declaration of module: 'cluster_top'
+   31 | module cluster_top
+      |        ^~~~~~~~~~~
+                 ip/compute unit\cluster_top.sv:24:8: ... Location of original declaration
+   24 | module cluster_top
+      |        ^~~~~~~~~~~
+                 ... For warning description see https://verilator.org/warn/MODDUP?v=5.041
+                 ... Use "/* verilator lint_off MODDUP */" and lint_on around source to disable this message.
+%Warning-PINCONNECTEMPTY: ip/compute unit\cluster_top.sv:253:18: Instance pin connected by name with empty reference: 'data_req_valid'
+  253 |                 .data_req_valid(),
+      |                  ^~~~~~~~~~~~~~
+                          ... For warning description see https://verilator.org/warn/PINCONNECTEMPTY?v=5.041
+                          ... Use "/* verilator lint_off PINCONNECTEMPTY */" and lint_on around source to disable this message.
+%Warning-PINCONNECTEMPTY: ip/compute unit\cluster_top.sv:254:18: Instance pin connected by name with empty reference: 'data_req_is_load'
+  254 |                 .data_req_is_load(),
+      |                  ^~~~~~~~~~~~~~~~
+%Warning-PINCONNECTEMPTY: ip/compute unit\cluster_top.sv:255:18: Instance pin connected by name with empty reference: 'data_req_addr'
+  255 |                 .data_req_addr(),
+      |                  ^~~~~~~~~~~~~
+%Warning-PINCONNECTEMPTY: ip/compute unit\cluster_top.sv:256:18: Instance pin connected by name with empty reference: 'data_req_wdata'
+  256 |                 .data_req_wdata(),
+      |                  ^~~~~~~~~~~~~~
+%Warning-PINCONNECTEMPTY: ip/compute unit\cluster_top.sv:257:18: Instance pin connected by name with empty reference: 'data_req_rd'
+  257 |                 .data_req_rd(),
+      |                  ^~~~~~~~~~~
+%Warning-PINCONNECTEMPTY: ip/compute unit\cluster_top.sv:409:10: Instance pin connected by name with empty reference: 'mb_s_awready'
+  409 |         .mb_s_awready(), .mb_s_wready(), .mb_s_bvalid(),
+      |          ^~~~~~~~~~~~
+%Warning-PINCONNECTEMPTY: ip/compute unit\cluster_top.sv:409:27: Instance pin connected by name with empty reference: 'mb_s_wready'
+  409 |         .mb_s_awready(), .mb_s_wready(), .mb_s_bvalid(),
+      |                           ^~~~~~~~~~~
+%Warning-PINCONNECTEMPTY: ip/compute unit\cluster_top.sv:409:43: Instance pin connected by name with empty reference: 'mb_s_bvalid'
+  409 |         .mb_s_awready(), .mb_s_wready(), .mb_s_bvalid(),
+      |                                           ^~~~~~~~~~~
+%Warning-PINCONNECTEMPTY: ip/compute unit\cluster_top.sv:410:10: Instance pin connected by name with empty reference: 'mb_s_arready'
+  410 |         .mb_s_arready(), .mb_s_rvalid(), .mb_s_rdata(),
+      |          ^~~~~~~~~~~~
+%Warning-PINCONNECTEMPTY: ip/compute unit\cluster_top.sv:410:27: Instance pin connected by name with empty reference: 'mb_s_rvalid'
+  410 |         .mb_s_arready(), .mb_s_rvalid(), .mb_s_rdata(),
+      |                           ^~~~~~~~~~~
+%Warning-PINCONNECTEMPTY: ip/compute unit\cluster_top.sv:410:43: Instance pin connected by name with empty reference: 'mb_s_rdata'
+  410 |         .mb_s_arready(), .mb_s_rvalid(), .mb_s_rdata(),
+      |                                           ^~~~~~~~~~
+%Warning-PINCONNECTEMPTY: ip/compute unit\cluster_top.sv:451:18: Instance pin connected by name with empty reference: 'rtu_busy'
+  451 |                 .rtu_busy(),
+      |                  ^~~~~~~~
+%Warning-PINCONNECTEMPTY: ip/compute unit\cluster_top.sv:452:18: Instance pin connected by name with empty reference: 'rtu_done'
+  452 |                 .rtu_done()
+      |                  ^~~~~~~~
+%Warning-PINCONNECTEMPTY: ip/compute unit\compute_unit_top.sv:959:10: Instance pin connected by name with empty reference: 'resp_err'
+  959 |         .resp_err(),
+      |          ^~~~~~~~
+%Warning-PINCONNECTEMPTY: ip/compute unit\compute_unit_top.sv:1581:10: Instance pin connected by name with empty reference: 'branch_taken'
+ 1581 |         .branch_taken()
+      |          ^~~~~~~~~~~~
+%Warning-PINCONNECTEMPTY: ip/compute unit\compute_unit_top.sv:2146:10: Instance pin connected by name with empty reference: 'mailbox_tx_valid'
+ 2146 |         .mailbox_tx_valid(),
+      |          ^~~~~~~~~~~~~~~~
+%Warning-PINCONNECTEMPTY: ip/compute unit\compute_unit_top.sv:2147:10: Instance pin connected by name with empty reference: 'mailbox_tx_dest'
+ 2147 |         .mailbox_tx_dest(),
+      |          ^~~~~~~~~~~~~~~
+%Warning-PINCONNECTEMPTY: ip/compute unit\compute_unit_top.sv:2148:10: Instance pin connected by name with empty reference: 'mailbox_tx_data'
+ 2148 |         .mailbox_tx_data(),
+      |          ^~~~~~~~~~~~~~~
+%Warning-PINCONNECTEMPTY: ip/compute unit\compute_unit_top.sv:2149:10: Instance pin connected by name with empty reference: 'mailbox_tx_prio'
+ 2149 |         .mailbox_tx_prio(),
+      |          ^~~~~~~~~~~~~~~
+%Warning-PINCONNECTEMPTY: ip/compute unit\compute_unit_top.sv:2150:10: Instance pin connected by name with empty reference: 'mailbox_tx_eop'
+ 2150 |         .mailbox_tx_eop(),
+      |          ^~~~~~~~~~~~~~
+%Warning-PINCONNECTEMPTY: ip/compute unit\compute_unit_top.sv:2151:10: Instance pin connected by name with empty reference: 'mailbox_tx_opcode'
+ 2151 |         .mailbox_tx_opcode(),
+      |          ^~~~~~~~~~~~~~~~~
+%Warning-PINCONNECTEMPTY: ip/compute unit\compute_unit_top.sv:2153:10: Instance pin connected by name with empty reference: 'mailbox_rd_valid'
+ 2153 |         .mailbox_rd_valid(),
+      |          ^~~~~~~~~~~~~~~~
+%Warning-PINCONNECTEMPTY: ip/compute unit\compute_unit_top.sv:2155:10: Instance pin connected by name with empty reference: 'mailbox_rd_dest'
+ 2155 |         .mailbox_rd_dest(),
+      |          ^~~~~~~~~~~~~~~
+%Warning-PINCONNECTEMPTY: ip/compute unit\compute_unit_top.sv:2156:10: Instance pin connected by name with empty reference: 'mailbox_rd_prio'
+ 2156 |         .mailbox_rd_prio(),
+      |          ^~~~~~~~~~~~~~~
+%Warning-PINCONNECTEMPTY: ip/compute unit\compute_unit_top.sv:2157:10: Instance pin connected by name with empty reference: 'mailbox_rd_opcode'
+ 2157 |         .mailbox_rd_opcode(),
+      |          ^~~~~~~~~~~~~~~~~
+%Warning-PINCONNECTEMPTY: ip/compute unit\compute_unit_top.sv:2160:10: Instance pin connected by name with empty reference: 'mailbox_rd_resp_ready'
+ 2160 |         .mailbox_rd_resp_ready()
+      |          ^~~~~~~~~~~~~~~~~~~~~
+%Warning-PINCONNECTEMPTY: ip/compute unit\icache.sv:33:10: Instance pin connected by name with empty reference: 'resp_err'
+   33 |         .resp_err(),
+      |          ^~~~~~~~
+%Warning-PINCONNECTEMPTY: ip/compute unit\ray_tracing_unit.sv:99:10: Instance pin connected by name with empty reference: 'irq'
+   99 |         .irq(),
+      |          ^~~
+%Warning-IMPLICITSTATIC: ip/mailbox\mailbox_switch_2x1.sv:271:11: Variable's lifetime implicitly set to static
+                                                                : ... The initializer value will only be set once
+                                                                : ... Suggest use 'static' before variable declaration'
+  271 |     logic req_up0  = ingress_req[0] && ingress_tgt[0][2] && !up_fifo_full;
+      |           ^~~~~~~
+                         ... For warning description see https://verilator.org/warn/IMPLICITSTATIC?v=5.041
+                         ... Use "/* verilator lint_off IMPLICITSTATIC */" and lint_on around source to disable this message.
+%Warning-IMPLICITSTATIC: ip/mailbox\mailbox_switch_2x1.sv:272:11: Variable's lifetime implicitly set to static
+                                                                : ... The initializer value will only be set once
+                                                                : ... Suggest use 'static' before variable declaration'
+  272 |     logic req_up1  = ingress_req[1] && ingress_tgt[1][2] && !up_fifo_full;
+      |           ^~~~~~~
+%Warning-IMPLICITSTATIC: ip/mailbox\mailbox_switch_2x1.sv:273:11: Variable's lifetime implicitly set to static
+                                                                : ... The initializer value will only be set once
+                                                                : ... Suggest use 'static' before variable declaration'
+  273 |     logic req_up2  = ingress_req[2] && ingress_tgt[2][2] && !up_fifo_full;
+      |           ^~~~~~~
+%Warning-IMPLICITSTATIC: ip/mailbox\mailbox_switch_2x1.sv:275:11: Variable's lifetime implicitly set to static
+                                                                : ... The initializer value will only be set once
+                                                                : ... Suggest use 'static' before variable declaration'
+  275 |     logic req_dl00 = ingress_req[0] && ingress_tgt[0][0] && !dl0_fifo_full;
+      |           ^~~~~~~~
+%Warning-IMPLICITSTATIC: ip/mailbox\mailbox_switch_2x1.sv:276:11: Variable's lifetime implicitly set to static
+                                                                : ... The initializer value will only be set once
+                                                                : ... Suggest use 'static' before variable declaration'
+  276 |     logic req_dl01 = ingress_req[1] && ingress_tgt[1][0] && !dl0_fifo_full;
+      |           ^~~~~~~~
+%Warning-IMPLICITSTATIC: ip/mailbox\mailbox_switch_2x1.sv:277:11: Variable's lifetime implicitly set to static
+                                                                : ... The initializer value will only be set once
+                                                                : ... Suggest use 'static' before variable declaration'
+  277 |     logic req_dl02 = ingress_req[2] && ingress_tgt[2][0] && !dl0_fifo_full;
+      |           ^~~~~~~~
+%Warning-IMPLICITSTATIC: ip/mailbox\mailbox_switch_2x1.sv:279:11: Variable's lifetime implicitly set to static
+                                                                : ... The initializer value will only be set once
+                                                                : ... Suggest use 'static' before variable declaration'
+  279 |     logic req_dl10 = ingress_req[0] && ingress_tgt[0][1] && !dl1_fifo_full;
+      |           ^~~~~~~~
+%Warning-IMPLICITSTATIC: ip/mailbox\mailbox_switch_2x1.sv:280:11: Variable's lifetime implicitly set to static
+                                                                : ... The initializer value will only be set once
+                                                                : ... Suggest use 'static' before variable declaration'
+  280 |     logic req_dl11 = ingress_req[1] && ingress_tgt[1][1] && !dl1_fifo_full;
+      |           ^~~~~~~~
+%Warning-IMPLICITSTATIC: ip/mailbox\mailbox_switch_2x1.sv:281:11: Variable's lifetime implicitly set to static
+                                                                : ... The initializer value will only be set once
+                                                                : ... Suggest use 'static' before variable declaration'
+  281 |     logic req_dl12 = ingress_req[2] && ingress_tgt[2][1] && !dl1_fifo_full;
+      |           ^~~~~~~~
+%Warning-WIDTHCONCAT: ip/compute unit\shade_unit.sv:70:88: Unsized numbers/parameters not allowed in concatenations.
+                                                         : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline.u_shade'
+   70 |             else if (v >= max_s) clamp_u32 = (max_dim == 0) ? 32'd0 : {16'h0, (max_dim - 1)};
+      |                                                                                        ^
+                      ... For warning description see https://verilator.org/warn/WIDTHCONCAT?v=5.041
+                      ... Use "/* verilator lint_off WIDTHCONCAT */" and lint_on around source to disable this message.
+%Warning-WIDTHCONCAT: ip/compute unit\shade_unit.sv:70:77: Unsized numbers/parameters not allowed in replications.
+                                                         : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline.u_shade'
+   70 |             else if (v >= max_s) clamp_u32 = (max_dim == 0) ? 32'd0 : {16'h0, (max_dim - 1)};
+      |                                                                             ^
+%Warning-WIDTHEXPAND: ip/compute unit\shade_unit.sv:313:40: Operator DIVS expects 64 bits on the RHS, but RHS's SIGNED generates 32 bits.
+                                                          : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline.u_shade'
+  313 |                     s3_u_i <= s2_acc_u / $signed(s2_area);
+      |                                        ^
+                      ... For warning description see https://verilator.org/warn/WIDTHEXPAND?v=5.041
+                      ... Use "/* verilator lint_off WIDTHEXPAND */" and lint_on around source to disable this message.
+%Warning-WIDTHTRUNC: ip/compute unit\shade_unit.sv:313:28: Operator ASSIGNDLY expects 32 bits on the Assign RHS, but Assign RHS's DIVS generates 64 bits.
+                                                         : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline.u_shade'
+  313 |                     s3_u_i <= s2_acc_u / $signed(s2_area);
+      |                            ^~
+                     ... For warning description see https://verilator.org/warn/WIDTHTRUNC?v=5.041
+                     ... Use "/* verilator lint_off WIDTHTRUNC */" and lint_on around source to disable this message.
+%Warning-WIDTHEXPAND: ip/compute unit\shade_unit.sv:314:40: Operator DIVS expects 64 bits on the RHS, but RHS's SIGNED generates 32 bits.
+                                                          : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline.u_shade'
+  314 |                     s3_v_i <= s2_acc_v / $signed(s2_area);
+      |                                        ^
+%Warning-WIDTHTRUNC: ip/compute unit\shade_unit.sv:314:28: Operator ASSIGNDLY expects 32 bits on the Assign RHS, but Assign RHS's DIVS generates 64 bits.
+                                                         : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline.u_shade'
+  314 |                     s3_v_i <= s2_acc_v / $signed(s2_area);
+      |                            ^~
+%Warning-WIDTHTRUNC: ip/compute unit\rop_unit.sv:100:17: Operator ASSIGN expects 8 bits on the Assign RHS, but Assign RHS's SHIFTR generates 16 bits.
+                                                       : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline.u_rop'
+  100 |             orr = (pr + 16'h0080) >> 8;
+      |                 ^
+%Warning-WIDTHTRUNC: ip/compute unit\rop_unit.sv:101:17: Operator ASSIGN expects 8 bits on the Assign RHS, but Assign RHS's SHIFTR generates 16 bits.
+                                                       : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline.u_rop'
+  101 |             org = (pg + 16'h0080) >> 8;
+      |                 ^
+%Warning-WIDTHTRUNC: ip/compute unit\rop_unit.sv:102:17: Operator ASSIGN expects 8 bits on the Assign RHS, but Assign RHS's SHIFTR generates 16 bits.
+                                                       : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline.u_rop'
+  102 |             orb = (pb + 16'h0080) >> 8;
+      |                 ^
+%Warning-WIDTHCONCAT: ip/compute unit\rop_unit.sv:135:88: Unsized numbers/parameters not allowed in concatenations.
+                                                        : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline.u_rop'
+  135 |             else if (v >= max_s) clamp_u32 = (max_dim == 0) ? 32'd0 : {16'h0, (max_dim - 1)};
+      |                                                                                        ^
+%Warning-WIDTHCONCAT: ip/compute unit\rop_unit.sv:135:77: Unsized numbers/parameters not allowed in replications.
+                                                        : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline.u_rop'
+  135 |             else if (v >= max_s) clamp_u32 = (max_dim == 0) ? 32'd0 : {16'h0, (max_dim - 1)};
+      |                                                                             ^
+%Warning-WIDTHEXPAND: ip/compute unit\raster_unit.sv:163:31: Operator SHIFTL expects 64 bits on the LHS, but LHS's SIGNED generates 32 bits.
+                                                           : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline.u_raster'
+  163 |             ax2 = $signed(ax) <<< 1;
+      |                               ^~~
+%Warning-WIDTHEXPAND: ip/compute unit\raster_unit.sv:164:31: Operator SHIFTL expects 64 bits on the LHS, but LHS's SIGNED generates 32 bits.
+                                                           : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline.u_raster'
+  164 |             ay2 = $signed(ay) <<< 1;
+      |                               ^~~
+%Warning-WIDTHEXPAND: ip/compute unit\raster_unit.sv:165:31: Operator SHIFTL expects 64 bits on the LHS, but LHS's SIGNED generates 32 bits.
+                                                           : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline.u_raster'
+  165 |             bx2 = $signed(bx) <<< 1;
+      |                               ^~~
+%Warning-WIDTHEXPAND: ip/compute unit\raster_unit.sv:166:31: Operator SHIFTL expects 64 bits on the LHS, but LHS's SIGNED generates 32 bits.
+                                                           : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline.u_raster'
+  166 |             by2 = $signed(by) <<< 1;
+      |                               ^~~
+%Warning-WIDTHEXPAND: ip/compute unit\raster_unit.sv:167:32: Operator SHIFTL expects 64 bits on the LHS, but LHS's SIGNED generates 32 bits.
+                                                           : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline.u_raster'
+  167 |             px2 = ($signed(px) <<< 1) + 64'sd1;
+      |                                ^~~
+%Warning-WIDTHEXPAND: ip/compute unit\raster_unit.sv:168:32: Operator SHIFTL expects 64 bits on the LHS, but LHS's SIGNED generates 32 bits.
+                                                           : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline.u_raster'
+  168 |             py2 = ($signed(py) <<< 1) + 64'sd1;
+      |                                ^~~
+%Warning-WIDTHEXPAND: ip/compute unit\scalar_wb_arb_pending2.sv:140:61: Operator SUB expects 32 bits on the RHS, but RHS's VARREF 'pend_cnt_after_pop' generates 3 bits.
+                                                                      : ... note: In instance 'gfx_console_tb.dut.u_scalar_wb_arb_pending2'
+  140 |     wire [$clog2(PEND_DEPTH+1)-1:0] free_slots = PEND_DEPTH - pend_cnt_after_pop;
+      |                                                             ^
+%Warning-WIDTHTRUNC: ip/compute unit\scalar_wb_arb_pending2.sv:140:48: Operator ASSIGNW expects 3 bits on the Assign RHS, but Assign RHS's SUB generates 32 bits.
+                                                                     : ... note: In instance 'gfx_console_tb.dut.u_scalar_wb_arb_pending2'
+  140 |     wire [$clog2(PEND_DEPTH+1)-1:0] free_slots = PEND_DEPTH - pend_cnt_after_pop;
+      |                                                ^
+%Warning-WIDTHEXPAND: ip/compute unit\graphics_pipeline.sv:443:32: Operator ASSIGN expects 32 bits on the Assign RHS, but Assign RHS's CASTWRAP generates 1 bits.
+                                                                 : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline'
+  443 |             if (scoord >= dim) return logic'(dim - 1);
+      |                                ^~~~~~
+%Warning-WIDTHEXPAND: ip/compute unit\graphics_pipeline.sv:450:9: Operator ASSIGN expects 32 bits on the Assign RHS, but Assign RHS's CASTWRAP generates 1 bits.
+                                                                : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline'
+  450 |         return logic'(r);
+      |         ^~~~~~
+%Warning-WIDTHEXPAND: ip/compute unit\fp_alu.sv:72:28: Operator ASSIGN expects 5 bits on the Assign RHS, but Assign RHS's CASTWRAP generates 1 bits.
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_fp_alu1'
+   72 |                 fp16_lzc14 = logic'((13 - k) & 31);
+      |                            ^
+%Warning-WIDTHEXPAND: ip/compute unit\fp_alu.sv:199:15: Operator ASSIGN expects 8 bits on the Assign RHS, but Assign RHS's SIGNED generates 7 bits.
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_fp_alu1'
+  199 |             e = $signed({1'b0, exp_big});
+      |               ^
+%Warning-WIDTHEXPAND: ip/compute unit\fp_alu.sv:228:28: Operator SUB expects 32 bits on the RHS, but RHS's VARREF 'e' generates 8 bits.
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_fp_alu1'
+  228 |                 rshift = 1 - e;
+      |                            ^
+%Warning-WIDTHEXPAND: ip/compute unit\fp_alu.sv:512:52: Operator ADD expects 8 bits on the LHS, but LHS's SIGNED generates 6 bits.
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_fp_alu1'
+  512 |                 s1_mul_exp  <= $signed({1'b0, xa}) + $signed({1'b0, xb}) - 8'sd15;
+      |                                                    ^
+%Warning-WIDTHEXPAND: ip/compute unit\fp_alu.sv:512:52: Operator ADD expects 8 bits on the RHS, but RHS's SIGNED generates 6 bits.
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_fp_alu1'
+  512 |                 s1_mul_exp  <= $signed({1'b0, xa}) + $signed({1'b0, xb}) - 8'sd15;
+      |                                                    ^
+%Warning-WIDTHEXPAND: ip/compute unit\fp_alu.sv:573:52: Operator SUB expects 32 bits on the LHS, but LHS's SIGNED generates 6 bits.
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_fp_alu1'
+  573 |                     shift = $signed({1'b0, a_exp}) - 6'sd15;
+      |                                                    ^
+%Warning-WIDTHEXPAND: ip/compute unit\fp_alu.sv:573:52: Operator SUB expects 32 bits on the RHS, but RHS's CONST '6'shf' generates 6 bits.
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_fp_alu1'
+  573 |                     shift = $signed({1'b0, a_exp}) - 6'sd15;
+      |                                                    ^
+%Warning-WIDTHEXPAND: ip/compute unit\fp_alu.sv:579:36: Operator SHIFTR expects 32 bits on the LHS, but LHS's VARREF 'mant' generates 26 bits.
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_fp_alu1'
+  579 |                         mag = mant >> (14 - shift);
+      |                                    ^~
+%Warning-WIDTHEXPAND: ip/compute unit\fp_alu.sv:607:31: Operator ADD expects 32 bits on the RHS, but RHS's CONST '5'hf' generates 5 bits.
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_fp_alu1'
+  607 |                     exp = msb + 5'd15;
+      |                               ^
+%Warning-WIDTHTRUNC: ip/compute unit\fp_alu.sv:607:25: Operator ASSIGN expects 5 bits on the Assign RHS, but Assign RHS's ADD generates 32 bits.
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_fp_alu1'
+  607 |                     exp = msb + 5'd15;
+      |                         ^
+%Warning-WIDTHTRUNC: ip/compute unit\fp_alu.sv:616:33: Operator ASSIGN expects 11 bits on the Assign RHS, but Assign RHS's SHIFTR generates 32 bits.
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_fp_alu1'
+  616 |                             man = absx >> rshift;
+      |                                 ^
+%Warning-WIDTHTRUNC: ip/compute unit\fp_alu.sv:627:33: Operator ASSIGN expects 11 bits on the Assign RHS, but Assign RHS's SHIFTL generates 32 bits.
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_fp_alu1'
+  627 |                             man = absx << (10 - msb);
+      |                                 ^
+%Warning-WIDTHEXPAND: ip/compute unit\fp_alu.sv:680:24: Operator ASSIGNDLY expects 8 bits on the Assign RHS, but Assign RHS's SIGNED generates 7 bits.
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_fp_alu1'
+  680 |                 s2_exp <= $signed({1'b0, s1_exp_big});
+      |                        ^~
+%Warning-WIDTHEXPAND: ip/compute unit\fp_alu.sv:757:32: Operator SUB expects 32 bits on the RHS, but RHS's VARREF 'e' generates 8 bits.
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_fp_alu1'
+  757 |                     rshift = 1 - e;
+      |                                ^
+%Warning-WIDTHEXPAND: ip/compute unit\fp_alu.sv:821:32: Operator SUB expects 32 bits on the RHS, but RHS's VARREF 'e' generates 8 bits.
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_fp_alu1'
+  821 |                     rshift = 1 - e;
+      |                                ^
+%Warning-WIDTHEXPAND: ip/compute unit\fp_alu.sv:898:36: Operator SUB expects 32 bits on the RHS, but RHS's VARREF 'e' generates 8 bits.
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_fp_alu1'
+  898 |                         rshift = 1 - e;
+      |                                    ^
+%Warning-WIDTHEXPAND: ip/compute unit\alu_vector.sv:102:29: Operator SUB expects 32 bits on the LHS, but LHS's VARREF 'exp_l' generates 5 bits.
+                                                          : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+  102 |             exp_tmp = exp_l - lz;
+      |                             ^
+%Warning-WIDTHEXPAND: ip/compute unit\alu_vector.sv:102:29: Operator SUB expects 32 bits on the RHS, but RHS's VARREF 'lz' generates 4 bits.
+                                                          : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+  102 |             exp_tmp = exp_l - lz;
+      |                             ^
+%Warning-WIDTHEXPAND: ip/compute unit\alu_vector.sv:162:29: Operator SUB expects 32 bits on the LHS, but LHS's VARREF 'exp_l' generates 4 bits.
+                                                          : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+  162 |             exp_tmp = exp_l - lz;
+      |                             ^
+%Warning-WIDTHEXPAND: ip/compute unit\alu_vector.sv:162:29: Operator SUB expects 32 bits on the RHS, but RHS's VARREF 'lz' generates 3 bits.
+                                                          : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+  162 |             exp_tmp = exp_l - lz;
+      |                             ^
+%Warning-WIDTHEXPAND: ip/compute unit\alu_vector.sv:203:22: Operator SUB expects 8 bits on the LHS, but LHS's VARREF 'e' generates 5 bits.
+                                                          : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+  203 |             e32 = (e - 5'd15) + 8'd127;
+      |                      ^
+%Warning-WIDTHEXPAND: ip/compute unit\alu_vector.sv:203:22: Operator SUB expects 8 bits on the RHS, but RHS's CONST '5'hf' generates 5 bits.
+                                                          : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+  203 |             e32 = (e - 5'd15) + 8'd127;
+      |                      ^
+%Warning-WIDTHEXPAND: ip/compute unit\alu_vector.sv:221:22: Operator SUB expects 32 bits on the LHS, but LHS's VARREF 'e' generates 8 bits.
+                                                          : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+  221 |             e16 = (e - 8'd127) + 5'd15;
+      |                      ^
+%Warning-WIDTHEXPAND: ip/compute unit\alu_vector.sv:221:22: Operator SUB expects 32 bits on the RHS, but RHS's CONST '8'h7f' generates 8 bits.
+                                                          : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+  221 |             e16 = (e - 8'd127) + 5'd15;
+      |                      ^
+%Warning-WIDTHEXPAND: ip/compute unit\alu_vector.sv:221:32: Operator ADD expects 32 bits on the RHS, but RHS's CONST '5'hf' generates 5 bits.
+                                                          : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+  221 |             e16 = (e - 8'd127) + 5'd15;
+      |                                ^
+%Warning-WIDTHEXPAND: ip/compute unit\alu_vector.sv:242:22: Operator SUB expects 8 bits on the LHS, but LHS's VARREF 'e' generates 4 bits.
+                                                          : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+  242 |             e32 = (e - 4'd7) + 8'd127;
+      |                      ^
+%Warning-WIDTHEXPAND: ip/compute unit\alu_vector.sv:242:22: Operator SUB expects 8 bits on the RHS, but RHS's CONST '4'h7' generates 4 bits.
+                                                          : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+  242 |             e32 = (e - 4'd7) + 8'd127;
+      |                      ^
+%Warning-WIDTHEXPAND: ip/compute unit\alu_vector.sv:260:21: Operator SUB expects 32 bits on the LHS, but LHS's VARREF 'e' generates 8 bits.
+                                                          : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+  260 |             e8 = (e - 8'd127) + 4'd7;
+      |                     ^
+%Warning-WIDTHEXPAND: ip/compute unit\alu_vector.sv:260:21: Operator SUB expects 32 bits on the RHS, but RHS's CONST '8'h7f' generates 8 bits.
+                                                          : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+  260 |             e8 = (e - 8'd127) + 4'd7;
+      |                     ^
+%Warning-WIDTHEXPAND: ip/compute unit\alu_vector.sv:260:31: Operator ADD expects 32 bits on the RHS, but RHS's CONST '4'h7' generates 4 bits.
+                                                          : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+  260 |             e8 = (e - 8'd127) + 4'd7;
+      |                               ^
+%Warning-WIDTHEXPAND: ip/compute unit\alu_vector.sv:348:23: Operator LTE expects 32 bits on the LHS, but LHS's VARREF 'exp_l' generates 8 bits.
+                                                          : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+  348 |             if (exp_l <= lz) begin
+      |                       ^~
+%Warning-WIDTHEXPAND: ip/compute unit\alu_vector.sv:399:26: Operator ADD expects 32 bits on the LHS, but LHS's VARREF 'exp_a' generates 8 bits.
+                                                          : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+  399 |         exp_tmp = (exp_a + exp_b) - 127;
+      |                          ^
+%Warning-WIDTHEXPAND: ip/compute unit\alu_vector.sv:399:26: Operator ADD expects 32 bits on the RHS, but RHS's VARREF 'exp_b' generates 8 bits.
+                                                          : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+  399 |         exp_tmp = (exp_a + exp_b) - 127;
+      |                          ^
+%Warning-WIDTHEXPAND: ip/compute unit\alu_vector.sv:449:21: Operator SUB expects 32 bits on the LHS, but LHS's VARREF 'exp' generates 8 bits.
+                                                          : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+  449 |         shift = exp - 127;
+      |                     ^
+%Warning-WIDTHEXPAND: ip/compute unit\alu_vector.sv:657:25: Operator ASSIGN expects 32 bits on the Assign RHS, but Assign RHS's SEL generates 2 bits.
+                                                          : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+  657 |                     sel = scalar_mask[(i%4)*2 +: 2];
+      |                         ^
+%Warning-WIDTHEXPAND: ip/compute unit\alu_vector.sv:1097:49: Operator ADD expects 64 bits on the RHS, but RHS's SIGNED generates 32 bits.
+                                                           : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+ 1097 |                 for (i = 0; i < lanes; i++) acc += $signed(r_elem[i]);
+      |                                                 ^~
+%Warning-WIDTHEXPAND: ip/compute unit\compute_unit_top.sv:637:42: Operator EQ expects 32 bits on the LHS, but LHS's VARREF 'vq_count' generates 2 bits.
+                                                                : ... note: In instance 'gfx_console_tb.dut'
+  637 |     wire vector_queue_full   = (vq_count == VQ_DEPTH);
+      |                                          ^~
+%Warning-WIDTHEXPAND: ip/compute unit\compute_unit_top.sv:638:42: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'vq_count' generates 2 bits.
+                                                                : ... note: In instance 'gfx_console_tb.dut'
+  638 |     wire vector_queue_has1   = (vq_count < VQ_DEPTH);
+      |                                          ^
+%Warning-WIDTHEXPAND: ip/compute unit\compute_unit_top.sv:639:42: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'vq_count' generates 2 bits.
+                                                                : ... note: In instance 'gfx_console_tb.dut'
+  639 |     wire vector_queue_has2   = (vq_count < (VQ_DEPTH-1));
+      |                                          ^
+%Warning-WIDTHEXPAND: ip/compute unit\compute_unit_top.sv:1743:46: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'vwbq_count' generates 6 bits.
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+ 1743 |     wire vwbq_can_accept_one   = (vwbq_count < VWBQ_DEPTH);
+      |                                              ^
+%Warning-WIDTHEXPAND: ip/compute unit\compute_unit_top.sv:1744:46: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'vwbq_count' generates 6 bits.
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+ 1744 |     wire vwbq_can_accept_two   = (vwbq_count < (VWBQ_DEPTH-1));
+      |                                              ^
+%Warning-WIDTHEXPAND: ip/compute unit\compute_unit_top.sv:1745:46: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'vwbq_count' generates 6 bits.
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+ 1745 |     wire vwbq_can_accept_three = (vwbq_count < (VWBQ_DEPTH-2));
+      |                                              ^
+%Warning-WIDTHEXPAND: ip/compute unit\compute_unit_top.sv:2700:35: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'cnt' generates 6 bits.
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+ 2700 |             if (v_push_gp && (cnt < VWBQ_DEPTH)) begin
+      |                                   ^
+%Warning-WIDTHEXPAND: ip/compute unit\compute_unit_top.sv:2711:39: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'cnt' generates 6 bits.
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+ 2711 |             if (v_push_valuv0 && (cnt < VWBQ_DEPTH)) begin
+      |                                       ^
+%Warning-WIDTHEXPAND: ip/compute unit\compute_unit_top.sv:2722:39: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'cnt' generates 6 bits.
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+ 2722 |             if (v_push_valuv1 && (cnt < VWBQ_DEPTH)) begin
+      |                                       ^
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:224:15: Operator FUNCREF 'i_type' expects 32 bits on the Function Argument, but Function Argument's CONST '12'h0' generates 12 bits.
+                                                        : ... note: In instance 'gfx_console_tb'
+  224 |         nop = i_type(12'd0, 5'd0, 3'b000, 5'd0, OP_IMM);
+      |               ^~~~~~
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:462:37: Operator SHIFTL expects 32 bits on the LHS, but LHS's VARREF 'r' generates 8 bits.
+                                                        : ... note: In instance 'gfx_console_tb'
+  462 |                             rgb = (r<<16)|(g<<8)|b;
+      |                                     ^~
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:462:45: Operator SHIFTL expects 32 bits on the LHS, but LHS's VARREF 'g' generates 8 bits.
+                                                        : ... note: In instance 'gfx_console_tb'
+  462 |                             rgb = (r<<16)|(g<<8)|b;
+      |                                             ^~
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:462:49: Operator OR expects 32 bits on the RHS, but RHS's VARREF 'b' generates 8 bits.
+                                                        : ... note: In instance 'gfx_console_tb'
+  462 |                             rgb = (r<<16)|(g<<8)|b;
+      |                                                 ^
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:873:26: Operator FUNCREF 'i_type' expects 32 bits on the Function Argument, but Function Argument's CONST '12'h40f' generates 12 bits.
+                                                        : ... note: In instance 'gfx_console_tb'
+  873 |             rom[pc>>2] = i_type(12'h40F, 5'd29, 3'b101, 5'd29, OP_IMM); pc += 4;
+      |                          ^~~~~~
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:877:26: Operator FUNCREF 'i_type' expects 32 bits on the Function Argument, but Function Argument's CONST '12'h40f' generates 12 bits.
+                                                        : ... note: In instance 'gfx_console_tb'
+  877 |             rom[pc>>2] = i_type(12'h40F, 5'd30, 3'b101, 5'd30, OP_IMM); pc += 4;
+      |                          ^~~~~~
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:883:26: Operator FUNCREF 'i_type' expects 32 bits on the Function Argument, but Function Argument's CONST '12'h40f' generates 12 bits.
+                                                        : ... note: In instance 'gfx_console_tb'
+  883 |             rom[pc>>2] = i_type(12'h40F, 5'd31, 3'b101, 5'd31, OP_IMM); pc += 4;
+      |                          ^~~~~~
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:891:26: Operator FUNCREF 'i_type' expects 32 bits on the Function Argument, but Function Argument's CONST '12'h40f' generates 12 bits.
+                                                        : ... note: In instance 'gfx_console_tb'
+  891 |             rom[pc>>2] = i_type(12'h40F, 5'd28, 3'b101, 5'd28, OP_IMM); pc += 4;
+      |                          ^~~~~~
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:900:26: Operator FUNCREF 'i_type' expects 32 bits on the Function Argument, but Function Argument's CONST '12'h40f' generates 12 bits.
+                                                        : ... note: In instance 'gfx_console_tb'
+  900 |             rom[pc>>2] = i_type(12'h40F, 5'd26, 3'b101, 5'd26, OP_IMM); pc += 4;
+      |                          ^~~~~~
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:949:26: Operator FUNCREF 'i_type' expects 32 bits on the Function Argument, but Function Argument's CONST '12'h40f' generates 12 bits.
+                                                        : ... note: In instance 'gfx_console_tb'
+  949 |             rom[pc>>2] = i_type(12'h40F, 5'd30, 3'b101, 5'd30, OP_IMM); pc += 4;
+      |                          ^~~~~~
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:953:26: Operator FUNCREF 'i_type' expects 32 bits on the Function Argument, but Function Argument's CONST '12'h40f' generates 12 bits.
+                                                        : ... note: In instance 'gfx_console_tb'
+  953 |             rom[pc>>2] = i_type(12'h40F, 5'd29, 3'b101, 5'd29, OP_IMM); pc += 4;
+      |                          ^~~~~~
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:957:26: Operator FUNCREF 'i_type' expects 32 bits on the Function Argument, but Function Argument's CONST '12'h40f' generates 12 bits.
+                                                        : ... note: In instance 'gfx_console_tb'
+  957 |             rom[pc>>2] = i_type(12'h40F, 5'd26, 3'b101, 5'd26, OP_IMM); pc += 4;
+      |                          ^~~~~~
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:996:26: Operator FUNCREF 'i_type' expects 32 bits on the Function Argument, but Function Argument's CONST '12'h40f' generates 12 bits.
+                                                        : ... note: In instance 'gfx_console_tb'
+  996 |             rom[pc>>2] = i_type(12'h40F, 5'd30, 3'b101, 5'd30, OP_IMM); pc += 4;
+      |                          ^~~~~~
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:1000:26: Operator FUNCREF 'i_type' expects 32 bits on the Function Argument, but Function Argument's CONST '12'h40f' generates 12 bits.
+                                                         : ... note: In instance 'gfx_console_tb'
+ 1000 |             rom[pc>>2] = i_type(12'h40F, 5'd29, 3'b101, 5'd29, OP_IMM); pc += 4;
+      |                          ^~~~~~
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:1004:26: Operator FUNCREF 'i_type' expects 32 bits on the Function Argument, but Function Argument's CONST '12'h40f' generates 12 bits.
+                                                         : ... note: In instance 'gfx_console_tb'
+ 1004 |             rom[pc>>2] = i_type(12'h40F, 5'd26, 3'b101, 5'd26, OP_IMM); pc += 4;
+      |                          ^~~~~~
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:1043:26: Operator FUNCREF 'i_type' expects 32 bits on the Function Argument, but Function Argument's CONST '12'h40f' generates 12 bits.
+                                                         : ... note: In instance 'gfx_console_tb'
+ 1043 |             rom[pc>>2] = i_type(12'h40F, 5'd30, 3'b101, 5'd30, OP_IMM); pc += 4;
+      |                          ^~~~~~
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:1047:26: Operator FUNCREF 'i_type' expects 32 bits on the Function Argument, but Function Argument's CONST '12'h40f' generates 12 bits.
+                                                         : ... note: In instance 'gfx_console_tb'
+ 1047 |             rom[pc>>2] = i_type(12'h40F, 5'd29, 3'b101, 5'd29, OP_IMM); pc += 4;
+      |                          ^~~~~~
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:1051:26: Operator FUNCREF 'i_type' expects 32 bits on the Function Argument, but Function Argument's CONST '12'h40f' generates 12 bits.
+                                                         : ... note: In instance 'gfx_console_tb'
+ 1051 |             rom[pc>>2] = i_type(12'h40F, 5'd26, 3'b101, 5'd26, OP_IMM); pc += 4;
+      |                          ^~~~~~
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:1127:26: Operator FUNCREF 'i_type' expects 32 bits on the Function Argument, but Function Argument's CONST '12'h40f' generates 12 bits.
+                                                         : ... note: In instance 'gfx_console_tb'
+ 1127 |             rom[pc>>2] = i_type(12'h40F, 5'd29, 3'b101, 5'd29, OP_IMM); pc += 4;
+      |                          ^~~~~~
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:1131:26: Operator FUNCREF 'i_type' expects 32 bits on the Function Argument, but Function Argument's CONST '12'h40f' generates 12 bits.
+                                                         : ... note: In instance 'gfx_console_tb'
+ 1131 |             rom[pc>>2] = i_type(12'h40F, 5'd30, 3'b101, 5'd30, OP_IMM); pc += 4;
+      |                          ^~~~~~
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:1135:26: Operator FUNCREF 'i_type' expects 32 bits on the Function Argument, but Function Argument's CONST '12'h40f' generates 12 bits.
+                                                         : ... note: In instance 'gfx_console_tb'
+ 1135 |             rom[pc>>2] = i_type(12'h40F, 5'd31, 3'b101, 5'd31, OP_IMM); pc += 4;
+      |                          ^~~~~~
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:1141:26: Operator FUNCREF 'i_type' expects 32 bits on the Function Argument, but Function Argument's CONST '12'h40f' generates 12 bits.
+                                                         : ... note: In instance 'gfx_console_tb'
+ 1141 |             rom[pc>>2] = i_type(12'h40F, 5'd28, 3'b101, 5'd28, OP_IMM); pc += 4;
+      |                          ^~~~~~
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:1146:26: Operator FUNCREF 'i_type' expects 32 bits on the Function Argument, but Function Argument's CONST '12'h40f' generates 12 bits.
+                                                         : ... note: In instance 'gfx_console_tb'
+ 1146 |             rom[pc>>2] = i_type(12'h40F, 5'd26, 3'b101, 5'd26, OP_IMM); pc += 4;
+      |                          ^~~~~~
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:1185:26: Operator FUNCREF 'i_type' expects 32 bits on the Function Argument, but Function Argument's CONST '12'h40f' generates 12 bits.
+                                                         : ... note: In instance 'gfx_console_tb'
+ 1185 |             rom[pc>>2] = i_type(12'h40F, 5'd30, 3'b101, 5'd30, OP_IMM); pc += 4;
+      |                          ^~~~~~
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:1189:26: Operator FUNCREF 'i_type' expects 32 bits on the Function Argument, but Function Argument's CONST '12'h40f' generates 12 bits.
+                                                         : ... note: In instance 'gfx_console_tb'
+ 1189 |             rom[pc>>2] = i_type(12'h40F, 5'd29, 3'b101, 5'd29, OP_IMM); pc += 4;
+      |                          ^~~~~~
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:1193:26: Operator FUNCREF 'i_type' expects 32 bits on the Function Argument, but Function Argument's CONST '12'h40f' generates 12 bits.
+                                                         : ... note: In instance 'gfx_console_tb'
+ 1193 |             rom[pc>>2] = i_type(12'h40F, 5'd26, 3'b101, 5'd26, OP_IMM); pc += 4;
+      |                          ^~~~~~
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:1226:26: Operator FUNCREF 'i_type' expects 32 bits on the Function Argument, but Function Argument's CONST '12'h40f' generates 12 bits.
+                                                         : ... note: In instance 'gfx_console_tb'
+ 1226 |             rom[pc>>2] = i_type(12'h40F, 5'd30, 3'b101, 5'd30, OP_IMM); pc += 4;
+      |                          ^~~~~~
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:1230:26: Operator FUNCREF 'i_type' expects 32 bits on the Function Argument, but Function Argument's CONST '12'h40f' generates 12 bits.
+                                                         : ... note: In instance 'gfx_console_tb'
+ 1230 |             rom[pc>>2] = i_type(12'h40F, 5'd29, 3'b101, 5'd29, OP_IMM); pc += 4;
+      |                          ^~~~~~
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:1234:26: Operator FUNCREF 'i_type' expects 32 bits on the Function Argument, but Function Argument's CONST '12'h40f' generates 12 bits.
+                                                         : ... note: In instance 'gfx_console_tb'
+ 1234 |             rom[pc>>2] = i_type(12'h40F, 5'd26, 3'b101, 5'd26, OP_IMM); pc += 4;
+      |                          ^~~~~~
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:1267:26: Operator FUNCREF 'i_type' expects 32 bits on the Function Argument, but Function Argument's CONST '12'h40f' generates 12 bits.
+                                                         : ... note: In instance 'gfx_console_tb'
+ 1267 |             rom[pc>>2] = i_type(12'h40F, 5'd30, 3'b101, 5'd30, OP_IMM); pc += 4;
+      |                          ^~~~~~
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:1271:26: Operator FUNCREF 'i_type' expects 32 bits on the Function Argument, but Function Argument's CONST '12'h40f' generates 12 bits.
+                                                         : ... note: In instance 'gfx_console_tb'
+ 1271 |             rom[pc>>2] = i_type(12'h40F, 5'd29, 3'b101, 5'd29, OP_IMM); pc += 4;
+      |                          ^~~~~~
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:1275:26: Operator FUNCREF 'i_type' expects 32 bits on the Function Argument, but Function Argument's CONST '12'h40f' generates 12 bits.
+                                                         : ... note: In instance 'gfx_console_tb'
+ 1275 |             rom[pc>>2] = i_type(12'h40F, 5'd26, 3'b101, 5'd26, OP_IMM); pc += 4;
+      |                          ^~~~~~
+%Warning-WIDTHEXPAND: testbench\gfx_console_tb.sv:1434:40: Operator EQ expects 32 bits on the LHS, but LHS's VARREF 'dcache_tx_beat' generates 3 bits.
+                                                         : ... note: In instance 'gfx_console_tb'
+ 1434 |                     if (dcache_tx_beat == (DCACHE_BEATS - 1)) begin
+      |                                        ^~
+%Warning-UNUSEDPARAM: testbench\gfx_console_tb.sv:35:29: Parameter is not used: 'TRI_BUF_CUBE_OFF'
+                                                       : ... note: In instance 'gfx_console_tb'
+   35 |     localparam logic [31:0] TRI_BUF_CUBE_OFF  = TRI_BUF_OFF;
+      |                             ^~~~~~~~~~~~~~~~
+                      ... For warning description see https://verilator.org/warn/UNUSEDPARAM?v=5.041
+                      ... Use "/* verilator lint_off UNUSEDPARAM */" and lint_on around source to disable this message.
+%Warning-UNUSEDPARAM: testbench\gfx_console_tb.sv:36:29: Parameter is not used: 'TRI_BUF_TEA_OFF'
+                                                       : ... note: In instance 'gfx_console_tb'
+   36 |     localparam logic [31:0] TRI_BUF_TEA_OFF   = TRI_BUF_OFF + (TRIS_CUBE * TRI_STRIDE_BYTES);
+      |                             ^~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:67:18: Bits of signal are not used: 'inst_miss_req_addr'[2:0]
+                                                        : ... note: In instance 'gfx_console_tb'
+   67 |     logic [31:0] inst_miss_req_addr;
+      |                  ^~~~~~~~~~~~~~~~~~
+                       ... For warning description see https://verilator.org/warn/UNUSEDSIGNAL?v=5.041
+                       ... Use "/* verilator lint_off UNUSEDSIGNAL */" and lint_on around source to disable this message.
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:73:18: Signal is not used: 'data_req_valid'
+                                                        : ... note: In instance 'gfx_console_tb'
+   73 |     logic        data_req_valid;
+      |                  ^~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:74:18: Signal is not used: 'data_req_is_load'
+                                                        : ... note: In instance 'gfx_console_tb'
+   74 |     logic        data_req_is_load;
+      |                  ^~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:75:18: Signal is not used: 'data_req_addr'
+                                                        : ... note: In instance 'gfx_console_tb'
+   75 |     logic [31:0] data_req_addr;
+      |                  ^~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:76:18: Signal is not used: 'data_req_wdata'
+                                                        : ... note: In instance 'gfx_console_tb'
+   76 |     logic [31:0] data_req_wdata;
+      |                  ^~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:77:18: Signal is not used: 'data_req_rd'
+                                                        : ... note: In instance 'gfx_console_tb'
+   77 |     logic [4:0]  data_req_rd;
+      |                  ^~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:87:18: Bits of signal are not used: 'dcache_mem_req_addr'[5:0]
+                                                        : ... note: In instance 'gfx_console_tb'
+   87 |     logic [31:0] dcache_mem_req_addr;
+      |                  ^~~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:88:18: Signal is not used: 'dcache_mem_req_size'
+                                                        : ... note: In instance 'gfx_console_tb'
+   88 |     logic [7:0]  dcache_mem_req_size;
+      |                  ^~~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:89:18: Signal is not used: 'dcache_mem_req_qos'
+                                                        : ... note: In instance 'gfx_console_tb'
+   89 |     logic [3:0]  dcache_mem_req_qos;
+      |                  ^~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:99:18: Signal is not used: 'fb_aw_valid'
+                                                        : ... note: In instance 'gfx_console_tb'
+   99 |     logic        fb_aw_valid;
+      |                  ^~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:100:18: Signal is not used: 'fb_aw_addr'
+                                                         : ... note: In instance 'gfx_console_tb'
+  100 |     logic [31:0] fb_aw_addr;
+      |                  ^~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:101:18: Signal is not used: 'fb_aw_len'
+                                                         : ... note: In instance 'gfx_console_tb'
+  101 |     logic [7:0]  fb_aw_len;
+      |                  ^~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:102:18: Signal is not used: 'fb_aw_size'
+                                                         : ... note: In instance 'gfx_console_tb'
+  102 |     logic [2:0]  fb_aw_size;
+      |                  ^~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:103:18: Signal is not used: 'fb_aw_burst'
+                                                         : ... note: In instance 'gfx_console_tb'
+  103 |     logic [1:0]  fb_aw_burst;
+      |                  ^~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:105:18: Signal is not used: 'fb_w_data'
+                                                         : ... note: In instance 'gfx_console_tb'
+  105 |     logic [31:0] fb_w_data;
+      |                  ^~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:106:18: Signal is not used: 'fb_w_strb'
+                                                         : ... note: In instance 'gfx_console_tb'
+  106 |     logic [3:0]  fb_w_strb;
+      |                  ^~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:107:18: Signal is not used: 'fb_w_last'
+                                                         : ... note: In instance 'gfx_console_tb'
+  107 |     logic        fb_w_last;
+      |                  ^~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:108:18: Signal is not used: 'fb_w_valid'
+                                                         : ... note: In instance 'gfx_console_tb'
+  108 |     logic        fb_w_valid;
+      |                  ^~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:111:18: Signal is not used: 'fb_b_ready'
+                                                         : ... note: In instance 'gfx_console_tb'
+  111 |     logic        fb_b_ready;
+      |                  ^~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:115:33: Signal is not used: 'mailbox_tx_data'
+                                                         : ... note: In instance 'gfx_console_tb'
+  115 |     mailbox_pkg::mailbox_flit_t mailbox_tx_data;
+      |                                 ^~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:117:11: Signal is not used: 'mailbox_tx_valid'
+                                                         : ... note: In instance 'gfx_console_tb'
+  117 |     logic mailbox_tx_valid;
+      |           ^~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:119:44: Signal is not used: 'mailbox_tx_dest_id'
+                                                         : ... note: In instance 'gfx_console_tb'
+  119 |     logic [mailbox_pkg::NODE_ID_WIDTH-1:0] mailbox_tx_dest_id;
+      |                                            ^~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:121:11: Signal is not used: 'mailbox_rx_ready'
+                                                         : ... note: In instance 'gfx_console_tb'
+  121 |     logic mailbox_rx_ready;
+      |           ^~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:124:11: Signal is not used: 'err_fp_overflow'
+                                                         : ... note: In instance 'gfx_console_tb'
+  124 |     logic err_fp_overflow;
+      |           ^~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:125:11: Signal is not used: 'err_fp_invalid'
+                                                         : ... note: In instance 'gfx_console_tb'
+  125 |     logic err_fp_invalid;
+      |           ^~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:126:11: Signal is not used: 'err_vec_overflow'
+                                                         : ... note: In instance 'gfx_console_tb'
+  126 |     logic err_vec_overflow;
+      |           ^~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:127:11: Signal is not used: 'err_vec_invalid'
+                                                         : ... note: In instance 'gfx_console_tb'
+  127 |     logic err_vec_invalid;
+      |           ^~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:129:18: Signal is not used: 'csr_status'
+                                                         : ... note: In instance 'gfx_console_tb'
+  129 |     logic [31:0] csr_status;
+      |                  ^~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:130:18: Signal is not used: 'csr_fstatus'
+                                                         : ... note: In instance 'gfx_console_tb'
+  130 |     logic [31:0] csr_fstatus;
+      |                  ^~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:131:18: Signal is not used: 'csr_vstatus'
+                                                         : ... note: In instance 'gfx_console_tb'
+  131 |     logic [31:0] csr_vstatus;
+      |                  ^~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:207:52: Bits of signal are not used: 'imm'[31:12]
+                                                         : ... note: In instance 'gfx_console_tb'
+  207 |     function automatic [31:0] i_type(input integer imm, input [4:0] rs1, input [2:0] funct3, input [4:0] rd, input [6:0] opcode);
+      |                                                    ^~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:211:52: Bits of signal are not used: 'imm'[11:0]
+                                                         : ... note: In instance 'gfx_console_tb'
+  211 |     function automatic [31:0] u_type(input integer imm, input [4:0] rd, input [6:0] opcode);
+      |                                                    ^~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:215:52: Bits of signal are not used: 'imm'[31:12]
+                                                         : ... note: In instance 'gfx_console_tb'
+  215 |     function automatic [31:0] s_type(input integer imm, input [4:0] rs1, input [4:0] rs2, input [2:0] funct3, input [6:0] opcode);
+      |                                                    ^~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:219:52: Bits of signal are not used: 'imm'[31:13,0]
+                                                         : ... note: In instance 'gfx_console_tb'
+  219 |     function automatic [31:0] b_type(input integer imm, input [4:0] rs1, input [4:0] rs2, input [2:0] funct3, input [6:0] opcode);
+      |                                                    ^~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:276:13: Signal is not used: 'done_idx'
+                                                         : ... note: In instance 'gfx_console_tb'
+  276 |         int done_idx;
+      |             ^~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:341:13: Bits of signal are not used: 'rr'[31:8]
+                                                         : ... note: In instance 'gfx_console_tb'
+  341 |         int rr, gg, bb;
+      |             ^~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:341:17: Bits of signal are not used: 'gg'[31:8]
+                                                         : ... note: In instance 'gfx_console_tb'
+  341 |         int rr, gg, bb;
+      |                 ^~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:341:21: Bits of signal are not used: 'bb'[31:8]
+                                                         : ... note: In instance 'gfx_console_tb'
+  341 |         int rr, gg, bb;
+      |                     ^~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:418:19: Bits of signal are not used: 'idx'[31:18]
+                                                         : ... note: In instance 'gfx_console_tb'
+  418 |         int y, x, idx;
+      |                   ^~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:419:22: Bits of signal are not used: 'pix'[31:24]
+                                                         : ... note: In instance 'gfx_console_tb'
+  419 |         logic [31:0] pix;
+      |                      ^~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:445:22: Bits of signal are not used: 'idx'[31:18]
+                                                         : ... note: In instance 'gfx_console_tb'
+  445 |         int y, x, p, idx, rgb, last_rgb;
+      |                      ^~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:446:22: Bits of signal are not used: 'pix'[31:24]
+                                                         : ... note: In instance 'gfx_console_tb'
+  446 |         logic [31:0] pix; logic [7:0] r, g, b; bit last_valid; int ansi_idx;
+      |                      ^~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:611:38: Bits of signal are not used: 'vidx'[31:5]
+                                                         : ... note: In instance 'gfx_console_tb'
+  611 |                         real th; int vidx; th = (6.283185307179586 * sj) / TEA_SEGS; vidx = ri * TEA_SEGS + sj;
+      |                                      ^~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:660:25: Bits of signal are not used: 'a'[31:5]
+                                                         : ... note: In instance 'gfx_console_tb'
+  660 |                     int a, b, c;
+      |                         ^
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:660:28: Bits of signal are not used: 'b'[31:5]
+                                                         : ... note: In instance 'gfx_console_tb'
+  660 |                     int a, b, c;
+      |                            ^
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:660:31: Bits of signal are not used: 'c'[31:5]
+                                                         : ... note: In instance 'gfx_console_tb'
+  660 |                     int a, b, c;
+      |                               ^
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:1355:9: Signal is not used: 'dbg_store_count'
+                                                         : ... note: In instance 'gfx_console_tb'
+ 1355 |     int dbg_store_count;
+      |         ^~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:1358:9: Signal is not used: 'dbg_tri_load_count'
+                                                         : ... note: In instance 'gfx_console_tb'
+ 1358 |     int dbg_tri_load_count;
+      |         ^~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:1359:9: Signal is not used: 'dbg_vtx_load_count'
+                                                         : ... note: In instance 'gfx_console_tb'
+ 1359 |     int dbg_vtx_load_count;
+      |         ^~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:1360:9: Signal is not used: 'dbg_vtx_after_count'
+                                                         : ... note: In instance 'gfx_console_tb'
+ 1360 |     int dbg_vtx_after_count;
+      |         ^~~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:1361:9: Signal is not used: 'dbg_load_count'
+                                                         : ... note: In instance 'gfx_console_tb'
+ 1361 |     int dbg_load_count;
+      |         ^~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:1367:9: Signal is not used: 'dbg_arb_resp_count'
+                                                         : ... note: In instance 'gfx_console_tb'
+ 1367 |     int dbg_arb_resp_count;
+      |         ^~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\gfx_console_tb.sv:1368:9: Signal is not used: 'dbg_load_after_count'
+                                                         : ... note: In instance 'gfx_console_tb'
+ 1368 |     int dbg_load_after_count;
+      |         ^~~~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:584:19: Bits of signal are not used: 'local_rdata'[127:32]
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  584 |     logic [127:0] local_rdata;
+      |                   ^~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\compute_unit_top.sv:6:19: Parameter is not used: 'TEX_CACHE_LINE_BYTES'
+                                                              : ... note: In instance 'gfx_console_tb.dut'
+    6 |     parameter int TEX_CACHE_LINE_BYTES = 16,
+      |                   ^~~~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\compute_unit_top.sv:7:19: Parameter is not used: 'TEX_CACHE_LINES'
+                                                              : ... note: In instance 'gfx_console_tb.dut'
+    7 |     parameter int TEX_CACHE_LINES      = 64,
+      |                   ^~~~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\compute_unit_top.sv:8:19: Parameter is not used: 'ROP_WCACHE_ENTRIES'
+                                                              : ... note: In instance 'gfx_console_tb.dut'
+    8 |     parameter int ROP_WCACHE_ENTRIES   = 8,
+      |                   ^~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:40:25: Signal is not used: 'data_req_ready'
+                                                                : ... note: In instance 'gfx_console_tb.dut'
+   40 |     input  logic        data_req_ready,
+      |                         ^~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:41:25: Signal is not used: 'data_resp_valid'
+                                                                : ... note: In instance 'gfx_console_tb.dut'
+   41 |     input  logic        data_resp_valid,
+      |                         ^~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:42:25: Signal is not used: 'data_resp_rd'
+                                                                : ... note: In instance 'gfx_console_tb.dut'
+   42 |     input  logic [4:0]  data_resp_rd,
+      |                         ^~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:43:25: Signal is not used: 'data_resp_data'
+                                                                : ... note: In instance 'gfx_console_tb.dut'
+   43 |     input  logic [31:0] data_resp_data,
+      |                         ^~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:79:44: Signal is not used: 'mailbox_tx_ready'
+                                                                : ... note: In instance 'gfx_console_tb.dut'
+   79 |     input  logic                           mailbox_tx_ready,
+      |                                            ^~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:83:44: Signal is not used: 'mailbox_rx_valid'
+                                                                : ... note: In instance 'gfx_console_tb.dut'
+   83 |     input  logic                           mailbox_rx_valid,
+      |                                            ^~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:85:44: Signal is not used: 'mailbox_rx_data'
+                                                                : ... note: In instance 'gfx_console_tb.dut'
+   85 |     input  mailbox_pkg::mailbox_flit_t     mailbox_rx_data,
+      |                                            ^~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:86:51: Signal is not used: 'mailbox_rx_dest_id'
+                                                                : ... note: In instance 'gfx_console_tb.dut'
+   86 |     input  logic [mailbox_pkg::NODE_ID_WIDTH-1:0] mailbox_rx_dest_id
+      |                                                   ^~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:123:18: Signal is not used: 'lsu0_busy'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  123 |     logic        lsu0_busy;
+      |                  ^~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:175:18: Signal is not used: 'lsu_tex_resp_id'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  175 |     logic [7:0]  lsu_tex_resp_id;
+      |                  ^~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:176:18: Signal is not used: 'lsu_tex_resp_err'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  176 |     logic        lsu_tex_resp_err;
+      |                  ^~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:206:19: Signal is not used: 'rr1_pc'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  206 |     logic [31:0]  rr1_pc;
+      |                   ^~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:236:18: Signal is not used: 'gfx_queue_count'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  236 |     logic [3:0]  gfx_queue_count;
+      |                  ^~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:237:18: Signal is not used: 'gfx_busy'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  237 |     logic        gfx_busy;
+      |                  ^~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:267:18: Signal is not used: 'tex_miss_req_valid'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  267 |     logic        tex_miss_req_valid;
+      |                  ^~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:268:18: Signal is not used: 'tex_miss_req_addr'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  268 |     logic [31:0] tex_miss_req_addr;
+      |                  ^~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:269:18: Signal is not used: 'tex_miss_req_ready'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  269 |     logic        tex_miss_req_ready;
+      |                  ^~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:270:18: Signal is not used: 'tex_miss_resp_valid'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  270 |     logic        tex_miss_resp_valid;
+      |                  ^~~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:294:18: Signal is not used: 'gp_wb_is_scalar'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  294 |     logic        gp_wb_is_scalar;
+      |                  ^~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:319:19: Signal is not used: 'gp_issue_ctrl'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  319 |     decode_ctrl_t gp_issue_ctrl;
+      |                   ^~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:320:19: Signal is not used: 'gp_issue_op_a'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  320 |     logic [31:0]  gp_issue_op_a;
+      |                   ^~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:321:19: Signal is not used: 'gp_issue_op_b'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  321 |     logic [31:0]  gp_issue_op_b;
+      |                   ^~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:322:19: Signal is not used: 'gp_issue_valid'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  322 |     logic         gp_issue_valid;
+      |                   ^~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:401:19: Signal is not used: 'ex_mask_scalar'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  401 |     logic [31:0]  ex_mask_scalar;
+      |                   ^~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:406:19: Signal is not used: 'ex_fp_scalar'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  406 |     logic [31:0]  ex_fp_scalar;
+      |                   ^~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:407:19: Signal is not used: 'ex_vec_a'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  407 |     logic [127:0] ex_vec_a;
+      |                   ^~~~~~~~
+%Warning-UNDRIVEN: ip/compute unit\compute_unit_top.sv:410:19: Signal is not driven: 'ex_fp_res'
+                                                             : ... note: In instance 'gfx_console_tb.dut'
+  410 |     logic [15:0]  ex_fp_res;
+      |                   ^~~~~~~~~
+                   ... For warning description see https://verilator.org/warn/UNDRIVEN?v=5.041
+                   ... Use "/* verilator lint_off UNDRIVEN */" and lint_on around source to disable this message.
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:430:19: Bits of signal are not used: 'wb_ctrl'[88:87,84:81,79:69,65:50,44:0]
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  430 |     decode_ctrl_t wb_ctrl;
+      |                   ^~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:433:19: Signal is not used: 'wb_fp_res'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  433 |     logic [15:0]  wb_fp_res;
+      |                   ^~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:434:19: Bits of signal are not used: 'wb1_ctrl'[88:87,84:81,79:69,65:50,44:0]
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  434 |     decode_ctrl_t wb1_ctrl;
+      |                   ^~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:439:11: Signal is not used: 'stall_scoreboard'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  439 |     logic stall_scoreboard;
+      |           ^~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:465:19: Signal is not used: 'f_wdata'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  465 |     logic [15:0]  f_wdata;
+      |                   ^~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:466:19: Signal is not used: 'f_we'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  466 |     logic         f_we;
+      |                   ^~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:467:19: Signal is not used: 'f_waddr'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  467 |     logic [4:0]   f_waddr;
+      |                   ^~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:474:19: Signal is not used: 'v_wdata'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  474 |     logic [127:0] v_wdata;
+      |                   ^~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:475:19: Signal is not used: 'v_we'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  475 |     logic         v_we;
+      |                   ^~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:476:19: Signal is not used: 'v_waddr'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  476 |     logic [4:0]   v_waddr;
+      |                   ^~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:498:19: Signal is not used: 'valuv_wb_valid'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  498 |     logic         valuv_wb_valid;
+      |                   ^~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:499:19: Signal is not used: 'valuv_wb_rd'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  499 |     logic [4:0]   valuv_wb_rd;
+      |                   ^~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:500:19: Signal is not used: 'valuv_wb_is_scalar'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  500 |     logic         valuv_wb_is_scalar;
+      |                   ^~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:501:19: Signal is not used: 'valuv_wb_data'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  501 |     logic [127:0] valuv_wb_data;
+      |                   ^~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:502:19: Signal is not used: 'valuv_ready'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  502 |     logic         valuv_ready;
+      |                   ^~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:503:19: Signal is not used: 'valuv_issue_valid'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  503 |     logic         valuv_issue_valid;
+      |                   ^~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:530:19: Signal is not used: 'fp_scalar_wb_valid'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  530 |     logic         fp_scalar_wb_valid;
+      |                   ^~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:531:19: Signal is not used: 'fp_scalar_wb_rd'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  531 |     logic [4:0]   fp_scalar_wb_rd;
+      |                   ^~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:532:19: Signal is not used: 'fp_scalar_wb_data'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  532 |     logic [31:0]  fp_scalar_wb_data;
+      |                   ^~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:541:19: Signal is not used: 's_commit_from_valu'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  541 |     logic         s_commit_from_valu;
+      |                   ^~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:546:19: Signal is not used: 'v_commit_from_valuv'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  546 |     logic         v_commit_from_valuv;
+      |                   ^~~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:547:19: Signal is not used: 'v_commit_err_overflow'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  547 |     logic         v_commit_err_overflow;
+      |                   ^~~~~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:548:19: Signal is not used: 'v_commit_err_invalid'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  548 |     logic         v_commit_err_invalid;
+      |                   ^~~~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:558:19: Bits of signal are not used: 'lsu1_wb_data'[127:32]
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  558 |     logic [127:0] lsu1_wb_data;
+      |                   ^~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:575:38: Signal is not used: 'vwbq_from_valuv'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  575 |     logic                            vwbq_from_valuv [VWBQ_DEPTH];
+      |                                      ^~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:604:111: Bits of signal are not used: 'vsew'[2]
+                                                                  : ... note: In instance 'gfx_console_tb.dut'
+  604 |     function automatic logic [2:0] rvv_compute_type_sel(input logic [2:0] placeholder_type, input logic [2:0] vsew);
+      |                                                                                                               ^~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:619:19: Signal is not used: 'csr_cmd_enable'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  619 |     logic         csr_cmd_enable;
+      |                   ^~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:620:19: Signal is not used: 'csr_cmd_ring_base'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  620 |     logic [31:0]  csr_cmd_ring_base;
+      |                   ^~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:621:19: Signal is not used: 'csr_cmd_ring_size_bytes'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  621 |     logic [31:0]  csr_cmd_ring_size_bytes;
+      |                   ^~~~~~~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:622:19: Signal is not used: 'csr_cmd_cons_ptr_bytes'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  622 |     logic [31:0]  csr_cmd_cons_ptr_bytes;
+      |                   ^~~~~~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:623:19: Signal is not used: 'csr_cmd_completion_base'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  623 |     logic [31:0]  csr_cmd_completion_base;
+      |                   ^~~~~~~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:631:10: Signal is not used: 'rr_is_membar'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  631 |     wire rr_is_membar  = rr_valid  && rr_ctrl.is_system && (rr_ctrl.funct3 == 3'b000);
+      |          ^~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:632:10: Signal is not used: 'ex_is_membar'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  632 |     wire ex_is_membar  = ex_valid  && ex_ctrl.is_system && (ex_ctrl.funct3 == 3'b000);
+      |          ^~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:637:10: Signal is not used: 'vector_queue_full'
+                                                                 : ... note: In instance 'gfx_console_tb.dut'
+  637 |     wire vector_queue_full   = (vq_count == VQ_DEPTH);
+      |          ^~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:1066:10: Signal is not used: 'd0_is_scalar_pipe'
+                                                                  : ... note: In instance 'gfx_console_tb.dut'
+ 1066 |     wire d0_is_scalar_pipe = if_inst0_valid && !d0_is_vec_alu && !d0_is_gfx;
+      |          ^~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:1628:22: Bits of signal are not used: 'zimm'[10:8]
+                                                                  : ... note: In instance 'gfx_console_tb.dut'
+ 1628 |         logic [10:0] zimm;
+      |                      ^~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:1973:18: Signal is not used: 'lsu_mailbox_tx_valid'
+                                                                  : ... note: In instance 'gfx_console_tb.dut'
+ 1973 |     logic        lsu_mailbox_tx_valid;
+      |                  ^~~~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:1974:18: Signal is not used: 'lsu_mailbox_tx_dest'
+                                                                  : ... note: In instance 'gfx_console_tb.dut'
+ 1974 |     logic [15:0] lsu_mailbox_tx_dest;
+      |                  ^~~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:1975:18: Signal is not used: 'lsu_mailbox_tx_data'
+                                                                  : ... note: In instance 'gfx_console_tb.dut'
+ 1975 |     logic [31:0] lsu_mailbox_tx_data;
+      |                  ^~~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:1976:18: Signal is not used: 'lsu_mailbox_tx_prio'
+                                                                  : ... note: In instance 'gfx_console_tb.dut'
+ 1976 |     logic        lsu_mailbox_tx_prio;
+      |                  ^~~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:1977:18: Signal is not used: 'lsu_mailbox_tx_eop'
+                                                                  : ... note: In instance 'gfx_console_tb.dut'
+ 1977 |     logic        lsu_mailbox_tx_eop;
+      |                  ^~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:1978:18: Signal is not used: 'lsu_mailbox_tx_opcode'
+                                                                  : ... note: In instance 'gfx_console_tb.dut'
+ 1978 |     logic [3:0]  lsu_mailbox_tx_opcode;
+      |                  ^~~~~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:1980:18: Signal is not used: 'lsu_mailbox_rd_dest'
+                                                                  : ... note: In instance 'gfx_console_tb.dut'
+ 1980 |     logic [15:0] lsu_mailbox_rd_dest;
+      |                  ^~~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:1981:18: Signal is not used: 'lsu_mailbox_rd_prio'
+                                                                  : ... note: In instance 'gfx_console_tb.dut'
+ 1981 |     logic        lsu_mailbox_rd_prio;
+      |                  ^~~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:1982:18: Signal is not used: 'lsu_mailbox_rd_opcode'
+                                                                  : ... note: In instance 'gfx_console_tb.dut'
+ 1982 |     logic [3:0]  lsu_mailbox_rd_opcode;
+      |                  ^~~~~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:1986:19: Signal is not used: 'lsu_mailbox_rd_resp_tag'
+                                                                  : ... note: In instance 'gfx_console_tb.dut'
+ 1986 |     mailbox_tag_t lsu_mailbox_rd_resp_tag;
+      |                   ^~~~~~~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:1990:18: Signal is not used: 'ep_tx_ready'
+                                                                  : ... note: In instance 'gfx_console_tb.dut'
+ 1990 |     logic        ep_tx_ready;
+      |                  ^~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:1994:22: Signal is not used: 'ep_rx_hdr'
+                                                                  : ... note: In instance 'gfx_console_tb.dut'
+ 1994 |     mailbox_header_t ep_rx_hdr;
+      |                      ^~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:1995:31: Signal is not used: 'ep_rx_dest_id'
+                                                                  : ... note: In instance 'gfx_console_tb.dut'
+ 1995 |     logic [NODE_ID_WIDTH-1:0] ep_rx_dest_id;
+      |                               ^~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:1996:18: Signal is not used: 'ep_rx_irq'
+                                                                  : ... note: In instance 'gfx_console_tb.dut'
+ 1996 |     logic        ep_rx_irq;
+      |                  ^~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:1997:18: Signal is not used: 'ep_rx_err'
+                                                                  : ... note: In instance 'gfx_console_tb.dut'
+ 1997 |     logic        ep_rx_err;
+      |                  ^~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:1998:18: Signal is not used: 'ep_rx_ready_int'
+                                                                  : ... note: In instance 'gfx_console_tb.dut'
+ 1998 |     logic        ep_rx_ready_int;
+      |                  ^~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:2528:11: Signal is not used: 'scalar_wb_from_fp'
+                                                                  : ... note: In instance 'gfx_console_tb.dut'
+ 2528 |     logic scalar_wb_from_fp;
+      |           ^~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:2529:11: Signal is not used: 'scalar_wb_from_valu'
+                                                                  : ... note: In instance 'gfx_console_tb.dut'
+ 2529 |     logic scalar_wb_from_valu;
+      |           ^~~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\compute_unit_top.sv:2530:11: Signal is not used: 'scalar_wb_from_alu'
+                                                                  : ... note: In instance 'gfx_console_tb.dut'
+ 2530 |     logic scalar_wb_from_alu;
+      |           ^~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\alu_vector.sv:42:16: Parameter is not used: 'TYPE_I8'
+                                                         : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+   42 |     localparam TYPE_I8   = 3'b010;
+      |                ^~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\alu_vector.sv:211:22: Bits of signal are not used: 'm'[12:0]
+                                                           : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+  211 |         logic [22:0] m;
+      |                      ^
+%Warning-UNUSEDSIGNAL: ip/compute unit\alu_vector.sv:270:61: Bits of signal are not used: 'a'[31]
+                                                           : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+  270 |     function automatic logic fp32_is_nan(input logic [31:0] a);
+      |                                                             ^
+%Warning-UNUSEDSIGNAL: ip/compute unit\alu_vector.sv:274:61: Bits of signal are not used: 'a'[31]
+                                                           : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+  274 |     function automatic logic fp32_is_inf(input logic [31:0] a);
+      |                                                             ^
+%Warning-UNUSEDSIGNAL: ip/compute unit\alu_vector.sv:419:22: Bits of signal are not used: 'mant'[23]
+                                                           : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+  419 |         logic [23:0] mant;
+      |                      ^~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\alu_vector.sv:460:70: Bits of signal are not used: 'x'[17:0]
+                                                           : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+  460 |     function automatic logic [31:0] fp32_rcp_init(input logic [31:0] x);
+      |                                                                      ^
+%Warning-UNUSEDSIGNAL: ip/compute unit\alu_vector.sv:656:25: Bits of signal are not used: 'sel'[31:4]
+                                                           : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+  656 |                     int sel;
+      |                         ^~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\alu_vector.sv:716:21: Bits of signal are not used: 'lsb'[31:7]
+                                                           : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+  716 |                 int lsb;
+      |                     ^~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\alu_vector.sv:762:44: Signal is not driven, nor used: 'r32'
+                                                           : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+  762 |                     logic [31:0] a32, b32, r32;
+      |                                            ^~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\alu_vector.sv:868:17: Bits of signal are not used: 'lsb0'[31:7]
+                                                           : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+  868 |             int lsb0, lsb1, lsb2;
+      |                 ^~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\alu_vector.sv:868:29: Bits of signal are not used: 'lsb2'[31:7]
+                                                           : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+  868 |             int lsb0, lsb1, lsb2;
+      |                             ^~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\alu_vector.sv:1114:35: Bits of signal are not used: 'lsb'[31:7]
+                                                            : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+ 1114 |             int w; int lanes; int lsb;
+      |                                   ^~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\alu_vector.sv:1135:34: Bits of signal are not used: 'lane_a'[15]
+                                                            : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+ 1135 |                     logic [15:0] lane_a, lane_b, lane_r;
+      |                                  ^~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\alu_vector.sv:1135:42: Bits of signal are not used: 'lane_b'[15]
+                                                            : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+ 1135 |                     logic [15:0] lane_a, lane_b, lane_r;
+      |                                          ^~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\alu_vector.sv:1135:50: Bits of signal are not used: 'lane_r'[15]
+                                                            : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+ 1135 |                     logic [15:0] lane_a, lane_b, lane_r;
+      |                                                  ^~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\alu_vector.sv:1142:33: Bits of signal are not used: 'lane_a8'[7]
+                                                            : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+ 1142 |                     logic [7:0] lane_a8, lane_b8, lane_r8;
+      |                                 ^~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\alu_vector.sv:1142:42: Bits of signal are not used: 'lane_b8'[7]
+                                                            : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+ 1142 |                     logic [7:0] lane_a8, lane_b8, lane_r8;
+      |                                          ^~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\alu_vector.sv:1142:51: Bits of signal are not used: 'lane_r8'[7]
+                                                            : ... note: In instance 'gfx_console_tb.dut.u_alu_vector1'
+ 1142 |                     logic [7:0] lane_a8, lane_b8, lane_r8;
+      |                                                   ^~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\branch_predictor_bht.sv:9:35: Bits of signal are not used: 'query_ctrl'[88:79,76:45,41:32]
+                                                                   : ... note: In instance 'gfx_console_tb.dut.u_branch_pred'
+    9 |     input  isa_pkg::decode_ctrl_t query_ctrl,
+      |                                   ^~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\branch_predictor_bht.sv:16:35: Bits of signal are not used: 'update_ctrl'[88:79,76:45,41:0]
+                                                                    : ... note: In instance 'gfx_console_tb.dut.u_branch_pred'
+   16 |     input  isa_pkg::decode_ctrl_t update_ctrl,
+      |                                   ^~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\branch_predictor_bht.sv:32:71: Bits of signal are not used: 'pc'[31:8,1:0]
+                                                                    : ... note: In instance 'gfx_console_tb.dut.u_branch_pred'
+   32 |     function automatic logic [IDX_BITS-1:0] idx_of(input logic [31:0] pc);
+      |                                                                       ^~
+%Warning-UNUSEDSIGNAL: ip/compute unit\branch_predictor_bht.sv:36:76: Bits of signal are not used: 'pc'[7:0]
+                                                                    : ... note: In instance 'gfx_console_tb.dut.u_branch_pred'
+   36 |     function automatic logic [31-(2+IDX_BITS):0] tag_of(input logic [31:0] pc);
+      |                                                                            ^~
+%Warning-UNUSEDSIGNAL: ip/compute unit\branch_predictor_bht.sv:41:10: Signal is not used: 'query_is_jalr'
+                                                                    : ... note: In instance 'gfx_console_tb.dut.u_branch_pred'
+   41 |     wire query_is_jalr = query_valid && query_ctrl.is_jalr;
+      |          ^~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\branch_unit.sv:3:35: Bits of signal are not used: 'ctrl'[88:79,76:69,67:45,41:32]
+                                                          : ... note: In instance 'gfx_console_tb.dut.u_branch_unit'
+    3 |     input  isa_pkg::decode_ctrl_t ctrl,
+      |                                   ^~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\decoder.sv:11:17: Signal is not used: 'funct6'
+                                                       : ... note: In instance 'gfx_console_tb.dut.u_decoder1'
+   11 |     logic [5:0] funct6;  
+      |                 ^~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\decoder.sv:16:17: Signal is not used: 'is_int_rtype'
+                                                       : ... note: In instance 'gfx_console_tb.dut.u_decoder1'
+   16 |     logic       is_int_rtype;
+      |                 ^~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\fp_alu.sv:33:61: Bits of signal are not used: 'a'[15]
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_fp_alu1'
+   33 |     function automatic logic fp16_is_nan(input logic [15:0] a);
+      |                                                             ^
+%Warning-UNUSEDSIGNAL: ip/compute unit\fp_alu.sv:37:61: Bits of signal are not used: 'a'[15]
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_fp_alu1'
+   37 |     function automatic logic fp16_is_inf(input logic [15:0] a);
+      |                                                             ^
+%Warning-UNUSEDSIGNAL: ip/compute unit\fp_alu.sv:41:62: Bits of signal are not used: 'a'[15]
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_fp_alu1'
+   41 |     function automatic logic fp16_is_zero(input logic [15:0] a);
+      |                                                              ^
+%Warning-UNUSEDSIGNAL: ip/compute unit\fp_alu.sv:50:71: Bits of signal are not used: 'a'[14:10]
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_fp_alu1'
+   50 |     function automatic logic [15:0] fp16_make_qnan(input logic [15:0] a);
+      |                                                                       ^
+%Warning-UNUSEDSIGNAL: ip/compute unit\fp_alu.sv:55:68: Bits of signal are not used: 'a'[15,9:0]
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_fp_alu1'
+   55 |     function automatic logic [4:0] fp16_eff_exp(input logic [15:0] a);
+      |                                                                    ^
+%Warning-UNUSEDSIGNAL: ip/compute unit\fp_alu.sv:61:69: Bits of signal are not used: 'a'[15]
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_fp_alu1'
+   61 |     function automatic logic [10:0] fp16_eff_man(input logic [15:0] a);
+      |                                                                     ^
+%Warning-UNUSEDSIGNAL: ip/compute unit\fp_alu.sv:122:21: Signal is not used: 'exp_a'
+                                                       : ... note: In instance 'gfx_console_tb.dut.u_fp_alu1'
+  122 |         logic [4:0] exp_a, exp_b;
+      |                     ^~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\fp_alu.sv:122:28: Signal is not used: 'exp_b'
+                                                       : ... note: In instance 'gfx_console_tb.dut.u_fp_alu1'
+  122 |         logic [4:0] exp_a, exp_b;
+      |                            ^~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\fp_alu.sv:123:21: Signal is not used: 'frac_a'
+                                                       : ... note: In instance 'gfx_console_tb.dut.u_fp_alu1'
+  123 |         logic [9:0] frac_a, frac_b;
+      |                     ^~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\fp_alu.sv:123:29: Signal is not used: 'frac_b'
+                                                       : ... note: In instance 'gfx_console_tb.dut.u_fp_alu1'
+  123 |         logic [9:0] frac_a, frac_b;
+      |                             ^~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\fp_alu.sv:333:11: Bits of signal are not used: 's2_op'[7:6,4:3,1:0]
+                                                       : ... note: In instance 'gfx_console_tb.dut.u_fp_alu1'
+  333 |     op_t  s2_op;
+      |           ^~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\fp_alu.sv:416:25: Signal is not driven, nor used: 'exp_big'
+                                                       : ... note: In instance 'gfx_console_tb.dut.u_fp_alu1'
+  416 |             logic [5:0] exp_big;
+      |                         ^~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\fp_alu.sv:587:30: Signal is not driven, nor used: 'x'
+                                                       : ... note: In instance 'gfx_console_tb.dut.u_fp_alu1'
+  587 |                 logic [31:0] x;
+      |                              ^
+%Warning-UNUSEDSIGNAL: ip/compute unit\graphics_pipeline.sv:41:25: Signal is not used: 'tex_resp_rd'
+                                                                 : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline'
+   41 |     input  logic [4:0]  tex_resp_rd,
+      |                         ^~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\graphics_pipeline.sv:50:25: Signal is not used: 'gfxd_resp_rd'
+                                                                 : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline'
+   50 |     input  logic [4:0]  gfxd_resp_rd,
+      |                         ^~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\graphics_pipeline.sv:389:18: Signal is not used: 'tex_desc_width'
+                                                                  : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline'
+  389 |     logic [31:0] tex_desc_width;
+      |                  ^~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\graphics_pipeline.sv:390:18: Signal is not used: 'tex_desc_height'
+                                                                  : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline'
+  390 |     logic [31:0] tex_desc_height;
+      |                  ^~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\graphics_pipeline.sv:391:18: Signal is not used: 'tex_desc_format'
+                                                                  : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline'
+  391 |     logic [31:0] tex_desc_format;
+      |                  ^~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\graphics_pipeline.sv:392:18: Signal is not used: 'tex_desc_wrap'
+                                                                  : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline'
+  392 |     logic [31:0] tex_desc_wrap;
+      |                  ^~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\graphics_pipeline.sv:393:18: Signal is not used: 'tex_desc_filter'
+                                                                  : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline'
+  393 |     logic [31:0] tex_desc_filter;
+      |                  ^~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\graphics_pipeline.sv:394:18: Signal is not used: 'tex_desc_misc'
+                                                                  : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline'
+  394 |     logic [31:0] tex_desc_misc;
+      |                  ^~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\graphics_pipeline.sv:408:18: Signal is not driven, nor used: 'cur_u'
+                                                                  : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline'
+  408 |     logic [31:0] cur_u, cur_v;
+      |                  ^~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\graphics_pipeline.sv:408:25: Signal is not driven, nor used: 'cur_v'
+                                                                  : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline'
+  408 |     logic [31:0] cur_u, cur_v;
+      |                         ^~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\graphics_pipeline.sv:413:45: Signal is not used: 'samp_11'
+                                                                  : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline'
+  413 |     logic [31:0] samp_00, samp_10, samp_01, samp_11;
+      |                                             ^~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\graphics_pipeline.sv:979:18: Signal is not used: 'r_sampler_handle'
+                                                                  : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline'
+  979 |     logic [31:0] r_sampler_handle;
+      |                  ^~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\graphics_pipeline.sv:980:18: Bits of signal are not used: 'rstate_flags0'[31:2,0]
+                                                                  : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline'
+  980 |     logic [31:0] rstate_flags0;
+      |                  ^~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\graphics_pipeline.sv:1001:18: Signal is not used: 'g_ibo_base'
+                                                                   : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline'
+ 1001 |     logic [31:0] g_ibo_base;
+      |                  ^~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\graphics_pipeline.sv:1002:18: Signal is not used: 'g_ibo_format'
+                                                                   : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline'
+ 1002 |     logic [31:0] g_ibo_format;
+      |                  ^~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\graphics_pipeline.sv:1003:18: Signal is not used: 'g_cull_clip_flags'
+                                                                   : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline'
+ 1003 |     logic [31:0] g_cull_clip_flags;
+      |                  ^~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\graphics_pipeline.sv:1016:18: Signal is not used: 'gd_rstate_ptr'
+                                                                   : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline'
+ 1016 |     logic [31:0] gd_rstate_ptr;
+      |                  ^~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\graphics_pipeline.sv:1030:18: Signal is not used: 'rect_color'
+                                                                   : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline'
+ 1030 |     logic [31:0] rect_color;
+      |                  ^~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\graphics_pipeline.sv:1044:18: Signal is not used: 'sampler_ptr'
+                                                                   : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline'
+ 1044 |     logic [31:0] sampler_ptr;
+      |                  ^~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\graphics_pipeline.sv:1376:10: Signal is not used: 'is_rstate'
+                                                                   : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline'
+ 1376 |     wire is_rstate = gq_head_is_gfx && (gq[gq_head].ctrl.funct3 == 3'b000);
+      |          ^~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\graphics_pipeline.sv:1377:10: Signal is not used: 'is_rsetup'
+                                                                   : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline'
+ 1377 |     wire is_rsetup = gq_head_is_gfx && (gq[gq_head].ctrl.funct3 == 3'b001);
+      |          ^~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\graphics_pipeline.sv:1378:10: Signal is not used: 'is_rdraw'
+                                                                   : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline'
+ 1378 |     wire is_rdraw  = gq_head_is_gfx && (gq[gq_head].ctrl.funct3 == 3'b010);
+      |          ^~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\graphics_pipeline.sv:1379:10: Signal is not used: 'is_rrect'
+                                                                   : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline'
+ 1379 |     wire is_rrect  = gq_head_is_gfx && (gq[gq_head].ctrl.funct3 == 3'b011);
+      |          ^~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\graphics_pipeline.sv:1380:10: Signal is not used: 'is_gstate'
+                                                                   : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline'
+ 1380 |     wire is_gstate = gq_head_is_gfx && (gq[gq_head].ctrl.funct3 == 3'b100);
+      |          ^~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\graphics_pipeline.sv:1381:10: Signal is not used: 'is_gparam'
+                                                                   : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline'
+ 1381 |     wire is_gparam = gq_head_is_gfx && (gq[gq_head].ctrl.funct3 == 3'b101);
+      |          ^~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\graphics_pipeline.sv:1382:10: Signal is not used: 'is_gdraw'
+                                                                   : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline'
+ 1382 |     wire is_gdraw  = gq_head_is_gfx && (gq[gq_head].ctrl.funct3 == 3'b110);
+      |          ^~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\graphics_pipeline.sv:1386:18: Signal is not used: 'cmd_ready'
+                                                                   : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline'
+ 1386 |     logic        cmd_ready;
+      |                  ^~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\local_mem_banked.sv:10:26: Bits of signal are not used: 'req_addr'[1:0]
+                                                                : ... note: In instance 'gfx_console_tb.dut.u_local_mem'
+   10 |     input  logic [31:0]  req_addr,
+      |                          ^~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\lsu_core.sv:13:26: Signal is not used: 'req_vec_mode'
+                                                        : ... note: In instance 'gfx_console_tb.dut.u_lsu_core1'
+   13 |     input  logic [1:0]   req_vec_mode,
+      |                          ^~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\lsu_core.sv:35:26: Signal is not used: 'dc_resp_id'
+                                                        : ... note: In instance 'gfx_console_tb.dut.u_lsu_core1'
+   35 |     input  logic [7:0]   dc_resp_id,
+      |                          ^~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\lsu_core.sv:70:18: Signal is not used: 'pend_type'
+                                                        : ... note: In instance 'gfx_console_tb.dut.u_lsu_core1'
+   70 |     logic [1:0]  pend_type;
+      |                  ^~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\lsu_core.sv:81:19: Signal is not used: 'atom_src_s'
+                                                        : ... note: In instance 'gfx_console_tb.dut.u_lsu_core1'
+   81 |     logic [31:0]  atom_src_s;
+      |                   ^~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\lsu_core.sv:82:19: Signal is not used: 'atom_old'
+                                                        : ... note: In instance 'gfx_console_tb.dut.u_lsu_core1'
+   82 |     logic [127:0] atom_old;
+      |                   ^~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\lsu_core.sv:83:19: Signal is not used: 'atom_old_s'
+                                                        : ... note: In instance 'gfx_console_tb.dut.u_lsu_core1'
+   83 |     logic [31:0]  atom_old_s;
+      |                   ^~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\lsu_core.sv:92:18: Signal is not used: 'mb_load_funct3'
+                                                        : ... note: In instance 'gfx_console_tb.dut.u_lsu_core1'
+   92 |     logic [2:0]  mb_load_funct3;
+      |                  ^~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\lsu_core.sv:94:18: Signal is not used: 'mb_wdata'
+                                                        : ... note: In instance 'gfx_console_tb.dut.u_lsu_core1'
+   94 |     logic [31:0] mb_wdata;
+      |                  ^~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\lsu_core.sv:240:17: Signal is not driven, nor used: 'li'
+                                                         : ... note: In instance 'gfx_console_tb.dut.u_lsu_core1'
+  240 |         integer li;
+      |                 ^~
+%Warning-UNUSEDSIGNAL: ip/compute unit\lsu_core.sv:241:29: Signal is not driven, nor used: 'atom_a'
+                                                         : ... note: In instance 'gfx_console_tb.dut.u_lsu_core1'
+  241 |         logic signed [31:0] atom_a;
+      |                             ^~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\lsu_core.sv:242:29: Signal is not driven, nor used: 'atom_b'
+                                                         : ... note: In instance 'gfx_console_tb.dut.u_lsu_core1'
+  242 |         logic signed [31:0] atom_b;
+      |                             ^~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\lsu_gfx.sv:21:25: Signal is not used: 'dc_resp_valid'
+                                                       : ... note: In instance 'gfx_console_tb.dut.u_lsu_gfx'
+   21 |     input  logic        dc_resp_valid,
+      |                         ^~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\lsu_gfx.sv:22:26: Signal is not used: 'dc_resp_data'
+                                                       : ... note: In instance 'gfx_console_tb.dut.u_lsu_gfx'
+   22 |     input  logic [127:0] dc_resp_data,
+      |                          ^~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\lsu_gfx.sv:23:25: Signal is not used: 'dc_resp_id'
+                                                       : ... note: In instance 'gfx_console_tb.dut.u_lsu_gfx'
+   23 |     input  logic [7:0]  dc_resp_id,
+      |                         ^~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\lsu_gfx.sv:24:25: Signal is not used: 'dc_resp_err'
+                                                       : ... note: In instance 'gfx_console_tb.dut.u_lsu_gfx'
+   24 |     input  logic        dc_resp_err,
+      |                         ^~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\lsu_gfx.sv:32:25: Signal is not used: 'fb_aw_ready'
+                                                       : ... note: In instance 'gfx_console_tb.dut.u_lsu_gfx'
+   32 |     input  logic        fb_aw_ready,
+      |                         ^~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\lsu_gfx.sv:38:25: Signal is not used: 'fb_w_ready'
+                                                       : ... note: In instance 'gfx_console_tb.dut.u_lsu_gfx'
+   38 |     input  logic        fb_w_ready,
+      |                         ^~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\lsu_gfx.sv:40:25: Signal is not used: 'fb_b_valid'
+                                                       : ... note: In instance 'gfx_console_tb.dut.u_lsu_gfx'
+   40 |     input  logic        fb_b_valid,
+      |                         ^~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/cache\l1_data_cache.sv:6:19: Parameter is not used: 'L1_ENABLED'
+                                                    : ... note: In instance 'gfx_console_tb.dut.u_dcache'
+    6 |     parameter int L1_ENABLED = 1,
+      |                   ^~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/cache\l1_data_cache.sv:9:19: Parameter is not used: 'ASSOCIATIVITY'
+                                                    : ... note: In instance 'gfx_console_tb.dut.u_dcache'
+    9 |     parameter int ASSOCIATIVITY = 4,
+      |                   ^~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/cache\l1_data_cache.sv:10:19: Parameter is not used: 'NUM_MSHR'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache'
+   10 |     parameter int NUM_MSHR = 4,
+      |                   ^~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/cache\l1_data_cache.sv:27:37: Signal is not used: 'lsu0_req_wstrb'
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_dcache'
+   27 |     input  logic [LINE_BYTES/8-1:0] lsu0_req_wstrb,
+      |                                     ^~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/cache\l1_data_cache.sv:44:37: Signal is not used: 'lsu1_req_wstrb'
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_dcache'
+   44 |     input  logic [LINE_BYTES/8-1:0] lsu1_req_wstrb,
+      |                                     ^~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/cache\l1_data_cache.sv:62:40: Signal is not used: 'lsu_tex_req_wdata'
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_dcache'
+   62 |     input  logic [MAX_RDATA_WIDTH-1:0] lsu_tex_req_wdata,
+      |                                        ^~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/cache\l1_data_cache.sv:63:37: Signal is not used: 'lsu_tex_req_wstrb'
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_dcache'
+   63 |     input  logic [LINE_BYTES/8-1:0] lsu_tex_req_wstrb,
+      |                                     ^~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/cache\l1_data_cache.sv:64:34: Bits of signal are not used: 'lsu_tex_req_id'[7:5]
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_dcache'
+   64 |     input  logic [7:0]           lsu_tex_req_id,
+      |                                  ^~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/cache\l1_data_cache.sv:89:33: Signal is not used: 'mem_resp_id'
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_dcache'
+   89 |     input  logic [7:0]          mem_resp_id
+      |                                 ^~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/cache\l1_data_cache.sv:225:67: Bits of signal are not used: 'a'[11:0]
+                                                       : ... note: In instance 'gfx_console_tb.dut.u_dcache'
+  225 |     function automatic [TAG_BITS-1:0] addr_tag(input logic [31:0] a);
+      |                                                                   ^
+%Warning-UNUSEDSIGNAL: ip/cache\l1_data_cache.sv:228:69: Bits of signal are not used: 'a'[31:12,5:0]
+                                                       : ... note: In instance 'gfx_console_tb.dut.u_dcache'
+  228 |     function automatic [INDEX_BITS-1:0] addr_idx(input logic [31:0] a);
+      |                                                                     ^
+%Warning-UNUSEDSIGNAL: ip/cache\l1_data_cache.sv:231:70: Bits of signal are not used: 'a'[31:6]
+                                                       : ... note: In instance 'gfx_console_tb.dut.u_dcache'
+  231 |     function automatic [OFFSET_BITS-1:0] addr_off(input logic [31:0] a);
+      |                                                                      ^
+%Warning-UNUSEDSIGNAL: ip/cache\l1_data_cache.sv:487:49: Bits of signal are not used: 'off'[1:0]
+                                                       : ... note: In instance 'gfx_console_tb.dut.u_dcache'
+  487 |                         logic [OFFSET_BITS-1:0] off;
+      |                                                 ^~~
+%Warning-UNUSEDSIGNAL: ip/cache\l1_data_cache.sv:767:45: Bits of signal are not used: 'off'[1:0]
+                                                       : ... note: In instance 'gfx_console_tb.dut.u_dcache'
+  767 |                     logic [OFFSET_BITS-1:0] off;
+      |                                             ^~~
+%Warning-UNUSEDSIGNAL: ip/cache\l1_inst_cache.sv:49:27: Bits of signal are not used: 'req_addr_q'[2:0]
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_icache'
+   49 |     logic [31:0]          req_addr_q;
+      |                           ^~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/cache\l1_inst_cache.sv:85:17: Bits of signal are not used: 'base_bit'[31:6]
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_icache'
+   85 |         integer base_bit;
+      |                 ^~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\alu_scalar.sv:22:25: Bits of signal are not used: 'mul_prod'[63:32]
+                                                          : ... note: In instance 'gfx_console_tb.dut.u_branch_unit.u_branch_cmp'
+   22 |     logic signed [63:0] mul_prod;
+      |                         ^~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\raster_unit.sv:173:68: Bits of signal are not used: 'm'[3]
+                                                            : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline.u_raster'
+  173 |     function automatic logic [1:0] first_set_idx(input logic [3:0] m);
+      |                                                                    ^
+%Warning-UNUSEDSIGNAL: ip/compute unit\rop_unit.sv:21:25: Signal is not used: 'quad_tex_base'
+                                                        : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline.u_rop'
+   21 |     input  logic [31:0] quad_tex_base,
+      |                         ^~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\rop_unit.sv:22:25: Signal is not used: 'quad_tex_stride_bytes'
+                                                        : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline.u_rop'
+   22 |     input  logic [31:0] quad_tex_stride_bytes,
+      |                         ^~~~~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\rop_unit.sv:23:25: Signal is not used: 'quad_tex_width'
+                                                        : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline.u_rop'
+   23 |     input  logic [15:0] quad_tex_width,
+      |                         ^~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/compute unit\rop_unit.sv:261:68: Bits of signal are not used: 'm'[3]
+                                                         : ... note: In instance 'gfx_console_tb.dut.u_graphics_pipeline.u_rop'
+  261 |     function automatic logic [1:0] first_set_idx(input logic [3:0] m);
+      |                                                                    ^
+%Warning-UNUSEDSIGNAL: ip/compute unit\texture_cache.sv:23:25: Signal is not used: 'miss_req_ready'
+                                                             : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   23 |     input  logic        miss_req_ready,
+      |                         ^~~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\isa_pkg.sv:63:28: Parameter is not used: 'RVV_VMUL'
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   63 |     localparam logic [5:0] RVV_VMUL    = 6'b100101;   
+      |                            ^~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\isa_pkg.sv:70:28: Parameter is not used: 'RVV_VEW8'
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   70 |     localparam logic [2:0] RVV_VEW8   = 3'b000;   
+      |                            ^~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\isa_pkg.sv:71:28: Parameter is not used: 'RVV_VEW16'
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   71 |     localparam logic [2:0] RVV_VEW16  = 3'b101;   
+      |                            ^~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\isa_pkg.sv:72:28: Parameter is not used: 'RVV_VEW32'
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   72 |     localparam logic [2:0] RVV_VEW32  = 3'b110;   
+      |                            ^~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\isa_pkg.sv:73:28: Parameter is not used: 'RVV_VEW64'
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   73 |     localparam logic [2:0] RVV_VEW64  = 3'b111;   
+      |                            ^~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\isa_pkg.sv:78:20: Parameter is not used: 'VLENB'
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   78 |     localparam int VLENB = VLEN / 8;   
+      |                    ^~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\isa_pkg.sv:81:29: Parameter is not used: 'CSR_VSTART'
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   81 |     localparam logic [11:0] CSR_VSTART = 12'h008;
+      |                             ^~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\isa_pkg.sv:82:29: Parameter is not used: 'CSR_VXSAT'
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   82 |     localparam logic [11:0] CSR_VXSAT  = 12'h009;
+      |                             ^~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\isa_pkg.sv:83:29: Parameter is not used: 'CSR_VXRM'
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   83 |     localparam logic [11:0] CSR_VXRM   = 12'h00A;
+      |                             ^~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\isa_pkg.sv:84:29: Parameter is not used: 'CSR_VCSR'
+                                                      : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   84 |     localparam logic [11:0] CSR_VCSR   = 12'h00F;
+      |                             ^~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:12:18: Parameter is not used: 'FXP_INT'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   12 |   localparam int FXP_INT   = FXP_TOTAL - FXP_FRAC;
+      |                  ^~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:14:34: Parameter is not used: 'FXP_ZERO'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   14 |   localparam logic signed [31:0] FXP_ZERO    = 32'sh0000_0000;
+      |                                  ^~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:15:34: Parameter is not used: 'FXP_ONE'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   15 |   localparam logic signed [31:0] FXP_ONE     = 32'sh0001_0000;   
+      |                                  ^~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:16:34: Parameter is not used: 'FXP_NEG_ONE'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   16 |   localparam logic signed [31:0] FXP_NEG_ONE = 32'sh_FFFF_0000;  
+      |                                  ^~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:17:34: Parameter is not used: 'FXP_EPSILON'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   17 |   localparam logic signed [31:0] FXP_EPSILON = 32'sh0000_0010;   
+      |                                  ^~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:18:34: Parameter is not used: 'FXP_MAX'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   18 |   localparam logic signed [31:0] FXP_MAX     = 32'sh7FFF_FFFF;   
+      |                                  ^~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:19:34: Parameter is not used: 'FXP_MIN'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   19 |   localparam logic signed [31:0] FXP_MIN     = 32'sh8000_0000;   
+      |                                  ^~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:40:18: Parameter is not used: 'BVH_NODE_BYTES'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   40 |   localparam int BVH_NODE_BYTES = BVH_NODE_WORDS * 4;
+      |                  ^~~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:42:18: Parameter is not used: 'TRI_BYTES'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   42 |   localparam int TRI_BYTES      = TRI_WORDS * 4;
+      |                  ^~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:54:18: Parameter is not used: 'RTU_REG_CTRL'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   54 |   localparam int RTU_REG_CTRL        = 0;    
+      |                  ^~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:55:18: Parameter is not used: 'RTU_REG_STATUS'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   55 |   localparam int RTU_REG_STATUS      = 1;    
+      |                  ^~~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:56:18: Parameter is not used: 'RTU_REG_RAY_OX'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   56 |   localparam int RTU_REG_RAY_OX      = 2;    
+      |                  ^~~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:57:18: Parameter is not used: 'RTU_REG_RAY_OY'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   57 |   localparam int RTU_REG_RAY_OY      = 3;    
+      |                  ^~~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:58:18: Parameter is not used: 'RTU_REG_RAY_OZ'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   58 |   localparam int RTU_REG_RAY_OZ      = 4;    
+      |                  ^~~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:59:18: Parameter is not used: 'RTU_REG_RAY_DX'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   59 |   localparam int RTU_REG_RAY_DX      = 5;    
+      |                  ^~~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:60:18: Parameter is not used: 'RTU_REG_RAY_DY'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   60 |   localparam int RTU_REG_RAY_DY      = 6;    
+      |                  ^~~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:61:18: Parameter is not used: 'RTU_REG_RAY_DZ'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   61 |   localparam int RTU_REG_RAY_DZ      = 7;    
+      |                  ^~~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:62:18: Parameter is not used: 'RTU_REG_RAY_TMIN'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   62 |   localparam int RTU_REG_RAY_TMIN    = 8;    
+      |                  ^~~~~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:63:18: Parameter is not used: 'RTU_REG_RAY_TMAX'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   63 |   localparam int RTU_REG_RAY_TMAX    = 9;    
+      |                  ^~~~~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:64:18: Parameter is not used: 'RTU_REG_BVH_ROOT'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   64 |   localparam int RTU_REG_BVH_ROOT    = 10;   
+      |                  ^~~~~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:65:18: Parameter is not used: 'RTU_REG_HIT_FLAG'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   65 |   localparam int RTU_REG_HIT_FLAG    = 11;   
+      |                  ^~~~~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:66:18: Parameter is not used: 'RTU_REG_HIT_T'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   66 |   localparam int RTU_REG_HIT_T       = 12;   
+      |                  ^~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:67:18: Parameter is not used: 'RTU_REG_HIT_U'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   67 |   localparam int RTU_REG_HIT_U       = 13;   
+      |                  ^~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:68:18: Parameter is not used: 'RTU_REG_HIT_V'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   68 |   localparam int RTU_REG_HIT_V       = 14;   
+      |                  ^~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:69:18: Parameter is not used: 'RTU_REG_HIT_TRI_ID'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   69 |   localparam int RTU_REG_HIT_TRI_ID  = 15;   
+      |                  ^~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:70:18: Parameter is not used: 'RTU_REG_PERF_RAYS'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   70 |   localparam int RTU_REG_PERF_RAYS   = 16;   
+      |                  ^~~~~~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:71:18: Parameter is not used: 'RTU_REG_PERF_NODES'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   71 |   localparam int RTU_REG_PERF_NODES  = 17;   
+      |                  ^~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:72:18: Parameter is not used: 'RTU_REG_PERF_TESTS'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   72 |   localparam int RTU_REG_PERF_TESTS  = 18;   
+      |                  ^~~~~~~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:73:18: Parameter is not used: 'RTU_REG_INV_DX'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   73 |   localparam int RTU_REG_INV_DX      = 19;   
+      |                  ^~~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:74:18: Parameter is not used: 'RTU_REG_INV_DY'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   74 |   localparam int RTU_REG_INV_DY      = 20;   
+      |                  ^~~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:75:18: Parameter is not used: 'RTU_REG_INV_DZ'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   75 |   localparam int RTU_REG_INV_DZ      = 21;   
+      |                  ^~~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:77:18: Parameter is not used: 'RTU_REG_ADDR_BITS'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   77 |   localparam int RTU_REG_ADDR_BITS   = $clog2(RTU_NUM_REGS);
+      |                  ^~~~~~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:82:18: Parameter is not used: 'BVH_STACK_DEPTH'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   82 |   localparam int BVH_STACK_DEPTH = 24;  
+      |                  ^~~~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:87:18: Parameter is not used: 'AABB_PIPE_STAGES'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   87 |   localparam int AABB_PIPE_STAGES  = 6;
+      |                  ^~~~~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/compute unit\rt_pkg.sv:88:18: Parameter is not used: 'TRI_PIPE_STAGES'
+                                                     : ... note: In instance 'gfx_console_tb.dut.u_dcache.tex_cache'
+   88 |   localparam int TRI_PIPE_STAGES   = 12;
+      |                  ^~~~~~~~~~~~~~~
+%Warning-SYNCASYNCNET: testbench\gfx_console_tb.sv:51:11: Signal flopped as both synchronous and async: 'gfx_console_tb.rst_n'
+                       ip/compute unit\compute_unit_top.sv:850:14: ... Location of async usage
+  850 |         if (!rst_n) begin
+      |              ^~~~~
+                       testbench\gfx_console_tb.sv:1373:14: ... Location of sync usage
+ 1373 |         if (!rst_n) begin
+      |              ^~~~~
+                       ... For warning description see https://verilator.org/warn/SYNCASYNCNET?v=5.041
+                       ... Use "/* verilator lint_off SYNCASYNCNET */" and lint_on around source to disable this message.
+make: Entering directory '/c/Users/weyst/TinyGPU-FPGA/obj_dir'
+g++ -Os  -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o verilated.o C:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/verilated.cpp
+g++ -Os  -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o verilated_vcd_c.o C:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/verilated_vcd_c.cpp
+g++ -Os  -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o verilated_timing.o C:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/verilated_timing.cpp
+g++ -Os  -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o verilated_threads.o C:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/verilated_threads.cpp
+g++ -Os  -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -x c++-header Vgfx_console_tb__pch.h -o Vgfx_console_tb__pch.h.fast.gch
+g++   -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -x c++-header Vgfx_console_tb__pch.h -o Vgfx_console_tb__pch.h.slow.gch
+echo "" > Vgfx_console_tb__ALL.verilator_deplist.tmp
+g++ -Os  -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.fast -c -o Vgfx_console_tb.o Vgfx_console_tb.cpp
+g++ -Os  -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.fast -c -o Vgfx_console_tb___024root__DepSet_h30e62e1a__0.o Vgfx_console_tb___024root__DepSet_h30e62e1a__0.cpp
+g++ -Os  -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.fast -c -o Vgfx_console_tb___024root__DepSet_h30e62e1a__1.o Vgfx_console_tb___024root__DepSet_h30e62e1a__1.cpp
+g++ -Os  -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.fast -c -o Vgfx_console_tb___024root__DepSet_h30e62e1a__2.o Vgfx_console_tb___024root__DepSet_h30e62e1a__2.cpp
+g++ -Os  -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.fast -c -o Vgfx_console_tb___024root__DepSet_hb7ead58b__0.o Vgfx_console_tb___024root__DepSet_hb7ead58b__0.cpp
+g++ -Os  -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.fast -c -o Vgfx_console_tb_alu_vector__DepSet_he0cbb06f__0.o Vgfx_console_tb_alu_vector__DepSet_he0cbb06f__0.cpp
+g++ -Os  -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.fast -c -o Vgfx_console_tb_alu_vector__DepSet_he0cbb06f__1.o Vgfx_console_tb_alu_vector__DepSet_he0cbb06f__1.cpp
+g++ -Os  -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.fast -c -o Vgfx_console_tb_alu_vector__DepSet_he0cbb06f__2.o Vgfx_console_tb_alu_vector__DepSet_he0cbb06f__2.cpp
+g++ -Os  -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.fast -c -o Vgfx_console_tb_alu_vector__DepSet_he0cbb06f__3.o Vgfx_console_tb_alu_vector__DepSet_he0cbb06f__3.cpp
+g++ -Os  -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.fast -c -o Vgfx_console_tb_fp_alu__DepSet_hc62b80c1__0.o Vgfx_console_tb_fp_alu__DepSet_hc62b80c1__0.cpp
+g++ -Os  -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.fast -c -o Vgfx_console_tb__main.o Vgfx_console_tb__main.cpp
+g++ -Os  -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.fast -c -o Vgfx_console_tb__Trace__0.o Vgfx_console_tb__Trace__0.cpp
+g++ -Os  -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.fast -c -o Vgfx_console_tb__Trace__1.o Vgfx_console_tb__Trace__1.cpp
+g++   -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.slow -c -o Vgfx_console_tb__ConstPool_0.o Vgfx_console_tb__ConstPool_0.cpp
+g++   -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.slow -c -o Vgfx_console_tb___024root__Slow.o Vgfx_console_tb___024root__Slow.cpp
+g++   -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.slow -c -o Vgfx_console_tb___024root__DepSet_h30e62e1a__0__Slow.o Vgfx_console_tb___024root__DepSet_h30e62e1a__0__Slow.cpp
+g++   -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.slow -c -o Vgfx_console_tb___024root__DepSet_h30e62e1a__1__Slow.o Vgfx_console_tb___024root__DepSet_h30e62e1a__1__Slow.cpp
+g++   -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.slow -c -o Vgfx_console_tb___024root__DepSet_h30e62e1a__2__Slow.o Vgfx_console_tb___024root__DepSet_h30e62e1a__2__Slow.cpp
+g++   -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.slow -c -o Vgfx_console_tb___024root__DepSet_hb7ead58b__0__Slow.o Vgfx_console_tb___024root__DepSet_hb7ead58b__0__Slow.cpp
+g++   -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.slow -c -o Vgfx_console_tb_alu_vector__Slow.o Vgfx_console_tb_alu_vector__Slow.cpp
+g++   -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.slow -c -o Vgfx_console_tb_alu_vector__DepSet_he0cbb06f__0__Slow.o Vgfx_console_tb_alu_vector__DepSet_he0cbb06f__0__Slow.cpp
+g++   -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.slow -c -o Vgfx_console_tb_alu_vector__DepSet_he0cbb06f__1__Slow.o Vgfx_console_tb_alu_vector__DepSet_he0cbb06f__1__Slow.cpp
+g++   -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.slow -c -o Vgfx_console_tb_alu_vector__DepSet_he0cbb06f__2__Slow.o Vgfx_console_tb_alu_vector__DepSet_he0cbb06f__2__Slow.cpp
+g++   -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.slow -c -o Vgfx_console_tb_alu_vector__DepSet_he0cbb06f__3__Slow.o Vgfx_console_tb_alu_vector__DepSet_he0cbb06f__3__Slow.cpp
+g++   -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.slow -c -o Vgfx_console_tb_alu_vector__DepSet_h07cd4798__0__Slow.o Vgfx_console_tb_alu_vector__DepSet_h07cd4798__0__Slow.cpp
+g++   -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.slow -c -o Vgfx_console_tb_fp_alu__Slow.o Vgfx_console_tb_fp_alu__Slow.cpp
+g++   -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.slow -c -o Vgfx_console_tb_fp_alu__DepSet_hc62b80c1__0__Slow.o Vgfx_console_tb_fp_alu__DepSet_hc62b80c1__0__Slow.cpp
+g++   -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.slow -c -o Vgfx_console_tb_fp_alu__DepSet_h29ad3742__0__Slow.o Vgfx_console_tb_fp_alu__DepSet_h29ad3742__0__Slow.cpp
+g++   -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.slow -c -o Vgfx_console_tb__Syms.o Vgfx_console_tb__Syms.cpp
+g++   -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.slow -c -o Vgfx_console_tb__Trace__0__Slow.o Vgfx_console_tb__Trace__0__Slow.cpp
+g++   -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -include Vgfx_console_tb__pch.h.slow -c -o Vgfx_console_tb__TraceDecls__0__Slow.o Vgfx_console_tb__TraceDecls__0__Slow.cpp
+g++    verilated.o verilated_vcd_c.o verilated_timing.o verilated_threads.o Vgfx_console_tb__ALL.a    -pthread -lpthread -latomic   -o Vgfx_console_tb
+rm Vgfx_console_tb__ALL.verilator_deplist.tmp
+make: Leaving directory '/c/Users/weyst/TinyGPU-FPGA/obj_dir'
+- V e r i l a t i o n   R e p o r t: Verilator 5.041 devel rev v5.040-201-g21dbdbf69
+- Verilator: Built from 26.414 MB sources in 55 modules, into 17.779 MB in 31 C++ files needing 0.009 MB
+- Verilator: Walltime 17.233 s (elab=0.151, cvt=2.074, bld=14.673); cpu 0.000 s on 24 threads; alloced 146.547 MB
+gfx_console_tb: ROM program loaded (1840 bytes)
+TB: DONE store (lsu0) value=0 t=411831000
+TB: DONE store (lsu0) value=1 t=684829000
+TB: wrote frame_1.ppm
+TB: frame 1 raster_busy_seen=1 rop_busy_seen=1 fb_writes=58194 fb_nonzero=58194 fb_rgb_nonzero=33897
+TB: DONE store (lsu0) value=2 t=958795000
+TB: wrote frame_2.ppm
+TB: frame 2 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23417 fb_nonzero=23417 fb_rgb_nonzero=9831
+TB: DONE store (lsu0) value=3 t=1233455000
+TB: wrote frame_3.ppm
+TB: frame 3 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23560 fb_nonzero=23560 fb_rgb_nonzero=9934
+TB: DONE store (lsu0) value=4 t=1507415000
+TB: wrote frame_4.ppm
+TB: frame 4 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23206 fb_nonzero=23206 fb_rgb_nonzero=9532
+TB: DONE store (lsu0) value=5 t=1781453000
+TB: wrote frame_5.ppm
+TB: frame 5 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23289 fb_nonzero=23289 fb_rgb_nonzero=9608
+TB: DONE store (lsu0) value=6 t=2057327000
+TB: wrote frame_6.ppm
+TB: frame 6 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23557 fb_nonzero=23557 fb_rgb_nonzero=9890
+TB: DONE store (lsu0) value=7 t=2332355000
+TB: wrote frame_7.ppm
+TB: frame 7 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23483 fb_nonzero=23483 fb_rgb_nonzero=9885
+TB: DONE store (lsu0) value=8 t=2608307000
+TB: wrote frame_8.ppm
+TB: frame 8 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23279 fb_nonzero=23279 fb_rgb_nonzero=9613
+TB: DONE store (lsu0) value=9 t=2884559000
+TB: wrote frame_9.ppm
+TB: frame 9 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23459 fb_nonzero=23459 fb_rgb_nonzero=9789
+TB: DONE store (lsu0) value=10 t=3159415000
+TB: wrote frame_10.ppm
+TB: frame 10 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23419 fb_nonzero=23419 fb_rgb_nonzero=9806
+TB: DONE store (lsu0) value=11 t=3435129000
+TB: DONE store (lsu0) value=11 t=3435131000
+TB: DONE store (lsu0) value=11 t=3435133000
+TB: DONE store (lsu0) value=11 t=3435135000
+TB: wrote frame_11.ppm
+TB: frame 11 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23450 fb_nonzero=23450 fb_rgb_nonzero=9721
+TB: DONE store (lsu0) value=12 t=3713931000
+TB: DONE store (lsu0) value=12 t=3713933000
+TB: DONE store (lsu0) value=12 t=3713935000
+TB: wrote frame_12.ppm
+TB: frame 12 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23501 fb_nonzero=23501 fb_rgb_nonzero=9760
+TB: DONE store (lsu0) value=13 t=3997023000
+TB: wrote frame_13.ppm
+TB: frame 13 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23887 fb_nonzero=23887 fb_rgb_nonzero=10166
+TB: DONE store (lsu0) value=14 t=4281287000
+TB: wrote frame_14.ppm
+TB: frame 14 raster_busy_seen=1 rop_busy_seen=1 fb_writes=24015 fb_nonzero=24015 fb_rgb_nonzero=10371
+TB: DONE store (lsu0) value=14 t=4281289000
+TB: DONE store (lsu0) value=14 t=4281291000
+TB: DONE store (lsu0) value=14 t=4281293000
+TB: DONE store (lsu0) value=15 t=4567153000
+TB: wrote frame_15.ppm
+TB: frame 15 raster_busy_seen=1 rop_busy_seen=1 fb_writes=48000 fb_nonzero=48000 fb_rgb_nonzero=20680
+TB: DONE store (lsu0) value=15 t=4567155000
+TB: DONE store (lsu0) value=15 t=4567157000
+TB: DONE store (lsu0) value=15 t=4567159000
+TB: DONE store (lsu0) value=16 t=4851213000
+TB: wrote frame_16.ppm
+TB: frame 16 raster_busy_seen=1 rop_busy_seen=1 fb_writes=71848 fb_nonzero=71848 fb_rgb_nonzero=30832
+TB: DONE store (lsu0) value=17 t=5137995000
+TB: wrote frame_17.ppm
+TB: frame 17 raster_busy_seen=1 rop_busy_seen=1 fb_writes=24115 fb_nonzero=24115 fb_rgb_nonzero=10368
+TB: DONE store (lsu0) value=18 t=5421891000
+TB: wrote frame_18.ppm
+TB: frame 18 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23873 fb_nonzero=23873 fb_rgb_nonzero=10227
+TB: DONE store (lsu0) value=18 t=5421893000
+TB: DONE store (lsu0) value=18 t=5421895000
+TB: DONE store (lsu0) value=18 t=5421897000
+TB: DONE store (lsu0) value=18 t=5421899000
+TB: DONE store (lsu0) value=18 t=5421901000
+TB: DONE store (lsu0) value=18 t=5421903000
+TB: DONE store (lsu0) value=18 t=5421905000
+TB: DONE store (lsu0) value=18 t=5421907000
+TB: DONE store (lsu0) value=18 t=5421909000
+TB: DONE store (lsu0) value=18 t=5421911000
+TB: DONE store (lsu0) value=19 t=5707821000
+TB: wrote frame_19.ppm
+TB: frame 19 raster_busy_seen=1 rop_busy_seen=1 fb_writes=24112 fb_nonzero=24112 fb_rgb_nonzero=10416
+TB: DONE store (lsu0) value=19 t=5707823000
+TB: DONE store (lsu0) value=19 t=5707825000
+TB: DONE store (lsu0) value=20 t=5989637000
+TB: DONE store (lsu0) value=20 t=5989639000
+TB: DONE store (lsu0) value=20 t=5989641000
+TB: DONE store (lsu0) value=20 t=5989643000
+TB: wrote frame_20.ppm
+TB: frame 20 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23759 fb_nonzero=23759 fb_rgb_nonzero=10007
+TB: DONE store (lsu0) value=21 t=6272973000
+TB: wrote frame_21.ppm
+TB: frame 21 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23567 fb_nonzero=23567 fb_rgb_nonzero=9753
+TB: DONE store (lsu0) value=21 t=6272975000
+TB: DONE store (lsu0) value=21 t=6272977000
+TB: DONE store (lsu0) value=21 t=6272979000
+TB: DONE store (lsu0) value=21 t=6272981000
+TB: DONE store (lsu0) value=21 t=6272983000
+TB: DONE store (lsu0) value=21 t=6272985000
+TB: DONE store (lsu0) value=22 t=6556793000
+TB: wrote frame_22.ppm
+TB: frame 22 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23729 fb_nonzero=23729 fb_rgb_nonzero=9888
+TB: DONE store (lsu0) value=22 t=6556795000
+TB: DONE store (lsu0) value=22 t=6556797000
+TB: DONE store (lsu0) value=22 t=6556799000
+TB: DONE store (lsu0) value=22 t=6556801000
+TB: DONE store (lsu0) value=22 t=6556803000
+TB: DONE store (lsu0) value=22 t=6556805000
+TB: DONE store (lsu0) value=22 t=6556807000
+TB: DONE store (lsu0) value=23 t=6842623000
+TB: wrote frame_23.ppm
+TB: frame 23 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23850 fb_nonzero=23850 fb_rgb_nonzero=10027
+TB: DONE store (lsu0) value=23 t=6842625000
+TB: DONE store (lsu0) value=23 t=6842627000
+TB: DONE store (lsu0) value=23 t=6842629000
+TB: DONE store (lsu0) value=23 t=6842631000
+TB: DONE store (lsu0) value=23 t=6842633000
+TB: DONE store (lsu0) value=23 t=6842635000
+TB: DONE store (lsu0) value=23 t=6842637000
+TB: DONE store (lsu0) value=24 t=7128853000
+TB: wrote frame_24.ppm
+TB: frame 24 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23781 fb_nonzero=23781 fb_rgb_nonzero=9954
+TB: DONE store (lsu0) value=24 t=7128855000
+TB: DONE store (lsu0) value=24 t=7128857000
+TB: DONE store (lsu0) value=24 t=7128859000
+TB: DONE store (lsu0) value=24 t=7128861000
+TB: DONE store (lsu0) value=24 t=7128863000
+TB: DONE store (lsu0) value=25 t=7418323000
+TB: wrote frame_25.ppm
+TB: frame 25 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23939 fb_nonzero=23939 fb_rgb_nonzero=10163
+TB: DONE store (lsu0) value=25 t=7418325000
+TB: DONE store (lsu0) value=25 t=7418327000
+TB: DONE store (lsu0) value=25 t=7418329000
+TB: DONE store (lsu0) value=25 t=7418331000
+TB: DONE store (lsu0) value=25 t=7418333000
+TB: DONE store (lsu0) value=25 t=7418335000
+TB: DONE store (lsu0) value=25 t=7418337000
+TB: DONE store (lsu0) value=26 t=7707361000
+TB: wrote frame_26.ppm
+TB: frame 26 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23944 fb_nonzero=23944 fb_rgb_nonzero=10223
+TB: DONE store (lsu0) value=26 t=7707363000
+TB: DONE store (lsu0) value=26 t=7707365000
+TB: DONE store (lsu0) value=26 t=7707367000
+TB: DONE store (lsu0) value=26 t=7707369000
+TB: DONE store (lsu0) value=26 t=7707371000
+TB: DONE store (lsu0) value=26 t=7707373000
+TB: DONE store (lsu0) value=27 t=7996525000
+TB: wrote frame_27.ppm
+TB: frame 27 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23951 fb_nonzero=23951 fb_rgb_nonzero=10203
+TB: DONE store (lsu0) value=27 t=7996527000
+TB: DONE store (lsu0) value=27 t=7996529000
+TB: DONE store (lsu0) value=27 t=7996531000
+TB: DONE store (lsu0) value=27 t=7996533000
+TB: DONE store (lsu0) value=27 t=7996535000
+TB: DONE store (lsu0) value=27 t=7996537000
+TB: DONE store (lsu0) value=28 t=8287647000
+TB: wrote frame_28.ppm
+TB: frame 28 raster_busy_seen=1 rop_busy_seen=1 fb_writes=24060 fb_nonzero=24060 fb_rgb_nonzero=10325
+TB: DONE store (lsu0) value=28 t=8287649000
+TB: DONE store (lsu0) value=28 t=8287651000
+TB: DONE store (lsu0) value=28 t=8287653000
+TB: DONE store (lsu0) value=28 t=8287655000
+TB: DONE store (lsu0) value=28 t=8287657000
+TB: DONE store (lsu0) value=28 t=8287659000
+TB: DONE store (lsu0) value=29 t=8577861000
+TB: wrote frame_29.ppm
+TB: frame 29 raster_busy_seen=1 rop_busy_seen=1 fb_writes=24048 fb_nonzero=24048 fb_rgb_nonzero=10333
+TB: DONE store (lsu0) value=29 t=8577863000
+TB: DONE store (lsu0) value=29 t=8577865000
+TB: DONE store (lsu0) value=29 t=8577867000
+TB: DONE store (lsu0) value=29 t=8577869000
+TB: DONE store (lsu0) value=29 t=8577871000
+TB: DONE store (lsu0) value=29 t=8577873000
+TB: DONE store (lsu0) value=30 t=8866587000
+TB: wrote frame_30.ppm
+TB: frame 30 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23973 fb_nonzero=23973 fb_rgb_nonzero=10187
+TB: DONE store (lsu0) value=30 t=8866589000
+TB: DONE store (lsu0) value=30 t=8866591000
+TB: DONE store (lsu0) value=30 t=8866593000
+TB: DONE store (lsu0) value=30 t=8866595000
+TB: DONE store (lsu0) value=30 t=8866597000
+TB: DONE store (lsu0) value=31 t=9151831000
+TB: wrote frame_31.ppm
+TB: frame 31 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23584 fb_nonzero=23584 fb_rgb_nonzero=9886
+TB: DONE store (lsu0) value=31 t=9151833000
+TB: DONE store (lsu0) value=31 t=9151835000
+TB: DONE store (lsu0) value=31 t=9151837000
+TB: DONE store (lsu0) value=31 t=9151839000
+TB: DONE store (lsu0) value=31 t=9151841000
+TB: DONE store (lsu0) value=31 t=9151843000
+TB: DONE store (lsu0) value=31 t=9151845000
+TB: DONE store (lsu0) value=32 t=9438395000
+TB: wrote frame_32.ppm
+TB: frame 32 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23580 fb_nonzero=23580 fb_rgb_nonzero=9946
+TB: DONE store (lsu0) value=32 t=9438397000
+TB: DONE store (lsu0) value=32 t=9438399000
+TB: DONE store (lsu0) value=32 t=9438401000
+TB: DONE store (lsu0) value=32 t=9438403000
+TB: DONE store (lsu0) value=32 t=9438405000
+TB: DONE store (lsu0) value=32 t=9438407000
+TB: DONE store (lsu0) value=33 t=9726769000
+TB: wrote frame_33.ppm
+TB: frame 33 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23831 fb_nonzero=23831 fb_rgb_nonzero=10209
+TB: DONE store (lsu0) value=33 t=9726771000
+TB: DONE store (lsu0) value=33 t=9726773000
+TB: DONE store (lsu0) value=33 t=9726775000
+TB: DONE store (lsu0) value=33 t=9726777000
+TB: DONE store (lsu0) value=33 t=9726779000
+TB: DONE store (lsu0) value=33 t=9726781000
+TB: DONE store (lsu0) value=33 t=9726783000
+TB: DONE store (lsu0) value=34 t=10011901000
+TB: wrote frame_34.ppm
+TB: frame 34 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23804 fb_nonzero=23804 fb_rgb_nonzero=10048
+TB: DONE store (lsu0) value=34 t=10011903000
+TB: DONE store (lsu0) value=34 t=10011905000
+TB: DONE store (lsu0) value=34 t=10011907000
+TB: DONE store (lsu0) value=34 t=10011909000
+TB: DONE store (lsu0) value=34 t=10011911000
+TB: DONE store (lsu0) value=34 t=10011913000
+TB: DONE store (lsu0) value=35 t=10296717000
+TB: wrote frame_35.ppm
+TB: frame 35 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23744 fb_nonzero=23744 fb_rgb_nonzero=10092
+TB: DONE store (lsu0) value=35 t=10296719000
+TB: DONE store (lsu0) value=35 t=10296721000
+TB: DONE store (lsu0) value=35 t=10296723000
+TB: DONE store (lsu0) value=35 t=10296725000
+TB: DONE store (lsu0) value=35 t=10296727000
+TB: DONE store (lsu0) value=35 t=10296729000
+TB: DONE store (lsu0) value=36 t=10579759000
+TB: DONE store (lsu0) value=36 t=10579761000
+TB: DONE store (lsu0) value=36 t=10579763000
+TB: DONE store (lsu0) value=36 t=10579765000
+TB: wrote frame_36.ppm
+TB: frame 36 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23720 fb_nonzero=23720 fb_rgb_nonzero=10118
+TB: DONE store (lsu0) value=37 t=10863471000
+TB: wrote frame_37.ppm
+TB: frame 37 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23684 fb_nonzero=23684 fb_rgb_nonzero=10154
+TB: DONE store (lsu0) value=38 t=11148323000
+TB: wrote frame_38.ppm
+TB: frame 38 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23890 fb_nonzero=23890 fb_rgb_nonzero=10320
+TB: DONE store (lsu0) value=39 t=11435027000
+TB: wrote frame_39.ppm
+TB: frame 39 raster_busy_seen=1 rop_busy_seen=1 fb_writes=24073 fb_nonzero=24073 fb_rgb_nonzero=10475
+TB: DONE store (lsu0) value=40 t=11720867000
+TB: wrote frame_40.ppm
+TB: frame 40 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23979 fb_nonzero=23979 fb_rgb_nonzero=10437
+TB: DONE store (lsu0) value=41 t=12006485000
+TB: wrote frame_41.ppm
+TB: frame 41 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23812 fb_nonzero=23812 fb_rgb_nonzero=10253
+TB: DONE store (lsu0) value=42 t=12294383000
+TB: wrote frame_42.ppm
+TB: frame 42 raster_busy_seen=1 rop_busy_seen=1 fb_writes=24031 fb_nonzero=24031 fb_rgb_nonzero=10509
+TB: DONE store (lsu0) value=43 t=12582605000
+TB: wrote frame_43.ppm
+TB: frame 43 raster_busy_seen=1 rop_busy_seen=1 fb_writes=24070 fb_nonzero=24070 fb_rgb_nonzero=10567
+TB: DONE store (lsu0) value=44 t=12867039000
+TB: wrote frame_44.ppm
+TB: frame 44 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23758 fb_nonzero=23758 fb_rgb_nonzero=10235
+TB: DONE store (lsu0) value=44 t=12867041000
+TB: DONE store (lsu0) value=44 t=12867043000
+TB: DONE store (lsu0) value=44 t=12867045000
+TB: DONE store (lsu0) value=44 t=12867047000
+TB: DONE store (lsu0) value=44 t=12867049000
+TB: DONE store (lsu0) value=44 t=12867051000
+TB: DONE store (lsu0) value=44 t=12867053000
+TB: DONE store (lsu0) value=45 t=13151033000
+TB: wrote frame_45.ppm
+TB: frame 45 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23621 fb_nonzero=23621 fb_rgb_nonzero=9993
+TB: DONE store (lsu0) value=45 t=13151035000
+TB: DONE store (lsu0) value=45 t=13151037000
+TB: DONE store (lsu0) value=45 t=13151039000
+TB: DONE store (lsu0) value=45 t=13151041000
+TB: DONE store (lsu0) value=45 t=13151043000
+TB: DONE store (lsu0) value=45 t=13151045000
+TB: DONE store (lsu0) value=46 t=13436451000
+TB: wrote frame_46.ppm
+TB: frame 46 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23636 fb_nonzero=23636 fb_rgb_nonzero=10003
+TB: DONE store (lsu0) value=46 t=13436453000
+TB: DONE store (lsu0) value=46 t=13436455000
+TB: DONE store (lsu0) value=46 t=13436457000
+TB: DONE store (lsu0) value=46 t=13436459000
+TB: DONE store (lsu0) value=46 t=13436461000
+TB: DONE store (lsu0) value=46 t=13436463000
+TB: DONE store (lsu0) value=47 t=13722425000
+TB: wrote frame_47.ppm
+TB: frame 47 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23638 fb_nonzero=23638 fb_rgb_nonzero=9996
+TB: DONE store (lsu0) value=47 t=13722427000
+TB: DONE store (lsu0) value=47 t=13722429000
+TB: DONE store (lsu0) value=47 t=13722431000
+TB: DONE store (lsu0) value=47 t=13722433000
+TB: DONE store (lsu0) value=47 t=13722435000
+TB: DONE store (lsu0) value=48 t=14010721000
+TB: wrote frame_48.ppm
+TB: frame 48 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23726 fb_nonzero=23726 fb_rgb_nonzero=10094
+TB: DONE store (lsu0) value=48 t=14010723000
+TB: DONE store (lsu0) value=48 t=14010725000
+TB: DONE store (lsu0) value=48 t=14010727000
+TB: DONE store (lsu0) value=48 t=14010729000
+TB: DONE store (lsu0) value=48 t=14010731000
+TB: DONE store (lsu0) value=49 t=14297319000
+TB: wrote frame_49.ppm
+TB: frame 49 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23422 fb_nonzero=23422 fb_rgb_nonzero=9833
+TB: DONE store (lsu0) value=49 t=14297321000
+TB: DONE store (lsu0) value=49 t=14297323000
+TB: DONE store (lsu0) value=49 t=14297325000
+TB: DONE store (lsu0) value=49 t=14297327000
+TB: DONE store (lsu0) value=49 t=14297329000
+TB: DONE store (lsu0) value=50 t=14583535000
+TB: wrote frame_50.ppm
+TB: frame 50 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23375 fb_nonzero=23375 fb_rgb_nonzero=9746
+TB: DONE store (lsu0) value=50 t=14583537000
+TB: DONE store (lsu0) value=50 t=14583539000
+TB: DONE store (lsu0) value=50 t=14583541000
+TB: DONE store (lsu0) value=50 t=14583543000
+TB: DONE store (lsu0) value=50 t=14583545000
+TB: DONE store (lsu0) value=50 t=14583547000
+TB: DONE store (lsu0) value=51 t=14870613000
+TB: wrote frame_51.ppm
+TB: frame 51 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23342 fb_nonzero=23342 fb_rgb_nonzero=9710
+TB: DONE store (lsu0) value=51 t=14870615000
+TB: DONE store (lsu0) value=51 t=14870617000
+TB: DONE store (lsu0) value=51 t=14870619000
+TB: DONE store (lsu0) value=51 t=14870621000
+TB: DONE store (lsu0) value=51 t=14870623000
+TB: DONE store (lsu0) value=51 t=14870625000
+TB: DONE store (lsu0) value=52 t=15159105000
+TB: wrote frame_52.ppm
+TB: frame 52 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23400 fb_nonzero=23400 fb_rgb_nonzero=9782
+TB: DONE store (lsu0) value=52 t=15159107000
+TB: DONE store (lsu0) value=52 t=15159109000
+TB: DONE store (lsu0) value=52 t=15159111000
+TB: DONE store (lsu0) value=52 t=15159113000
+TB: DONE store (lsu0) value=52 t=15159115000
+TB: DONE store (lsu0) value=52 t=15159117000
+TB: DONE store (lsu0) value=52 t=15159119000
+TB: DONE store (lsu0) value=53 t=15446395000
+TB: wrote frame_53.ppm
+TB: frame 53 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23222 fb_nonzero=23222 fb_rgb_nonzero=9519
+TB: DONE store (lsu0) value=53 t=15446397000
+TB: DONE store (lsu0) value=53 t=15446399000
+TB: DONE store (lsu0) value=53 t=15446401000
+TB: DONE store (lsu0) value=53 t=15446403000
+TB: DONE store (lsu0) value=53 t=15446405000
+TB: DONE store (lsu0) value=53 t=15446407000
+TB: DONE store (lsu0) value=54 t=15734355000
+TB: wrote frame_54.ppm
+TB: frame 54 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23185 fb_nonzero=23185 fb_rgb_nonzero=9494
+TB: DONE store (lsu0) value=54 t=15734357000
+TB: DONE store (lsu0) value=55 t=16025925000
+TB: wrote frame_55.ppm
+TB: frame 55 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23350 fb_nonzero=23350 fb_rgb_nonzero=9684
+TB: DONE store (lsu0) value=55 t=16025927000
+TB: DONE store (lsu0) value=55 t=16025929000
+TB: DONE store (lsu0) value=55 t=16025931000
+TB: DONE store (lsu0) value=56 t=16315683000
+TB: wrote frame_56.ppm
+TB: frame 56 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23183 fb_nonzero=23183 fb_rgb_nonzero=9590
+TB: DONE store (lsu0) value=56 t=16315685000
+TB: DONE store (lsu0) value=56 t=16315687000
+TB: DONE store (lsu0) value=57 t=16607333000
+TB: wrote frame_57.ppm
+TB: frame 57 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23240 fb_nonzero=23240 fb_rgb_nonzero=9576
+TB: DONE store (lsu0) value=57 t=16607335000
+TB: DONE store (lsu0) value=57 t=16607337000
+TB: DONE store (lsu0) value=58 t=16900015000
+TB: wrote frame_58.ppm
+TB: frame 58 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23236 fb_nonzero=23236 fb_rgb_nonzero=9580
+TB: DONE store (lsu0) value=58 t=16900017000
+TB: DONE store (lsu0) value=59 t=17192363000
+TB: wrote frame_59.ppm
+TB: frame 59 raster_busy_seen=1 rop_busy_seen=1 fb_writes=23112 fb_nonzero=23112 fb_rgb_nonzero=9495
+TB: DONE store (lsu0) value=59 t=17192365000
+TB: DONE store (lsu0) value=59 t=17192367000
+TB: DONE store (lsu0) value=59 t=17192369000
+TB: DONE store (lsu0) value=59 t=17192371000
+TB: DONE store (lsu0) value=59 t=17192373000
+TB: DONE store (lsu0) value=59 t=17192375000
+TB: DONE store (lsu0) value=59 t=17192377000
+[99999999000] %Fatal: gfx_console_tb.sv:1544: Assertion failed in gfx_console_tb.unnamedblk29: gfx_console_tb: timeout
+%Error: testbench\gfx_console_tb.sv:1544: Verilog $stop
+Aborting...

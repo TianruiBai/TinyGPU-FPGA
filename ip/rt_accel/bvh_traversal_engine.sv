@@ -34,6 +34,9 @@ module bvh_traversal_engine
     output logic signed [31:0] result_u,
     output logic signed [31:0] result_v,
     output logic        [31:0] result_tri_id,
+    output logic signed [31:0] result_nx,
+    output logic signed [31:0] result_ny,
+    output logic signed [31:0] result_nz,
 
     // Performance counters
     output logic [31:0] perf_nodes_visited,
@@ -81,6 +84,15 @@ module bvh_traversal_engine
     logic signed [31:0] r_tmin;
     logic signed [31:0] r_tmax; // Updated when closer hit found
 
+    function automatic logic signed [31:0] fmul(
+        input logic signed [31:0] a,
+        input logic signed [31:0] b
+    );
+        logic signed [63:0] full;
+        full = 64'(a) * 64'(b);
+        return 32'(full >>> FXP_FRAC);
+    endfunction
+
     // Traversal stack
     logic [31:0] stack_addr [0:BVH_STACK_DEPTH-1];
     logic [$clog2(BVH_STACK_DEPTH)-1:0] stack_ptr;
@@ -114,9 +126,22 @@ module bvh_traversal_engine
     logic signed [31:0] best_u;
     logic signed [31:0] best_v;
     logic [31:0] best_tri_id;
+    logic signed [31:0] best_nx;
+    logic signed [31:0] best_ny;
+    logic signed [31:0] best_nz;
 
     // Current node address
     logic [31:0] cur_node_addr;
+
+    wire signed [31:0] tri_e1_x = $signed(tri_buf[3]) - $signed(tri_buf[0]);
+    wire signed [31:0] tri_e1_y = $signed(tri_buf[4]) - $signed(tri_buf[1]);
+    wire signed [31:0] tri_e1_z = $signed(tri_buf[5]) - $signed(tri_buf[2]);
+    wire signed [31:0] tri_e2_x = $signed(tri_buf[6]) - $signed(tri_buf[0]);
+    wire signed [31:0] tri_e2_y = $signed(tri_buf[7]) - $signed(tri_buf[1]);
+    wire signed [31:0] tri_e2_z = $signed(tri_buf[8]) - $signed(tri_buf[2]);
+    wire signed [31:0] tri_geo_nx = fmul(tri_e1_y, tri_e2_z) - fmul(tri_e1_z, tri_e2_y);
+    wire signed [31:0] tri_geo_ny = fmul(tri_e1_z, tri_e2_x) - fmul(tri_e1_x, tri_e2_z);
+    wire signed [31:0] tri_geo_nz = fmul(tri_e1_x, tri_e2_y) - fmul(tri_e1_y, tri_e2_x);
 
     // -----------------------------------------------------------------------
     // AABB intersection unit wiring
@@ -195,6 +220,9 @@ module bvh_traversal_engine
     assign result_u      = best_u;
     assign result_v      = best_v;
     assign result_tri_id = best_tri_id;
+    assign result_nx     = best_nx;
+    assign result_ny     = best_ny;
+    assign result_nz     = best_nz;
 
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -203,6 +231,13 @@ module bvh_traversal_engine
             node_beat_cnt    <= '0;
             tri_beat_cnt     <= '0;
             best_hit         <= 1'b0;
+            best_t           <= FXP_MAX;
+            best_u           <= FXP_ZERO;
+            best_v           <= FXP_ZERO;
+            best_tri_id      <= 32'h0;
+            best_nx          <= FXP_ZERO;
+            best_ny          <= FXP_ZERO;
+            best_nz          <= FXP_ZERO;
             mem_req_pending  <= 1'b0;
             perf_nodes_visited <= '0;
             perf_tris_tested   <= '0;
@@ -221,6 +256,12 @@ module bvh_traversal_engine
                         stack_ptr     <= '0;
                         best_hit      <= 1'b0;
                         best_t        <= FXP_MAX;
+                        best_u        <= FXP_ZERO;
+                        best_v        <= FXP_ZERO;
+                        best_tri_id   <= 32'h0;
+                        best_nx       <= FXP_ZERO;
+                        best_ny       <= FXP_ZERO;
+                        best_nz       <= FXP_ZERO;
                         perf_nodes_visited <= '0;
                         perf_tris_tested   <= '0;
                         state <= ST_FETCH_NODE;
@@ -342,6 +383,9 @@ module bvh_traversal_engine
                             best_u      <= tri_u;
                             best_v      <= tri_v;
                             best_tri_id <= tri_id_out;
+                            best_nx     <= tri_geo_nx;
+                            best_ny     <= tri_geo_ny;
+                            best_nz     <= tri_geo_nz;
                             r_tmax      <= tri_t; // Tighten t_max for closer-hit culling
                         end
                         // Next triangle or pop
@@ -378,6 +422,12 @@ module bvh_traversal_engine
                         stack_ptr     <= '0;
                         best_hit      <= 1'b0;
                         best_t        <= FXP_MAX;
+                        best_u        <= FXP_ZERO;
+                        best_v        <= FXP_ZERO;
+                        best_tri_id   <= 32'h0;
+                        best_nx       <= FXP_ZERO;
+                        best_ny       <= FXP_ZERO;
+                        best_nz       <= FXP_ZERO;
                         perf_nodes_visited <= '0;
                         perf_tris_tested   <= '0;
                         state <= ST_FETCH_NODE;

@@ -73,6 +73,9 @@ package rt_pkg;
   localparam int RTU_REG_INV_DX      = 19;  // W: precomputed 1/dir.x (Q16.16) — optional
   localparam int RTU_REG_INV_DY      = 20;  // W: precomputed 1/dir.y
   localparam int RTU_REG_INV_DZ      = 21;  // W: precomputed 1/dir.z
+  localparam int RTU_REG_HIT_NX      = 22;  // R: geometric hit normal X (Q16.16)
+  localparam int RTU_REG_HIT_NY      = 23;  // R: geometric hit normal Y (Q16.16)
+  localparam int RTU_REG_HIT_NZ      = 24;  // R: geometric hit normal Z (Q16.16)
   localparam int RTU_NUM_REGS        = 32;
   localparam int RTU_REG_ADDR_BITS   = $clog2(RTU_NUM_REGS);
 

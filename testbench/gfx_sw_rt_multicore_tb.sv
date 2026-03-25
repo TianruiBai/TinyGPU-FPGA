@@ -16,14 +16,14 @@
 // CU0 pre-frame pipeline (firmware, before frame loop):
 //   1. MXU: rotation matrix × identity, poll completion via RX FIFO
 //   2. RTU forward ray: origin(0,0,0) dir(0,0,1) → expect hit tri_id=1
-//   3. RTU backward ray: dir(0,0,-1) → expect miss
+//   3. RTU backward ray: dir(0,0,-1) → expect hit reflector tri_id=3
 //   4. Store completion payloads to shared memory for TB verification
 //
 // Tests:
 //   - MXU payload: non-zero tiles & ops in completion flit
 //   - MXU matrix:  C == A (rotation × identity)
 //   - RTU forward: hit_flag=1, tri_id=1
-//   - RTU backward: hit_flag=0
+//   - RTU backward: hit_flag=1, tri_id=3 (behind-camera reflector)
 //   - Frames 0-2:  Both CUs complete DONE
 //   - Perf counters: RTU_RAYS=2, MXU_TILES=1
 //
@@ -33,11 +33,17 @@
 //   0x0000_0180: MXU completion result (CU0 writes)
 //   0x0000_01C0: RTU forward result   (CU0 writes)
 //   0x0000_01C4: RTU backward result  (CU0 writes)
+//   0x0000_01C8: RTU forward normal X (CU0 writes)
+//   0x0000_01CC: RTU forward normal Y (CU0 writes)
+//   0x0000_01D0: RTU forward normal Z (CU0 writes)
 //   0x0000_2000: sin/cos LUT
 //   0x0000_3000: inverse sqrt LUT
 //   0x0000_4000: vector constants
 //   0x0000_6000: perspective LUT
+//   0x0002_0000: RT reflection ray LUT
+//   0x0004_0000: RT reflection color map (CU0 writes)
 //   0x0000_8000: BVH root node  (64B aligned)
+//   0x0000_A000: RT reflection BVH root (4KB-aligned for LUI)
 //   0x0000_8040: Left leaf       (64B aligned)
 //   0x0000_8080: Right leaf      (64B aligned)
 //   0x0000_8100: Triangle 0      (64B aligned)
@@ -69,13 +75,25 @@ module gfx_sw_rt_multicore_tb;
     localparam logic [31:0] MXU_RESULT_OFF  = 32'h0000_0180;
     localparam logic [31:0] RTU_FWD_OFF     = 32'h0000_01C0;
     localparam logic [31:0] RTU_BWD_OFF     = 32'h0000_01C4;
+    localparam logic [31:0] RTU_FWD_NX_OFF  = 32'h0000_01C8;
+    localparam logic [31:0] RTU_FWD_NY_OFF  = 32'h0000_01CC;
+    localparam logic [31:0] RTU_FWD_NZ_OFF  = 32'h0000_01D0;
     localparam logic [31:0] SINCOS_OFF      = 32'h0000_2000;
     localparam logic [31:0] INVSQRT_OFF     = 32'h0000_3000;
     localparam logic [31:0] VEC_CONST_OFF   = 32'h0000_4000;
     localparam logic [31:0] PERSP_OFF       = 32'h0000_6000;
     localparam logic [31:0] BVH_OFF         = 32'h0000_8000;
+    localparam logic [31:0] RT_REFLECT_BVH_OFF = 32'h0000_A000;
     localparam logic [31:0] MXU_SCRATCH_OFF = 32'h0000_9000;
+    localparam logic [31:0] RT_REFLECT_RAY_OFF   = 32'h0002_0000;
+    localparam logic [31:0] RT_REFLECT_COLOR_OFF = 32'h0004_0000;
     localparam logic [31:0] FB_OFF          = 32'h0001_0000;
+
+    localparam int RT_REFLECT_ENV_W        = 64;
+    localparam int RT_REFLECT_ENV_H        = 64;
+    localparam int RT_REFLECT_ENV_SAMPLES  = RT_REFLECT_ENV_W * RT_REFLECT_ENV_H;
+    localparam int RT_REFLECT_SAMPLE_WORDS = 6;
+    localparam int RT_REFLECT_SAMPLE_BYTES = RT_REFLECT_SAMPLE_WORDS * 4;
 
     // Slot indices
     localparam int CU0_SLOT = 0;
@@ -501,6 +519,7 @@ module gfx_sw_rt_multicore_tb;
     // -----------------------------------------------------------------------
     task automatic init_memory();
         int i, ti, idx;
+        int sx, sy;
         real ang;
         int s_q, c_q;
         begin
@@ -550,12 +569,47 @@ module gfx_sw_rt_multicore_tb;
                 mem[idx] = $rtoi(t_val * 65536.0);
             end
 
-            $display("TB: Memory initialized (sincos, invsqrt, persp, vec_const)");
+            // Reflection ray LUT for RTU-backed mirror sampling.
+            for (sy = 0; sy < RT_REFLECT_ENV_H; sy++) begin
+                for (sx = 0; sx < RT_REFLECT_ENV_W; sx++) begin
+                    real dx_real, dy_real, inv_real;
+                    int base_wi;
+                    dx_real = (((2.0 * sx) + 1.0) - RT_REFLECT_ENV_W) / RT_REFLECT_ENV_W;
+                    dy_real = (((RT_REFLECT_ENV_H - 1) - (2.0 * sy)) + 0.5) / RT_REFLECT_ENV_H;
+                    base_wi = mw(BASE_ADDR + RT_REFLECT_RAY_OFF
+                                 + ((sy * RT_REFLECT_ENV_W + sx) * RT_REFLECT_SAMPLE_BYTES));
+
+                    mem[base_wi + 0] = $rtoi(dx_real * 65536.0);
+                    mem[base_wi + 1] = $rtoi(dy_real * 65536.0);
+                    mem[base_wi + 2] = 32'h0001_0000;
+
+                    if ((dx_real > -1.0e-6) && (dx_real < 1.0e-6))
+                        mem[base_wi + 3] = 32'h7FFF_FFFF;
+                    else begin
+                        inv_real = 1.0 / dx_real;
+                        mem[base_wi + 3] = $rtoi(inv_real * 65536.0);
+                    end
+
+                    if ((dy_real > -1.0e-6) && (dy_real < 1.0e-6))
+                        mem[base_wi + 4] = 32'h7FFF_FFFF;
+                    else begin
+                        inv_real = 1.0 / dy_real;
+                        mem[base_wi + 4] = $rtoi(inv_real * 65536.0);
+                    end
+
+                    mem[base_wi + 5] = 32'h0001_0000;
+                end
+            end
+
+            for (i = 0; i < RT_REFLECT_ENV_SAMPLES; i++)
+                mem[mw(BASE_ADDR + RT_REFLECT_COLOR_OFF + (i * 4))] = 32'h0;
+
+            $display("TB: Memory initialized (sincos, invsqrt, persp, vec_const, rt_reflect_lut)");
         end
     endtask
 
     // -----------------------------------------------------------------------
-    // BVH scene setup (2 triangles as sphere proxies)
+    // BVH scene setup (front validation tri + behind-camera split-color panel)
     // -----------------------------------------------------------------------
     task automatic setup_bvh_scene();
         int wi;
@@ -569,23 +623,32 @@ module gfx_sw_rt_multicore_tb;
         mem[wi+ 8] = fxp( 2, 0); mem[wi+ 9] = 32'h0000_0001; // v2.z, tri_id=1
         mem[wi+10] = 32'h0;      mem[wi+11] = 32'h0;         // reserved
 
-        // Triangle 1 at BVH_OFF + 0x140 (sphere 2 proxy, fixed at z=4)
+        // Triangle 1 at BVH_OFF + 0x140 (split-color reflector, lower-right)
         wi = mw(BASE_ADDR + BVH_OFF + 32'h140);
-        mem[wi+ 0] = fxp(-1, 0); mem[wi+ 1] = fxp(-1, 0);
-        mem[wi+ 2] = fxp( 4, 0); mem[wi+ 3] = fxp( 1, 0);
-        mem[wi+ 4] = fxp(-1, 0); mem[wi+ 5] = fxp( 4, 0);
-        mem[wi+ 6] = fxp( 0, 0); mem[wi+ 7] = fxp( 1, 0);
-        mem[wi+ 8] = fxp( 4, 0); mem[wi+ 9] = 32'h0000_0002;
+        mem[wi+ 0] = 32'hFFFE_8000; mem[wi+ 1] = 32'hFFFE_C000;
+        mem[wi+ 2] = 32'hFFFD_8000; mem[wi+ 3] = 32'h0001_8000;
+        mem[wi+ 4] = 32'hFFFE_C000; mem[wi+ 5] = 32'hFFFD_8000;
+        mem[wi+ 6] = 32'h0001_4000; mem[wi+ 7] = 32'h0001_8000;
+        mem[wi+ 8] = 32'hFFFD_8000; mem[wi+ 9] = 32'h0000_0003;
         mem[wi+10] = 32'h0;      mem[wi+11] = 32'h0;
+
+        // Triangle 2 at BVH_OFF + 0x170 (split-color reflector, upper-left)
+        wi = mw(BASE_ADDR + BVH_OFF + 32'h170);
+        mem[wi+ 0] = 32'hFFFE_8000; mem[wi+ 1] = 32'hFFFE_C000;
+        mem[wi+ 2] = 32'hFFFD_8000; mem[wi+ 3] = 32'h0001_4000;
+        mem[wi+ 4] = 32'h0001_8000; mem[wi+ 5] = 32'hFFFD_8000;
+        mem[wi+ 6] = 32'hFFFE_C000; mem[wi+ 7] = 32'h0001_4000;
+        mem[wi+ 8] = 32'hFFFD_8000; mem[wi+ 9] = 32'h0000_0004;
+        mem[wi+10] = 32'h0;         mem[wi+11] = 32'h0;
 
         // BVH root at BVH_OFF + 0x000 (internal node)
         // Child/tri pointers are word addresses = byte_addr >> 2
         wi = mw(BASE_ADDR + BVH_OFF);
         mem[wi+0] = {2'b00, 30'((BASE_ADDR + BVH_OFF + 32'h040) >> 2)};  // internal, left  → leaf @+0x040
         mem[wi+1] = {2'b00, 30'((BASE_ADDR + BVH_OFF + 32'h080) >> 2)};  //           right → leaf @+0x080
-        mem[wi+2] = fxp(-1, 0); mem[wi+3] = fxp(-1, 0);  // AABB min x,y
-        mem[wi+4] = fxp( 2, 0); mem[wi+5] = fxp( 1, 0);  // AABB min z, max x
-        mem[wi+6] = fxp( 1, 0); mem[wi+7] = fxp( 4, 0);  // AABB max y, max z
+        mem[wi+2] = fxp(-1, 0); mem[wi+3] = fxp(-1, 0);          // AABB min x,y
+        mem[wi+4] = fxp(-3, 0); mem[wi+5] = fxp( 1, 0);          // AABB min z, max x
+        mem[wi+6] = fxp( 1, 0); mem[wi+7] = fxp( 2, 0);          // AABB max y, max z
 
         // Left leaf at BVH_OFF + 0x040 → triangle 0
         wi = mw(BASE_ADDR + BVH_OFF + 32'h040);
@@ -595,15 +658,79 @@ module gfx_sw_rt_multicore_tb;
         mem[wi+4] = fxp( 2, 0); mem[wi+5] = fxp( 1, 0);
         mem[wi+6] = fxp( 1, 0); mem[wi+7] = fxp( 2, 0);
 
-        // Right leaf at BVH_OFF + 0x080 → triangle 1
+        // Right leaf at BVH_OFF + 0x080 → behind-camera reflector panel (2 tris)
         wi = mw(BASE_ADDR + BVH_OFF + 32'h080);
         mem[wi+0] = {2'b01, 30'((BASE_ADDR + BVH_OFF + 32'h140) >> 2)};  // leaf, tri_ptr
-        mem[wi+1] = {2'b00, 30'd1};
-        mem[wi+2] = fxp(-1, 0); mem[wi+3] = fxp(-1, 0);
-        mem[wi+4] = fxp( 4, 0); mem[wi+5] = fxp( 1, 0);
-        mem[wi+6] = fxp( 1, 0); mem[wi+7] = fxp( 4, 0);
+        mem[wi+1] = {2'b00, 30'd2};
+        mem[wi+2] = 32'hFFFE_8000; mem[wi+3] = 32'hFFFE_C000;
+        mem[wi+4] = 32'hFFFD_8000; mem[wi+5] = 32'h0001_8000;
+        mem[wi+6] = 32'h0001_4000; mem[wi+7] = 32'hFFFD_8000;
 
-        $display("TB: BVH scene loaded (root + 2 leaves + 2 triangles)");
+        // Reflection BVH at RT_REFLECT_BVH_OFF: ground checker + green cube face.
+        // Ground left-red, T0 (y=-1, x∈[-8,0], z∈[0.5,16])
+        wi = mw(BASE_ADDR + RT_REFLECT_BVH_OFF + 32'h020);
+        mem[wi+ 0] = fxp(-8, 0);    mem[wi+ 1] = fxp(-1, 0);
+        mem[wi+ 2] = fxp( 0,32768); mem[wi+ 3] = fxp( 0, 0);
+        mem[wi+ 4] = fxp(-1, 0);    mem[wi+ 5] = fxp( 0,32768);
+        mem[wi+ 6] = fxp(-8, 0);    mem[wi+ 7] = fxp(-1, 0);
+        mem[wi+ 8] = fxp(16, 0);    mem[wi+ 9] = 32'h0000_0003;
+        mem[wi+10] = 32'h0;         mem[wi+11] = 32'h0;
+
+        // Ground left-red, T1
+        wi = mw(BASE_ADDR + RT_REFLECT_BVH_OFF + 32'h050);
+        mem[wi+ 0] = fxp( 0, 0);    mem[wi+ 1] = fxp(-1, 0);
+        mem[wi+ 2] = fxp( 0,32768); mem[wi+ 3] = fxp( 0, 0);
+        mem[wi+ 4] = fxp(-1, 0);    mem[wi+ 5] = fxp(16, 0);
+        mem[wi+ 6] = fxp(-8, 0);    mem[wi+ 7] = fxp(-1, 0);
+        mem[wi+ 8] = fxp(16, 0);    mem[wi+ 9] = 32'h0000_0004;
+        mem[wi+10] = 32'h0;         mem[wi+11] = 32'h0;
+
+        // Ground right-dark, T2 (x∈[0,8])
+        wi = mw(BASE_ADDR + RT_REFLECT_BVH_OFF + 32'h080);
+        mem[wi+ 0] = fxp( 0, 0);    mem[wi+ 1] = fxp(-1, 0);
+        mem[wi+ 2] = fxp( 0,32768); mem[wi+ 3] = fxp( 8, 0);
+        mem[wi+ 4] = fxp(-1, 0);    mem[wi+ 5] = fxp( 0,32768);
+        mem[wi+ 6] = fxp( 0, 0);    mem[wi+ 7] = fxp(-1, 0);
+        mem[wi+ 8] = fxp(16, 0);    mem[wi+ 9] = 32'h0000_0005;
+        mem[wi+10] = 32'h0;         mem[wi+11] = 32'h0;
+
+        // Ground right-dark, T3
+        wi = mw(BASE_ADDR + RT_REFLECT_BVH_OFF + 32'h0B0);
+        mem[wi+ 0] = fxp( 8, 0);    mem[wi+ 1] = fxp(-1, 0);
+        mem[wi+ 2] = fxp( 0,32768); mem[wi+ 3] = fxp( 8, 0);
+        mem[wi+ 4] = fxp(-1, 0);    mem[wi+ 5] = fxp(16, 0);
+        mem[wi+ 6] = fxp( 0, 0);    mem[wi+ 7] = fxp(-1, 0);
+        mem[wi+ 8] = fxp(16, 0);    mem[wi+ 9] = 32'h0000_0006;
+        mem[wi+10] = 32'h0;         mem[wi+11] = 32'h0;
+
+        // Green cube face, T4 (z=4, x∈[-1.5,1.5], y∈[-0.5,1.5])
+        wi = mw(BASE_ADDR + RT_REFLECT_BVH_OFF + 32'h0E0);
+        mem[wi+ 0] = fxp(-2,32768); mem[wi+ 1] = fxp(-1,32768);
+        mem[wi+ 2] = fxp( 4, 0);    mem[wi+ 3] = fxp( 1,32768);
+        mem[wi+ 4] = fxp(-1,32768); mem[wi+ 5] = fxp( 4, 0);
+        mem[wi+ 6] = fxp(-2,32768); mem[wi+ 7] = fxp( 1,32768);
+        mem[wi+ 8] = fxp( 4, 0);    mem[wi+ 9] = 32'h0000_0007;
+        mem[wi+10] = 32'h0;         mem[wi+11] = 32'h0;
+
+        // Green cube face, T5
+        wi = mw(BASE_ADDR + RT_REFLECT_BVH_OFF + 32'h110);
+        mem[wi+ 0] = fxp( 1,32768); mem[wi+ 1] = fxp(-1,32768);
+        mem[wi+ 2] = fxp( 4, 0);    mem[wi+ 3] = fxp( 1,32768);
+        mem[wi+ 4] = fxp( 1,32768); mem[wi+ 5] = fxp( 4, 0);
+        mem[wi+ 6] = fxp(-2,32768); mem[wi+ 7] = fxp( 1,32768);
+        mem[wi+ 8] = fxp( 4, 0);    mem[wi+ 9] = 32'h0000_0008;
+        mem[wi+10] = 32'h0;         mem[wi+11] = 32'h0;
+
+        // Root node (leaf) — 6 triangles starting at +0x020
+        wi = mw(BASE_ADDR + RT_REFLECT_BVH_OFF);
+        mem[wi+0] = {2'b01, 30'((BASE_ADDR + RT_REFLECT_BVH_OFF + 32'h020) >> 2)};
+        mem[wi+1] = {2'b00, 30'd6};
+        mem[wi+2] = fxp(-8, 0);     mem[wi+3] = fxp(-1, 0);
+        mem[wi+4] = fxp( 0,32768);  mem[wi+5] = fxp( 8, 0);
+        mem[wi+6] = fxp( 1,32768);  mem[wi+7] = fxp(16, 0);
+
+        $display("TB: BVH scene loaded (front hit tri + behind-camera split-color panel)");
+        $display("TB: Reflection BVH loaded (ground checker + green cube face)");
     endtask
 
     // -----------------------------------------------------------------------
@@ -665,21 +792,30 @@ module gfx_sw_rt_multicore_tb;
         int br_s1_pc, br_s2_pc, br_gnd_pc;
         int jmp_sky_pc;
         int br_fog_pc;
-        int br_black_pc, br_hard_pc, br_med_pc;
-        int jmp_noshadow_pc, jmp_red_med_pc, jmp_red_hard_pc, jmp_black_pc, jmp_fog_pc;
-        int br_s1gnd_pc, jmp_s1sky_pc, br_s1chk_pc, jmp_s1dk_pc;
+        int br_black_pc, br_hard_pc, br_med_pc, br_soft_pc;
+        int jmp_noshadow_pc, jmp_red_med_pc, jmp_red_hard_pc, jmp_red_soft_pc, jmp_black_pc, jmp_fog_pc;
+        int br_s1env_pc, jmp_s1sky_pc;
+        int br_s1xneg_pc, br_s1xmax_pc, br_s1yneg_pc, br_s1ymax_pc;
+        int s1_env_pc, s1_xclamp0_pc, s1_xclamp15_pc, s1_xok_pc;
+        int s1_yclamp0_pc, s1_yclamp15_pc, s1_yok_pc;
+        int jmp_s1sample_pc;
+        int jmp_s1direct_pc;
         int br_spec_pc, jmp_tint_pc;
         int br_s2lit_pc, jmp_s2lit_pc, jmp_s2dk_pc;
         int blt_x_pc, blt_y_pc, blt_frame_pc;
         int loop_frame_pc, loop_y_pc, loop_x_pc;
         int sphere1_pc, sphere2_pc;
         int ground_pc, fog_sky_pc;
-        int ground_black_pc, red_hard_pc, red_med_pc;
-        int s1_gnd_pc, s1_lt_pc, spec_pc, skip_spec_pc;
+        int ground_black_pc, red_hard_pc, red_med_pc, red_soft_pc;
+        int spec_pc, skip_spec_pc;
         int s2_dk_pc;
         int write_pc;
         int br_skip_accel_pc, skip_accel_pc;
         int poll_mxu_pc, poll_rtu_fwd_pc, poll_rtu_bwd_pc;
+        int rt_reflect_loop_pc, rt_reflect_poll_pc, rt_reflect_hit_pc;
+        int rt_reflect_tri_pc, br_rt_reflect_red_pc, rt_reflect_red_pc;
+        int br_rt_reflect_dark_pc, rt_reflect_dark_pc, jmp_rt_reflect_dark_store_pc;
+        int jmp_rt_reflect_store_pc, rt_reflect_store_pc, rt_reflect_done_pc;
         int imm;
         begin
             for (int i = 0; i < ROM_WORDS; i++) rom[i] = nop();
@@ -873,6 +1009,29 @@ module gfx_sw_rt_multicore_tb;
             // x8 = {hit_flag, 15'b0, tri_id[15:0]}
             rom[pc>>2] = s_type(RTU_FWD_OFF, 5'd1, 5'd8, 3'b010, OP_STORE); pc += 4;           // store to BASE+0x1C0
 
+            // Snapshot RTU hit normal through mailbox read requests before the
+            // backward validation ray overwrites the live result CSRs.
+            rom[pc>>2] = i_type(RTU_REG_HIT_NX, 5'd0, 3'b000, 5'd7, OP_IMM); pc += 4;
+            rom[pc>>2] = s_type(32'h31, 5'd14, 5'd7, 3'b010, OP_STORE); pc += 4;
+            rom[pc>>2] = i_type(0, 5'd14, 3'b010, 5'd8, OP_LOAD); pc += 4;
+            rom[pc>>2] = b_type(-4, 5'd8, 5'd24, 3'b000, OP_BRANCH); pc += 4;
+            rom[pc>>2] = nop(); pc += 4;
+            rom[pc>>2] = s_type(RTU_FWD_NX_OFF, 5'd1, 5'd8, 3'b010, OP_STORE); pc += 4;
+
+            rom[pc>>2] = i_type(RTU_REG_HIT_NY, 5'd0, 3'b000, 5'd7, OP_IMM); pc += 4;
+            rom[pc>>2] = s_type(32'h31, 5'd14, 5'd7, 3'b010, OP_STORE); pc += 4;
+            rom[pc>>2] = i_type(0, 5'd14, 3'b010, 5'd8, OP_LOAD); pc += 4;
+            rom[pc>>2] = b_type(-4, 5'd8, 5'd24, 3'b000, OP_BRANCH); pc += 4;
+            rom[pc>>2] = nop(); pc += 4;
+            rom[pc>>2] = s_type(RTU_FWD_NY_OFF, 5'd1, 5'd8, 3'b010, OP_STORE); pc += 4;
+
+            rom[pc>>2] = i_type(RTU_REG_HIT_NZ, 5'd0, 3'b000, 5'd7, OP_IMM); pc += 4;
+            rom[pc>>2] = s_type(32'h31, 5'd14, 5'd7, 3'b010, OP_STORE); pc += 4;
+            rom[pc>>2] = i_type(0, 5'd14, 3'b010, 5'd8, OP_LOAD); pc += 4;
+            rom[pc>>2] = b_type(-4, 5'd8, 5'd24, 3'b000, OP_BRANCH); pc += 4;
+            rom[pc>>2] = nop(); pc += 4;
+            rom[pc>>2] = s_type(RTU_FWD_NZ_OFF, 5'd1, 5'd8, 3'b010, OP_STORE); pc += 4;
+
             // RTU deassert CTRL
             rom[pc>>2] = i_type(RTU_REG_CTRL, 5'd0, 3'b000, 5'd7, OP_IMM); pc += 4;
             rom[pc>>2] = s_type(32'h32, 5'd14, 5'd7, 3'b010, OP_STORE); pc += 4;
@@ -912,8 +1071,118 @@ module gfx_sw_rt_multicore_tb;
             rom[pc>>2] = s_type(32'h32, 5'd14, 5'd7, 3'b010, OP_STORE); pc += 4;
             rom[pc>>2] = s_type(32'h30, 5'd14, 5'd0, 3'b010, OP_STORE); pc += 4;
 
+            // ---- RTU reflection map precompute ----
+            rom[pc>>2] = i_type(RTU_REG_BVH_ROOT, 5'd0, 3'b000, 5'd7, OP_IMM); pc += 4;
+            rom[pc>>2] = s_type(32'h32, 5'd14, 5'd7, 3'b010, OP_STORE); pc += 4;
+            rom[pc>>2] = u_type(BASE_ADDR + RT_REFLECT_BVH_OFF, 5'd8, OP_LUI); pc += 4;
+            rom[pc>>2] = s_type(32'h30, 5'd14, 5'd8, 3'b010, OP_STORE); pc += 4;
+
+            rom[pc>>2] = u_type(BASE_ADDR + RT_REFLECT_RAY_OFF, 5'd25, OP_LUI); pc += 4;      // x25 = ray LUT ptr
+            rom[pc>>2] = u_type(BASE_ADDR + RT_REFLECT_COLOR_OFF, 5'd26, OP_LUI); pc += 4;    // x26 = color map ptr
+            rom[pc>>2] = u_type(RT_REFLECT_ENV_SAMPLES, 5'd27, OP_LUI); pc += 4;              // x27 = sample count
+            rom[pc>>2] = u_type(32'hFFE6_9000, 5'd28, OP_LUI); pc += 4;                         // x28 = sky color
+            rom[pc>>2] = i_type(12'h664, 5'd28, 3'b000, 5'd28, OP_IMM); pc += 4;
+            rom[pc>>2] = u_type(32'hFF3C_B000, 5'd29, OP_LUI); pc += 4;                         // x29 = green color
+            rom[pc>>2] = i_type(12'h43C, 5'd29, 3'b000, 5'd29, OP_IMM); pc += 4;
+            rom[pc>>2] = u_type(32'hFF00_0000, 5'd30, OP_LUI); pc += 4;                         // x30 = red color
+            rom[pc>>2] = i_type(12'h0FF, 5'd30, 3'b000, 5'd30, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(5, 5'd0, 3'b000, 5'd6, OP_IMM); pc += 4;                        // x6 = tri_id split
+
+            rt_reflect_loop_pc = pc;
+            rom[pc>>2] = i_type(0, 5'd25, 3'b010, 5'd8, OP_LOAD); pc += 4;                     // dx
+            rom[pc>>2] = i_type(RTU_REG_RAY_DX, 5'd0, 3'b000, 5'd7, OP_IMM); pc += 4;
+            rom[pc>>2] = s_type(32'h32, 5'd14, 5'd7, 3'b010, OP_STORE); pc += 4;
+            rom[pc>>2] = s_type(32'h30, 5'd14, 5'd8, 3'b010, OP_STORE); pc += 4;
+
+            rom[pc>>2] = i_type(4, 5'd25, 3'b010, 5'd8, OP_LOAD); pc += 4;                     // dy
+            rom[pc>>2] = i_type(RTU_REG_RAY_DY, 5'd0, 3'b000, 5'd7, OP_IMM); pc += 4;
+            rom[pc>>2] = s_type(32'h32, 5'd14, 5'd7, 3'b010, OP_STORE); pc += 4;
+            rom[pc>>2] = s_type(32'h30, 5'd14, 5'd8, 3'b010, OP_STORE); pc += 4;
+
+            rom[pc>>2] = i_type(8, 5'd25, 3'b010, 5'd8, OP_LOAD); pc += 4;                     // dz
+            rom[pc>>2] = i_type(RTU_REG_RAY_DZ, 5'd0, 3'b000, 5'd7, OP_IMM); pc += 4;
+            rom[pc>>2] = s_type(32'h32, 5'd14, 5'd7, 3'b010, OP_STORE); pc += 4;
+            rom[pc>>2] = s_type(32'h30, 5'd14, 5'd8, 3'b010, OP_STORE); pc += 4;
+
+            rom[pc>>2] = i_type(12, 5'd25, 3'b010, 5'd8, OP_LOAD); pc += 4;                    // inv_dx
+            rom[pc>>2] = i_type(RTU_REG_INV_DX, 5'd0, 3'b000, 5'd7, OP_IMM); pc += 4;
+            rom[pc>>2] = s_type(32'h32, 5'd14, 5'd7, 3'b010, OP_STORE); pc += 4;
+            rom[pc>>2] = s_type(32'h30, 5'd14, 5'd8, 3'b010, OP_STORE); pc += 4;
+
+            rom[pc>>2] = i_type(16, 5'd25, 3'b010, 5'd8, OP_LOAD); pc += 4;                    // inv_dy
+            rom[pc>>2] = i_type(RTU_REG_INV_DY, 5'd0, 3'b000, 5'd7, OP_IMM); pc += 4;
+            rom[pc>>2] = s_type(32'h32, 5'd14, 5'd7, 3'b010, OP_STORE); pc += 4;
+            rom[pc>>2] = s_type(32'h30, 5'd14, 5'd8, 3'b010, OP_STORE); pc += 4;
+
+            rom[pc>>2] = i_type(20, 5'd25, 3'b010, 5'd8, OP_LOAD); pc += 4;                    // inv_dz
+            rom[pc>>2] = i_type(RTU_REG_INV_DZ, 5'd0, 3'b000, 5'd7, OP_IMM); pc += 4;
+            rom[pc>>2] = s_type(32'h32, 5'd14, 5'd7, 3'b010, OP_STORE); pc += 4;
+            rom[pc>>2] = s_type(32'h30, 5'd14, 5'd8, 3'b010, OP_STORE); pc += 4;
+
+            rom[pc>>2] = i_type(RTU_REG_CTRL, 5'd0, 3'b000, 5'd7, OP_IMM); pc += 4;
+            rom[pc>>2] = s_type(32'h32, 5'd14, 5'd7, 3'b010, OP_STORE); pc += 4;
+            rom[pc>>2] = i_type(9, 5'd0, 3'b000, 5'd8, OP_IMM); pc += 4;
+            rom[pc>>2] = s_type(32'h30, 5'd14, 5'd8, 3'b010, OP_STORE); pc += 4;
+
+            rt_reflect_poll_pc = pc;
+            rom[pc>>2] = i_type(0, 5'd14, 3'b010, 5'd8, OP_LOAD); pc += 4;
+            rom[pc>>2] = b_type(-4, 5'd8, 5'd24, 3'b000, OP_BRANCH); pc += 4;
+            rom[pc>>2] = nop(); pc += 4;
+
+            // x8 = completion payload = {hit_flag, 15'b0, tri_id[15:0]}
+            rom[pc>>2] = r_type(7'b0000000, 5'd28, 5'd0, 3'b000, 5'd31, OP_REG); pc += 4;     // x31 = sky (default)
+            rt_reflect_hit_pc = pc;
+            rom[pc>>2] = b_type(0, 5'd8, 5'd0, 3'b100, OP_BRANCH); pc += 4;                    // if payload < 0 -> classify hit
+            rom[pc>>2] = nop(); pc += 4;
+            rom[pc>>2] = b_type(0, 5'd0, 5'd0, 3'b000, OP_BRANCH); pc += 4;                    // else -> store sky
+            rom[pc>>2] = nop(); pc += 4;
+
+            rt_reflect_tri_pc = pc;
+            rom[pc>>2] = i_type(12'h0FF, 5'd8, 3'b111, 5'd7, OP_IMM); pc += 4;                 // x7 = tri_id[7:0]
+            br_rt_reflect_red_pc = pc;
+            rom[pc>>2] = b_type(0, 5'd7, 5'd6, 3'b100, OP_BRANCH); pc += 4;                    // tri_id < 5 -> red ground
+            rom[pc>>2] = nop(); pc += 4;
+            rom[pc>>2] = i_type(7, 5'd0, 3'b000, 5'd31, OP_IMM); pc += 4;                      // x31 = threshold 7
+            br_rt_reflect_dark_pc = pc;
+            rom[pc>>2] = b_type(0, 5'd7, 5'd31, 3'b100, OP_BRANCH); pc += 4;                   // tri_id < 7 -> dark ground
+            rom[pc>>2] = nop(); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd29, 5'd0, 3'b000, 5'd31, OP_REG); pc += 4;     // x31 = green
+            jmp_rt_reflect_store_pc = pc;
+            rom[pc>>2] = b_type(0, 5'd0, 5'd0, 3'b000, OP_BRANCH); pc += 4;
+            rom[pc>>2] = nop(); pc += 4;
+
+            rt_reflect_dark_pc = pc;
+            rom[pc>>2] = r_type(7'b0000000, 5'd0, 5'd0, 3'b000, 5'd31, OP_REG); pc += 4;      // x31 = black (0)
+            jmp_rt_reflect_dark_store_pc = pc;
+            rom[pc>>2] = b_type(0, 5'd0, 5'd0, 3'b000, OP_BRANCH); pc += 4;
+            rom[pc>>2] = nop(); pc += 4;
+
+            rt_reflect_red_pc = pc;
+            rom[pc>>2] = r_type(7'b0000000, 5'd30, 5'd0, 3'b000, 5'd31, OP_REG); pc += 4;     // x31 = red
+            rt_reflect_store_pc = pc;
+            rom[pc>>2] = s_type(0, 5'd26, 5'd31, 3'b010, OP_STORE); pc += 4;
+
+            rom[pc>>2] = i_type(RTU_REG_CTRL, 5'd0, 3'b000, 5'd7, OP_IMM); pc += 4;
+            rom[pc>>2] = s_type(32'h32, 5'd14, 5'd7, 3'b010, OP_STORE); pc += 4;
+            rom[pc>>2] = s_type(32'h30, 5'd14, 5'd0, 3'b010, OP_STORE); pc += 4;
+            rom[pc>>2] = i_type(RT_REFLECT_SAMPLE_BYTES, 5'd25, 3'b000, 5'd25, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(4, 5'd26, 3'b000, 5'd26, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(-1, 5'd27, 3'b000, 5'd27, OP_IMM); pc += 4;
+            rt_reflect_done_pc = pc;
+            rom[pc>>2] = b_type(0, 5'd0, 5'd27, 3'b100, OP_BRANCH); pc += 4;                   // loop while x27 > 0
+            rom[pc>>2] = nop(); pc += 4;
+
+            // Restore validated BVH root after the full reflection probe pass.
+            rom[pc>>2] = i_type(RTU_REG_BVH_ROOT, 5'd0, 3'b000, 5'd7, OP_IMM); pc += 4;
+            rom[pc>>2] = s_type(32'h32, 5'd14, 5'd7, 3'b010, OP_STORE); pc += 4;
+            rom[pc>>2] = u_type(BASE_ADDR + BVH_OFF, 5'd8, OP_LUI); pc += 4;
+            rom[pc>>2] = s_type(32'h30, 5'd14, 5'd8, 3'b010, OP_STORE); pc += 4;
+
             // FENCE to push mailbox results to memory
             rom[pc>>2] = i_type(12'h0FF, 5'd0, 3'b000, 5'd0, OP_FENCE); pc += 4;
+
+            // Restore shared loop state before either core enters the frame loop.
+            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd6, OP_IMM); pc += 4;                       // x6 = frame ctr = 0
 
             skip_accel_pc = pc;  // CU1 jumps here
 
@@ -1024,10 +1293,23 @@ module gfx_sw_rt_multicore_tb;
             rom[pc>>2] = b_type(0, 5'd30, 5'd31, 3'b100, OP_BRANCH); pc += 4;
             rom[pc>>2] = nop(); pc += 4;
 
+            rom[pc>>2] = r_type(7'b0000000, 5'd17, 5'd31, 3'b000, 5'd31, OP_REG); pc += 4;
+            br_soft_pc = pc;
+            rom[pc>>2] = b_type(0, 5'd30, 5'd31, 3'b100, OP_BRANCH); pc += 4;
+            rom[pc>>2] = nop(); pc += 4;
+
             // No shadow: full red
             rom[pc>>2] = u_type(32'hFF00_0000, 5'd31, OP_LUI); pc += 4;
             rom[pc>>2] = i_type(12'h0FF, 5'd31, 3'b000, 5'd31, OP_IMM); pc += 4;
             jmp_noshadow_pc = pc;
+            rom[pc>>2] = b_type(0, 5'd0, 5'd0, 3'b000, OP_BRANCH); pc += 4;
+            rom[pc>>2] = nop(); pc += 4;
+
+            // Soft shadow
+            red_soft_pc = pc;
+            rom[pc>>2] = u_type(32'hFF00_0000, 5'd31, OP_LUI); pc += 4;
+            rom[pc>>2] = i_type(12'h0D0, 5'd31, 3'b000, 5'd31, OP_IMM); pc += 4;
+            jmp_red_soft_pc = pc;
             rom[pc>>2] = b_type(0, 5'd0, 5'd0, 3'b000, OP_BRANCH); pc += 4;
             rom[pc>>2] = nop(); pc += 4;
 
@@ -1079,46 +1361,99 @@ module gfx_sw_rt_multicore_tb;
             rom[pc>>2] = i_type(12'h408, 5'd24, 3'b101, 5'd24, OP_IMM); pc += 4;
             rom[pc>>2] = r_type(7'b0000001, 5'd7, 5'd29, 3'b000, 5'd29, OP_REG); pc += 4;
             rom[pc>>2] = i_type(12'h408, 5'd29, 3'b101, 5'd29, OP_IMM); pc += 4;
-            rom[pc>>2] = i_type(1, 5'd29, 3'b001, 5'd30, OP_IMM); pc += 4;
+            // View-dependent reflection: R = I - 2*(I.N)*N
+            // N = (nx, ny, nz) in x14, x24, x29.  I ~= (dx, yndc, 1).
+            rom[pc>>2] = r_type(7'b0000001, 5'd14, 5'd25, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h410, 5'd26, 3'b101, 5'd26, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000001, 5'd24, 5'd10, 3'b000, 5'd27, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(12'h410, 5'd27, 3'b101, 5'd27, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd27, 5'd26, 3'b000, 5'd28, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd29, 5'd28, 3'b000, 5'd28, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(1, 5'd28, 3'b001, 5'd30, OP_IMM); pc += 4;
             rom[pc>>2] = r_type(7'b0000001, 5'd14, 5'd30, 3'b000, 5'd26, OP_REG); pc += 4;
             rom[pc>>2] = i_type(12'h410, 5'd26, 3'b101, 5'd26, OP_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0100000, 5'd26, 5'd0, 3'b000, 5'd26, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0100000, 5'd26, 5'd25, 3'b000, 5'd26, OP_REG); pc += 4;
             rom[pc>>2] = r_type(7'b0000001, 5'd24, 5'd30, 3'b000, 5'd27, OP_REG); pc += 4;
             rom[pc>>2] = i_type(12'h410, 5'd27, 3'b101, 5'd27, OP_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0100000, 5'd27, 5'd0, 3'b000, 5'd27, OP_REG); pc += 4;
+            rom[pc>>2] = r_type(7'b0100000, 5'd27, 5'd10, 3'b000, 5'd27, OP_REG); pc += 4;
             rom[pc>>2] = r_type(7'b0000001, 5'd29, 5'd30, 3'b000, 5'd30, OP_REG); pc += 4;
             rom[pc>>2] = i_type(12'h410, 5'd30, 3'b101, 5'd30, OP_IMM); pc += 4;
             rom[pc>>2] = r_type(7'b0100000, 5'd30, 5'd5, 3'b000, 5'd30, OP_REG); pc += 4;
 
-            // Reflected ground or sky
-            br_s1gnd_pc = pc;
-            rom[pc>>2] = b_type(0, 5'd27, 5'd0, 3'b100, OP_BRANCH); pc += 4;
+            // Hand off to the RTU env-map path; the actual sample now comes
+            // from the reflected direction instead of a forced center texel.
+            rom[pc>>2] = nop(); pc += 4;
+            rom[pc>>2] = nop(); pc += 4;
+            rom[pc>>2] = nop(); pc += 4;
+            jmp_s1direct_pc = pc;
+            rom[pc>>2] = b_type(0, 5'd0, 5'd0, 3'b000, OP_BRANCH); pc += 4;
             rom[pc>>2] = nop(); pc += 4;
 
-            // Reflected sky
+            // RTU-backed reflection map lookup. With a denser 32x32 probe,
+            // sample using the reflected vector directly.
+            br_s1env_pc = pc;
+            rom[pc>>2] = b_type(0, 5'd0, 5'd0, 3'b000, OP_BRANCH); pc += 4;                   // always sample env map
+            rom[pc>>2] = nop(); pc += 4;
+
+            // Forward-facing reflections stay sky-colored.
             rom[pc>>2] = u_type(32'hFFE6_9000, 5'd31, OP_LUI); pc += 4;
             rom[pc>>2] = i_type(12'h664, 5'd31, 3'b000, 5'd31, OP_IMM); pc += 4;
             jmp_s1sky_pc = pc;
             rom[pc>>2] = b_type(0, 5'd0, 5'd0, 3'b000, OP_BRANCH); pc += 4;
             rom[pc>>2] = nop(); pc += 4;
 
-            // Reflected ground checker
-            s1_gnd_pc = pc;
-            rom[pc>>2] = i_type(12'h40E, 5'd26, 3'b101, 5'd28, OP_IMM); pc += 4;
-            rom[pc>>2] = i_type(12'h40E, 5'd30, 3'b101, 5'd29, OP_IMM); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd29, 5'd28, 3'b100, 5'd28, OP_REG); pc += 4;
-            rom[pc>>2] = r_type(7'b0000000, 5'd6, 5'd28, 3'b000, 5'd28, OP_REG); pc += 4;
-            rom[pc>>2] = i_type(1, 5'd28, 3'b111, 5'd28, OP_IMM); pc += 4;
-            br_s1chk_pc = pc;
-            rom[pc>>2] = b_type(0, 5'd28, 5'd0, 3'b001, OP_BRANCH); pc += 4;
+            s1_env_pc = pc;
+            rom[pc>>2] = i_type(12'h40B, 5'd26, 3'b101, 5'd28, OP_IMM); pc += 4;              // ix = 32 + (rx >> 11)
+            rom[pc>>2] = i_type(32, 5'd28, 3'b000, 5'd28, OP_IMM); pc += 4;
+            rom[pc>>2] = i_type(12'h40B, 5'd27, 3'b101, 5'd29, OP_IMM); pc += 4;              // iy = 32 - (ry >> 11)
+            br_s1xneg_pc = pc;
+            rom[pc>>2] = b_type(0, 5'd28, 5'd0, 3'b100, OP_BRANCH); pc += 4;
             rom[pc>>2] = nop(); pc += 4;
-            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd31, OP_IMM); pc += 4;
-            jmp_s1dk_pc = pc;
+            rom[pc>>2] = i_type(63, 5'd0, 3'b000, 5'd7, OP_IMM); pc += 4;
+            br_s1xmax_pc = pc;
+            rom[pc>>2] = b_type(0, 5'd7, 5'd28, 3'b100, OP_BRANCH); pc += 4;
+            rom[pc>>2] = nop(); pc += 4;
+            s1_xok_pc = pc;
+            rom[pc>>2] = i_type(32, 5'd0, 3'b000, 5'd7, OP_IMM); pc += 4;
+            rom[pc>>2] = r_type(7'b0100000, 5'd29, 5'd7, 3'b000, 5'd29, OP_REG); pc += 4;
+            rom[pc>>2] = nop(); pc += 4;
+            br_s1yneg_pc = pc;
+            rom[pc>>2] = b_type(0, 5'd29, 5'd0, 3'b100, OP_BRANCH); pc += 4;
+            rom[pc>>2] = nop(); pc += 4;
+            rom[pc>>2] = i_type(63, 5'd0, 3'b000, 5'd7, OP_IMM); pc += 4;
+            br_s1ymax_pc = pc;
+            rom[pc>>2] = b_type(0, 5'd7, 5'd29, 3'b100, OP_BRANCH); pc += 4;
+            rom[pc>>2] = nop(); pc += 4;
+            s1_yok_pc = pc;
+            rom[pc>>2] = i_type(6, 5'd29, 3'b001, 5'd29, OP_IMM); pc += 4;                     // iy << 6
+            rom[pc>>2] = r_type(7'b0000000, 5'd28, 5'd29, 3'b000, 5'd29, OP_REG); pc += 4;    // sample index
+            rom[pc>>2] = i_type(2, 5'd29, 3'b001, 5'd29, OP_IMM); pc += 4;                     // byte offset
+            rom[pc>>2] = u_type(BASE_ADDR + RT_REFLECT_COLOR_OFF, 5'd7, OP_LUI); pc += 4;
+            rom[pc>>2] = r_type(7'b0000000, 5'd29, 5'd7, 3'b000, 5'd7, OP_REG); pc += 4;
+            rom[pc>>2] = i_type(0, 5'd7, 3'b010, 5'd31, OP_LOAD); pc += 4;
+            jmp_s1sample_pc = pc;
             rom[pc>>2] = b_type(0, 5'd0, 5'd0, 3'b000, OP_BRANCH); pc += 4;
             rom[pc>>2] = nop(); pc += 4;
-            s1_lt_pc = pc;
-            rom[pc>>2] = u_type(32'hFF00_0000, 5'd31, OP_LUI); pc += 4;
-            rom[pc>>2] = i_type(12'h0FF, 5'd31, 3'b000, 5'd31, OP_IMM); pc += 4;
+
+            s1_xclamp0_pc = pc;
+            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd28, OP_IMM); pc += 4;
+            rom[pc>>2] = b_type(0, 5'd0, 5'd0, 3'b000, OP_BRANCH); pc += 4;
+            rom[pc>>2] = nop(); pc += 4;
+
+            s1_xclamp15_pc = pc;
+            rom[pc>>2] = i_type(15, 5'd0, 3'b000, 5'd28, OP_IMM); pc += 4;
+            rom[pc>>2] = b_type(0, 5'd0, 5'd0, 3'b000, OP_BRANCH); pc += 4;
+            rom[pc>>2] = nop(); pc += 4;
+
+            s1_yclamp0_pc = pc;
+            rom[pc>>2] = i_type(0, 5'd0, 3'b000, 5'd29, OP_IMM); pc += 4;
+            rom[pc>>2] = b_type(0, 5'd0, 5'd0, 3'b000, OP_BRANCH); pc += 4;
+            rom[pc>>2] = nop(); pc += 4;
+
+            s1_yclamp15_pc = pc;
+            rom[pc>>2] = i_type(15, 5'd0, 3'b000, 5'd29, OP_IMM); pc += 4;
+            rom[pc>>2] = b_type(0, 5'd0, 5'd0, 3'b000, OP_BRANCH); pc += 4;
+            rom[pc>>2] = nop(); pc += 4;
 
             // Specular
             spec_pc = pc;
@@ -1132,9 +1467,9 @@ module gfx_sw_rt_multicore_tb;
             skip_spec_pc = pc;
 
             // Mirror tint
-            rom[pc>>2] = r_type(7'b0011110, 5'd31, 5'd0, 3'b011, 5'd1, OP_CUSTOM1); pc += 4;
-            rom[pc>>2] = r_type(7'b0011000, 5'd2, 5'd1, 3'b011, 5'd1, OP_CUSTOM1); pc += 4;
-            rom[pc>>2] = r_type(7'b0010000, 5'd0, 5'd1, 3'b011, 5'd31, OP_CUSTOM1); pc += 4;
+            rom[pc>>2] = nop(); pc += 4;
+            rom[pc>>2] = nop(); pc += 4;
+            rom[pc>>2] = nop(); pc += 4;
             jmp_tint_pc = pc;
             rom[pc>>2] = b_type(0, 5'd0, 5'd0, 3'b000, OP_BRANCH); pc += 4;
             rom[pc>>2] = nop(); pc += 4;
@@ -1204,8 +1539,12 @@ module gfx_sw_rt_multicore_tb;
             rom[br_hard_pc>>2] = b_type(imm, 5'd30, 5'd17, 3'b100, OP_BRANCH);
             imm = red_med_pc - br_med_pc;
             rom[br_med_pc>>2] = b_type(imm, 5'd30, 5'd31, 3'b100, OP_BRANCH);
+            imm = red_soft_pc - br_soft_pc;
+            rom[br_soft_pc>>2] = b_type(imm, 5'd30, 5'd31, 3'b100, OP_BRANCH);
             imm = write_pc - jmp_noshadow_pc;
             rom[jmp_noshadow_pc>>2] = b_type(imm, 5'd0, 5'd0, 3'b000, OP_BRANCH);
+            imm = write_pc - jmp_red_soft_pc;
+            rom[jmp_red_soft_pc>>2] = b_type(imm, 5'd0, 5'd0, 3'b000, OP_BRANCH);
             imm = write_pc - jmp_red_med_pc;
             rom[jmp_red_med_pc>>2] = b_type(imm, 5'd0, 5'd0, 3'b000, OP_BRANCH);
             imm = write_pc - jmp_red_hard_pc;
@@ -1214,14 +1553,30 @@ module gfx_sw_rt_multicore_tb;
             rom[jmp_black_pc>>2] = b_type(imm, 5'd0, 5'd0, 3'b000, OP_BRANCH);
             imm = write_pc - jmp_fog_pc;
             rom[jmp_fog_pc>>2] = b_type(imm, 5'd0, 5'd0, 3'b000, OP_BRANCH);
-            imm = s1_gnd_pc - br_s1gnd_pc;
-            rom[br_s1gnd_pc>>2] = b_type(imm, 5'd27, 5'd0, 3'b100, OP_BRANCH);
+            imm = s1_env_pc - br_s1env_pc;
+            rom[br_s1env_pc>>2] = b_type(imm, 5'd0, 5'd0, 3'b000, OP_BRANCH);
             imm = spec_pc - jmp_s1sky_pc;
             rom[jmp_s1sky_pc>>2] = b_type(imm, 5'd0, 5'd0, 3'b000, OP_BRANCH);
-            imm = s1_lt_pc - br_s1chk_pc;
-            rom[br_s1chk_pc>>2] = b_type(imm, 5'd28, 5'd0, 3'b001, OP_BRANCH);
-            imm = spec_pc - jmp_s1dk_pc;
-            rom[jmp_s1dk_pc>>2] = b_type(imm, 5'd0, 5'd0, 3'b000, OP_BRANCH);
+            imm = s1_xclamp0_pc - br_s1xneg_pc;
+            rom[br_s1xneg_pc>>2] = b_type(imm, 5'd28, 5'd0, 3'b100, OP_BRANCH);
+            imm = s1_xclamp15_pc - br_s1xmax_pc;
+            rom[br_s1xmax_pc>>2] = b_type(imm, 5'd7, 5'd28, 3'b100, OP_BRANCH);
+            imm = s1_yclamp0_pc - br_s1yneg_pc;
+            rom[br_s1yneg_pc>>2] = b_type(imm, 5'd29, 5'd0, 3'b100, OP_BRANCH);
+            imm = s1_yclamp15_pc - br_s1ymax_pc;
+            rom[br_s1ymax_pc>>2] = b_type(imm, 5'd7, 5'd29, 3'b100, OP_BRANCH);
+            imm = s1_xok_pc - (s1_xclamp0_pc + 4);
+            rom[(s1_xclamp0_pc + 4)>>2] = b_type(imm, 5'd0, 5'd0, 3'b000, OP_BRANCH);
+            imm = s1_xok_pc - (s1_xclamp15_pc + 4);
+            rom[(s1_xclamp15_pc + 4)>>2] = b_type(imm, 5'd0, 5'd0, 3'b000, OP_BRANCH);
+            imm = s1_yok_pc - (s1_yclamp0_pc + 4);
+            rom[(s1_yclamp0_pc + 4)>>2] = b_type(imm, 5'd0, 5'd0, 3'b000, OP_BRANCH);
+            imm = s1_yok_pc - (s1_yclamp15_pc + 4);
+            rom[(s1_yclamp15_pc + 4)>>2] = b_type(imm, 5'd0, 5'd0, 3'b000, OP_BRANCH);
+            imm = br_s1env_pc - jmp_s1direct_pc;
+            rom[jmp_s1direct_pc>>2] = b_type(imm, 5'd0, 5'd0, 3'b000, OP_BRANCH);
+            imm = spec_pc - jmp_s1sample_pc;
+            rom[jmp_s1sample_pc>>2] = b_type(imm, 5'd0, 5'd0, 3'b000, OP_BRANCH);
             imm = skip_spec_pc - br_spec_pc;
             rom[br_spec_pc>>2] = b_type(imm, 5'd28, 5'd29, 3'b100, OP_BRANCH);
             imm = write_pc - jmp_tint_pc;
@@ -1232,6 +1587,20 @@ module gfx_sw_rt_multicore_tb;
             rom[jmp_s2lit_pc>>2] = b_type(imm, 5'd0, 5'd0, 3'b000, OP_BRANCH);
             imm = write_pc - jmp_s2dk_pc;
             rom[jmp_s2dk_pc>>2] = b_type(imm, 5'd0, 5'd0, 3'b000, OP_BRANCH);
+            imm = rt_reflect_tri_pc - rt_reflect_hit_pc;
+            rom[rt_reflect_hit_pc>>2] = b_type(imm, 5'd8, 5'd0, 3'b100, OP_BRANCH);
+            imm = rt_reflect_store_pc - (rt_reflect_hit_pc + 8);
+            rom[(rt_reflect_hit_pc + 8)>>2] = b_type(imm, 5'd0, 5'd0, 3'b000, OP_BRANCH);
+            imm = rt_reflect_red_pc - br_rt_reflect_red_pc;
+            rom[br_rt_reflect_red_pc>>2] = b_type(imm, 5'd7, 5'd6, 3'b100, OP_BRANCH);
+            imm = rt_reflect_dark_pc - br_rt_reflect_dark_pc;
+            rom[br_rt_reflect_dark_pc>>2] = b_type(imm, 5'd7, 5'd31, 3'b100, OP_BRANCH);
+            imm = rt_reflect_store_pc - jmp_rt_reflect_store_pc;
+            rom[jmp_rt_reflect_store_pc>>2] = b_type(imm, 5'd0, 5'd0, 3'b000, OP_BRANCH);
+            imm = rt_reflect_store_pc - jmp_rt_reflect_dark_store_pc;
+            rom[jmp_rt_reflect_dark_store_pc>>2] = b_type(imm, 5'd0, 5'd0, 3'b000, OP_BRANCH);
+            imm = rt_reflect_loop_pc - rt_reflect_done_pc;
+            rom[rt_reflect_done_pc>>2] = b_type(imm, 5'd0, 5'd27, 3'b100, OP_BRANCH);
             imm = loop_x_pc - blt_x_pc;
             rom[blt_x_pc>>2] = b_type(imm, 5'd11, 5'd19, 3'b100, OP_BRANCH);
             imm = loop_y_pc - blt_y_pc;
@@ -1263,6 +1632,35 @@ module gfx_sw_rt_multicore_tb;
             for (y = 0; y < H; y++) begin
                 for (x = 0; x < W; x++) begin
                     idx = mw(BASE_ADDR + FB_OFF + (y * W * 4) + (x * 4));
+                    pix = mem[idx];
+                    r = pix[7:0];
+                    g = pix[15:8];
+                    b = pix[23:16];
+                    $fwrite(fh, "%0d %0d %0d\n", r, g, b);
+                end
+            end
+            $fclose(fh);
+            $display("TB: wrote %s", fname);
+        end
+    endtask
+
+    task automatic dump_rt_reflect_ppm();
+        int y, x, idx;
+        logic [31:0] pix;
+        logic [7:0] r, g, b;
+        string fname;
+        int fh;
+        begin
+            fname = "rt_reflect_map.ppm";
+            fh = $fopen(fname, "w");
+            if (fh == 0) begin
+                $display("TB WARN: could not open %s for write", fname);
+                return;
+            end
+            $fwrite(fh, "P3\n%0d %0d\n255\n", RT_REFLECT_ENV_W, RT_REFLECT_ENV_H);
+            for (y = 0; y < RT_REFLECT_ENV_H; y++) begin
+                for (x = 0; x < RT_REFLECT_ENV_W; x++) begin
+                    idx = mw(BASE_ADDR + RT_REFLECT_COLOR_OFF + ((y * RT_REFLECT_ENV_W + x) * 4));
                     pix = mem[idx];
                     r = pix[7:0];
                     g = pix[15:8];
@@ -1401,6 +1799,8 @@ module gfx_sw_rt_multicore_tb;
 
             // Dump framebuffer
             dump_fb_ppm(frame);
+            if (frame == 0)
+                dump_rt_reflect_ppm();
 
             // -----------------------------------------------------------
             // After frame 0: verify CU0-driven accelerator results
@@ -1408,6 +1808,7 @@ module gfx_sw_rt_multicore_tb;
             // -----------------------------------------------------------
             if (frame == 0) begin
                 logic [31:0] mxu_result, rtu_fwd_result, rtu_bwd_result;
+                logic [31:0] rtu_fwd_nx, rtu_fwd_ny, rtu_fwd_nz;
 
                 // Allow write-through to settle
                 repeat (200) @(posedge clk);
@@ -1456,22 +1857,35 @@ module gfx_sw_rt_multicore_tb;
                     $display("  [RTU-CU] FAIL: Expected hit=1, tri_id=1");
                 end
 
+                rtu_fwd_nx = mem[mw(BASE_ADDR + RTU_FWD_NX_OFF)];
+                rtu_fwd_ny = mem[mw(BASE_ADDR + RTU_FWD_NY_OFF)];
+                rtu_fwd_nz = mem[mw(BASE_ADDR + RTU_FWD_NZ_OFF)];
+                $display("  [RTU-CU] Forward ray normal: nx=0x%08x ny=0x%08x nz=0x%08x",
+                         rtu_fwd_nx, rtu_fwd_ny, rtu_fwd_nz);
+                if (rtu_fwd_nx == 32'h0 && rtu_fwd_ny == 32'h0 && rtu_fwd_nz == 32'h0004_0000) begin
+                    $display("  [RTU-CU] PASS: Forward ray captured geometric normal");
+                    rtu_pass++;
+                end else begin
+                    $display("  [RTU-CU] FAIL: Expected normal (0,0,4.0)");
+                end
+
                 // ---- RTU backward ray ----
                 rtu_bwd_result = mem[mw(BASE_ADDR + RTU_BWD_OFF)];
                 $display("  [RTU-CU] Backward ray payload: 0x%08x", rtu_bwd_result);
-                // Expect: {hit=0, 15'b0, 16'bx} → bit 31 = 0
-                if (!rtu_bwd_result[31]) begin
-                    $display("  [RTU-CU] PASS: Backward ray missed");
+                // Expect: hit behind-camera reflector panel tri_id=3
+                if (rtu_bwd_result == 32'h8000_0003) begin
+                    $display("  [RTU-CU] PASS: Backward ray hit reflector (tri_id=3)");
                     rtu_pass++;
                 end else begin
-                    $display("  [RTU-CU] FAIL: Expected miss (hit=0)");
+                    $display("  [RTU-CU] FAIL: Expected hit reflector tri_id=3 (got 0x%08x)", rtu_bwd_result);
                 end
             end
 
         end // frame loop
 
         // ===============================================================
-        // Performance counter check (CU0 dispatched 1 MXU tile, 2 RTU rays)
+        // Performance counter check (CU0 dispatched 1 MXU tile, 2 validation
+        // RTU rays, and the reflection-map precompute pass)
         // ===============================================================
         $display("\n=== Performance Counters ===");
         begin
@@ -1485,11 +1899,11 @@ module gfx_sw_rt_multicore_tb;
             $display("  RTU: rays=%0d  nodes=%0d  tri_tests=%0d",
                      rtu_rays, rtu_nodes, rtu_tests);
             $display("  MXU: tiles=%0d  ops=%0d", mxu_tiles, mxu_ops);
-            if (rtu_rays == 32'd2 && mxu_tiles == 32'd1) begin
+            if (rtu_rays == 32'(2 + RT_REFLECT_ENV_SAMPLES) && mxu_tiles == 32'd1) begin
                 $display("  PASS: Perf counters correct (CU-driven)");
                 total_pass++;
             end else begin
-                $display("  FAIL: Expected RTU_RAYS=2, MXU_TILES=1");
+                $display("  FAIL: Expected RTU_RAYS=%0d, MXU_TILES=1", 2 + RT_REFLECT_ENV_SAMPLES);
                 total_fail++;
             end
         end
@@ -1506,11 +1920,11 @@ module gfx_sw_rt_multicore_tb;
         // Summary
         // ===============================================================
         total_pass += mxu_pass + rtu_pass + frame_pass;
-        total_fail += (2 - mxu_pass) + (2 - rtu_pass) + (FRAMES - frame_pass);
+        total_fail += (2 - mxu_pass) + (3 - rtu_pass) + (FRAMES - frame_pass);
 
         $display("\n============================================================");
         $display("  GFX SW-RT Cluster TB — CU-Driven Accelerators");
-        $display("  MXU: %0d/2    RTU: %0d/2    Frames: %0d/%0d",
+        $display("  MXU: %0d/2    RTU: %0d/3    Frames: %0d/%0d",
                  mxu_pass, rtu_pass, frame_pass, FRAMES);
         $display("  Total: %0d PASS, %0d FAIL", total_pass, total_fail);
         $display("============================================================");

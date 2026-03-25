@@ -471,7 +471,7 @@ module gfx_console_tb;
                                 endcase
                                 last_valid = 1'b1; last_rgb = rgb;
                             end
-                            if (console_color_mode == 1) $write("閳?); else for (p = 0; p < console_pixel_w; p++) $write(" ");
+                            if (console_color_mode == 1) $write("█"); else for (p = 0; p < console_pixel_w; p++) $write(" ");
                         end
                     end
                 end

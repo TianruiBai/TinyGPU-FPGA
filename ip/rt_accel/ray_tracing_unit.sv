@@ -79,6 +79,7 @@ module ray_tracing_unit
     logic        bvh_irq;
     logic        bvh_result_hit;
     logic signed [31:0] bvh_result_t, bvh_result_u, bvh_result_v;
+    logic signed [31:0] bvh_result_nx, bvh_result_ny, bvh_result_nz;
     logic [31:0] bvh_result_tri_id;
     logic [31:0] bvh_perf_nodes, bvh_perf_tris;
 
@@ -128,6 +129,9 @@ module ray_tracing_unit
         .result_u(bvh_result_u),
         .result_v(bvh_result_v),
         .result_tri_id(bvh_result_tri_id),
+        .result_nx(bvh_result_nx),
+        .result_ny(bvh_result_ny),
+        .result_nz(bvh_result_nz),
         .perf_nodes_visited(bvh_perf_nodes),
         .perf_tris_tested(bvh_perf_tris),
         .mem_req_valid(bvh_mem_req_valid),
@@ -211,6 +215,9 @@ module ray_tracing_unit
                         regs[RTU_REG_HIT_U]      <= bvh_result_u;
                         regs[RTU_REG_HIT_V]      <= bvh_result_v;
                         regs[RTU_REG_HIT_TRI_ID] <= bvh_result_tri_id;
+                        regs[RTU_REG_HIT_NX]     <= bvh_result_nx;
+                        regs[RTU_REG_HIT_NY]     <= bvh_result_ny;
+                        regs[RTU_REG_HIT_NZ]     <= bvh_result_nz;
                         regs[RTU_REG_PERF_NODES] <= bvh_perf_nodes;
                         regs[RTU_REG_PERF_TESTS] <= bvh_perf_tris;
                         regs[RTU_REG_PERF_RAYS]  <= regs[RTU_REG_PERF_RAYS] + 1;

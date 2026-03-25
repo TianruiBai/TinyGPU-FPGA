@@ -786,11 +786,15 @@ module l1_data_cache #(
                         if (refill_last) begin
                             data_ram[idx] <= refill_line;
                             refill_cnt <= '0;
+`ifdef DEBUG_L1_REFILL
                             $display("L1 refill line addr=%08h last=1 @%0t", {tag, idx, {OFFSET_BITS{1'b0}}}, $time);
+`endif
                         end else begin
                             refill_buf <= refill_buf_next;
                             refill_cnt <= refill_cnt + 1'b1;
+`ifdef DEBUG_L1_REFILL
                             $display("L1 refill beat %0d/%0d addr=%08h @%0t", refill_cnt, LINE_BEATS, {tag, idx, {OFFSET_BITS{1'b0}}}, $time);
+`endif
                         end
                     end
                     if (refill_last) begin
@@ -798,7 +802,9 @@ module l1_data_cache #(
                         tag_ram[idx].tag   <= tag;
                         tag_ram[idx].dirty <= 1'b0;
                         cnt_refills <= cnt_refills + 1;
+`ifdef DEBUG_L1_REFILL
                         $display("L1 refill done addr=%08h pending_store=%0b @%0t", {tag, idx, {OFFSET_BITS{1'b0}}}, pending_is_store, $time);
+`endif
                         // Apply pending store/atomic updates after refill
                         if (pending_is_store) begin
                             integer lane;

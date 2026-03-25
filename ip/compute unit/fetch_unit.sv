@@ -30,6 +30,7 @@ module fetch_unit (
     logic        req_pending;
     logic        advance_pending;
     logic [31:0] advance_base_pc;
+    logic        discard_resp;   // set when redirect occurs with in-flight req
 
     // Export the PC that matches the currently presented instruction(s)
     assign pc = pc_bundle;
@@ -53,6 +54,7 @@ module fetch_unit (
             req_pc       <= 32'h0;
             advance_pending <= 1'b0;
             advance_base_pc <= 32'h0;
+            discard_resp <= 1'b0;
         end else begin
             // Default: drop inst_valid unless a new response arrives
             inst_valid <= 1'b0;
@@ -62,8 +64,17 @@ module fetch_unit (
                 pc_reg      <= redirect_target;
                 pc_bundle   <= redirect_target;
                 pc_halfword <= redirect_target[2];
-                req_pending <= 1'b0;
                 advance_pending <= 1'b0;
+
+                if (req_pending && !advance_pending && !resp_valid) begin
+                    // True in-flight icache request — stale response will
+                    // arrive later.  Keep req_pending=1 to stay in sync
+                    // with the icache and mark the response for discard.
+                    discard_resp <= 1'b1;
+                end else begin
+                    req_pending  <= 1'b0;
+                    discard_resp <= 1'b0;
+                end
             end else begin
                 // Advance PC after the front end decides how many slots were accepted.
                 if (advance_pending) begin
@@ -78,15 +89,21 @@ module fetch_unit (
                     req_pending <= req_ready; // latch if accepted this cycle
                 end
 
-                // Capture response; hold off issuing the next request until we've advanced PC
+                // Capture or discard response
                 if (resp_valid) begin
-                    pc_bundle       <= req_pc;
-                    inst_bundle     <= resp_data;
-                    pc_halfword     <= req_pc[2];
-                    inst_valid      <= 1'b1;
-                    advance_pending <= 1'b1;
-                    advance_base_pc <= req_pc;
-                    req_pending     <= 1'b1;
+                    if (discard_resp) begin
+                        // Stale response from pre-redirect request — throw away
+                        discard_resp <= 1'b0;
+                        req_pending  <= 1'b0;
+                    end else begin
+                        pc_bundle       <= req_pc;
+                        inst_bundle     <= resp_data;
+                        pc_halfword     <= req_pc[2];
+                        inst_valid      <= 1'b1;
+                        advance_pending <= 1'b1;
+                        advance_base_pc <= req_pc;
+                        req_pending     <= 1'b1;
+                    end
                 end
             end
         end

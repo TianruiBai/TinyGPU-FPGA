@@ -312,12 +312,15 @@ module rt_accel_tb;
         wait_rtu_done(50000);
 
         begin
-            logic [31:0] hit_flag, hit_t, hit_u, hit_v, hit_tri, perf_n, perf_t;
+            logic [31:0] hit_flag, hit_t, hit_u, hit_v, hit_tri, hit_nx, hit_ny, hit_nz, perf_n, perf_t;
             rtu_read(RTU_REG_HIT_FLAG,   hit_flag);
             rtu_read(RTU_REG_HIT_T,      hit_t);
             rtu_read(RTU_REG_HIT_U,      hit_u);
             rtu_read(RTU_REG_HIT_V,      hit_v);
             rtu_read(RTU_REG_HIT_TRI_ID, hit_tri);
+            rtu_read(RTU_REG_HIT_NX,     hit_nx);
+            rtu_read(RTU_REG_HIT_NY,     hit_ny);
+            rtu_read(RTU_REG_HIT_NZ,     hit_nz);
             rtu_read(RTU_REG_PERF_NODES, perf_n);
             rtu_read(RTU_REG_PERF_TESTS, perf_t);
 
@@ -331,6 +334,16 @@ module rt_accel_tb;
                 pass_count++;
             end else begin
                 $display("  FAIL: Expected hit on tri_id=1");
+                fail_count++;
+            end
+
+            $display("  normal=(0x%08x,0x%08x,0x%08x) (expect 0,0,0x%08x)",
+                     hit_nx, hit_ny, hit_nz, fxp(4, 0));
+            if (hit_nx == 32'h0 && hit_ny == 32'h0 && hit_nz == fxp(4, 0)) begin
+                $display("  PASS: Geometric hit normal captured");
+                pass_count++;
+            end else begin
+                $display("  FAIL: Unexpected hit normal");
                 fail_count++;
             end
         end

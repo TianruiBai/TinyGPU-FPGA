@@ -1,0 +1,492 @@
+=== Building RT Accelerator TB ===
+%Warning-PINCONNECTEMPTY: ip/rt_accel\ray_tracing_unit.sv:114:10: Instance pin connected by name with empty reference: 'irq'
+  114 |         .irq(),
+      |          ^~~
+                          ... For warning description see https://verilator.org/warn/PINCONNECTEMPTY?v=5.041
+                          ... Use "/* verilator lint_off PINCONNECTEMPTY */" and lint_on around source to disable this message.
+%Warning-PINCONNECTEMPTY: testbench\rt_accel_tb.sv:73:10: Instance pin connected by name with empty reference: 'mb_tx_valid'
+   73 |         .mb_tx_valid(), .mb_tx_ready(1'b1),
+      |          ^~~~~~~~~~~
+%Warning-PINCONNECTEMPTY: testbench\rt_accel_tb.sv:74:10: Instance pin connected by name with empty reference: 'mb_tx_data'
+   74 |         .mb_tx_data(),  .mb_tx_dest_id(),
+      |          ^~~~~~~~~~
+%Warning-PINCONNECTEMPTY: testbench\rt_accel_tb.sv:74:26: Instance pin connected by name with empty reference: 'mb_tx_dest_id'
+   74 |         .mb_tx_data(),  .mb_tx_dest_id(),
+      |                          ^~~~~~~~~~~~~
+%Warning-PINCONNECTEMPTY: testbench\rt_accel_tb.sv:75:30: Instance pin connected by name with empty reference: 'mb_rx_ready'
+   75 |         .mb_rx_valid(1'b0), .mb_rx_ready(),
+      |                              ^~~~~~~~~~~
+%Warning-WIDTHTRUNC: ip/rt_accel\bvh_traversal_engine.sv:290:33: Bit extraction of array[7:0] requires 3 bit index, not 4 bits.
+                                                               : ... note: In instance 'rt_accel_tb.u_rtu.u_bvh'
+  290 |                         node_buf[{node_beat_cnt, 1'b0}]     <= mem_resp_data[31:0];
+      |                                 ^
+                     ... For warning description see https://verilator.org/warn/WIDTHTRUNC?v=5.041
+                     ... Use "/* verilator lint_off WIDTHTRUNC */" and lint_on around source to disable this message.
+%Warning-WIDTHTRUNC: ip/rt_accel\bvh_traversal_engine.sv:291:33: Bit extraction of array[7:0] requires 3 bit index, not 4 bits.
+                                                               : ... note: In instance 'rt_accel_tb.u_rtu.u_bvh'
+  291 |                         node_buf[{node_beat_cnt, 1'b1}]     <= mem_resp_data[63:32];
+      |                                 ^
+%Warning-WIDTHEXPAND: ip/rt_accel\bvh_traversal_engine.sv:332:39: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'stack_ptr' generates 5 bits.
+                                                                : ... note: In instance 'rt_accel_tb.u_rtu.u_bvh'
+  332 |                         if (stack_ptr < BVH_STACK_DEPTH) begin
+      |                                       ^
+                      ... For warning description see https://verilator.org/warn/WIDTHEXPAND?v=5.041
+                      ... Use "/* verilator lint_off WIDTHEXPAND */" and lint_on around source to disable this message.
+%Warning-WIDTHTRUNC: ip/rt_accel\bvh_traversal_engine.sv:361:32: Bit extraction of array[11:0] requires 4 bit index, not 5 bits.
+                                                               : ... note: In instance 'rt_accel_tb.u_rtu.u_bvh'
+  361 |                         tri_buf[{tri_beat_cnt, 1'b0}]  <= mem_resp_data[31:0];
+      |                                ^
+%Warning-WIDTHTRUNC: ip/rt_accel\bvh_traversal_engine.sv:362:32: Bit extraction of array[11:0] requires 4 bit index, not 5 bits.
+                                                               : ... note: In instance 'rt_accel_tb.u_rtu.u_bvh'
+  362 |                         tri_buf[{tri_beat_cnt, 1'b1}]   <= mem_resp_data[63:32];
+      |                                ^
+%Warning-WIDTHEXPAND: ip/rt_accel\ray_tracing_unit.sv:180:17: Operator CASE expects 32 bits on the Case expression, but Case expression's VARREF 'wr_addr_mux' generates 5 bits.
+                                                            : ... note: In instance 'rt_accel_tb.u_rtu'
+  180 |                 case (wr_addr_mux)
+      |                 ^~~~
+%Warning-WIDTHEXPAND: ip/rt_accel\ray_tracing_unit.sv:244:42: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'reg_rd_addr' generates 5 bits.
+                                                            : ... note: In instance 'rt_accel_tb.u_rtu'
+  244 |         if (reg_rd_valid && (reg_rd_addr < RTU_NUM_REGS))
+      |                                          ^
+%Warning-WIDTHEXPAND: ip/rt_accel\ray_tracing_unit.sv:379:57: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'mb_rd_addr_latched' generates 5 bits.
+                                                            : ... note: In instance 'rt_accel_tb.u_rtu'
+  379 |             mb_tx_data.payload    = (mb_rd_addr_latched < RTU_NUM_REGS) ?
+      |                                                         ^
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:298:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_RAY_OX' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  298 |         rtu_write(RTU_REG_RAY_OX,   fxp(0, 0));         
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:299:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_RAY_OY' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  299 |         rtu_write(RTU_REG_RAY_OY,   fxp(0, 0));         
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:300:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_RAY_OZ' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  300 |         rtu_write(RTU_REG_RAY_OZ,   fxp(0, 0));         
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:301:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_RAY_DX' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  301 |         rtu_write(RTU_REG_RAY_DX,   fxp(0, 0));         
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:302:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_RAY_DY' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  302 |         rtu_write(RTU_REG_RAY_DY,   fxp(0, 0));         
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:303:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_RAY_DZ' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  303 |         rtu_write(RTU_REG_RAY_DZ,   fxp(1, 0));         
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:304:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_INV_DX' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  304 |         rtu_write(RTU_REG_INV_DX,   FXP_MAX);           
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:305:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_INV_DY' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  305 |         rtu_write(RTU_REG_INV_DY,   FXP_MAX);           
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:306:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_INV_DZ' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  306 |         rtu_write(RTU_REG_INV_DZ,   fxp(1, 0));         
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:307:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_RAY_TMIN' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  307 |         rtu_write(RTU_REG_RAY_TMIN, fxp(0, 16));        
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:308:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_RAY_TMAX' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  308 |         rtu_write(RTU_REG_RAY_TMAX, fxp(100, 0));       
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:309:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_BVH_ROOT' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  309 |         rtu_write(RTU_REG_BVH_ROOT, MEM_BASE);          
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:310:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_CTRL' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  310 |         rtu_write(RTU_REG_CTRL,     32'h0000_0009);      
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:316:13: Operator TASKREF 'rtu_read' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_HIT_FLAG' generates 32 bits.
+                                                    : ... note: In instance 'rt_accel_tb'
+  316 |             rtu_read(RTU_REG_HIT_FLAG,   hit_flag);
+      |             ^~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:317:13: Operator TASKREF 'rtu_read' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_HIT_T' generates 32 bits.
+                                                    : ... note: In instance 'rt_accel_tb'
+  317 |             rtu_read(RTU_REG_HIT_T,      hit_t);
+      |             ^~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:318:13: Operator TASKREF 'rtu_read' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_HIT_U' generates 32 bits.
+                                                    : ... note: In instance 'rt_accel_tb'
+  318 |             rtu_read(RTU_REG_HIT_U,      hit_u);
+      |             ^~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:319:13: Operator TASKREF 'rtu_read' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_HIT_V' generates 32 bits.
+                                                    : ... note: In instance 'rt_accel_tb'
+  319 |             rtu_read(RTU_REG_HIT_V,      hit_v);
+      |             ^~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:320:13: Operator TASKREF 'rtu_read' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_HIT_TRI_ID' generates 32 bits.
+                                                    : ... note: In instance 'rt_accel_tb'
+  320 |             rtu_read(RTU_REG_HIT_TRI_ID, hit_tri);
+      |             ^~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:321:13: Operator TASKREF 'rtu_read' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_HIT_NX' generates 32 bits.
+                                                    : ... note: In instance 'rt_accel_tb'
+  321 |             rtu_read(RTU_REG_HIT_NX,     hit_nx);
+      |             ^~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:322:13: Operator TASKREF 'rtu_read' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_HIT_NY' generates 32 bits.
+                                                    : ... note: In instance 'rt_accel_tb'
+  322 |             rtu_read(RTU_REG_HIT_NY,     hit_ny);
+      |             ^~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:323:13: Operator TASKREF 'rtu_read' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_HIT_NZ' generates 32 bits.
+                                                    : ... note: In instance 'rt_accel_tb'
+  323 |             rtu_read(RTU_REG_HIT_NZ,     hit_nz);
+      |             ^~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:324:13: Operator TASKREF 'rtu_read' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_PERF_NODES' generates 32 bits.
+                                                    : ... note: In instance 'rt_accel_tb'
+  324 |             rtu_read(RTU_REG_PERF_NODES, perf_n);
+      |             ^~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:325:13: Operator TASKREF 'rtu_read' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_PERF_TESTS' generates 32 bits.
+                                                    : ... note: In instance 'rt_accel_tb'
+  325 |             rtu_read(RTU_REG_PERF_TESTS, perf_t);
+      |             ^~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:352:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_CTRL' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  352 |         rtu_write(RTU_REG_CTRL, 32'h0000_0000);
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:361:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_RAY_DX' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  361 |         rtu_write(RTU_REG_RAY_DX,   fxp(0, 0));
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:362:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_RAY_DY' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  362 |         rtu_write(RTU_REG_RAY_DY,   fxp(0, 0));
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:363:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_RAY_DZ' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  363 |         rtu_write(RTU_REG_RAY_DZ,   fxp(-1, 0));        
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:364:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_INV_DX' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  364 |         rtu_write(RTU_REG_INV_DX,   FXP_MAX);
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:365:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_INV_DY' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  365 |         rtu_write(RTU_REG_INV_DY,   FXP_MAX);
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:366:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_INV_DZ' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  366 |         rtu_write(RTU_REG_INV_DZ,   fxp(-1, 0));        
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:367:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_CTRL' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  367 |         rtu_write(RTU_REG_CTRL,     32'h0000_0009);
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:373:13: Operator TASKREF 'rtu_read' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_HIT_FLAG' generates 32 bits.
+                                                    : ... note: In instance 'rt_accel_tb'
+  373 |             rtu_read(RTU_REG_HIT_FLAG, hit_flag);
+      |             ^~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:384:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_CTRL' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  384 |         rtu_write(RTU_REG_CTRL, 32'h0000_0000);
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:393:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_RAY_OX' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  393 |         rtu_write(RTU_REG_RAY_OX,   32'hFFFF_1999);     
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:394:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_RAY_OY' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  394 |         rtu_write(RTU_REG_RAY_OY,   32'hFFFF_1999);     
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:395:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_RAY_OZ' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  395 |         rtu_write(RTU_REG_RAY_OZ,   fxp(0, 0));
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:396:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_RAY_DX' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  396 |         rtu_write(RTU_REG_RAY_DX,   fxp(0, 0));
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:397:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_RAY_DY' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  397 |         rtu_write(RTU_REG_RAY_DY,   fxp(0, 0));
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:398:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_RAY_DZ' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  398 |         rtu_write(RTU_REG_RAY_DZ,   fxp(1, 0));
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:399:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_INV_DX' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  399 |         rtu_write(RTU_REG_INV_DX,   FXP_MAX);
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:400:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_INV_DY' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  400 |         rtu_write(RTU_REG_INV_DY,   FXP_MAX);
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:401:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_INV_DZ' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  401 |         rtu_write(RTU_REG_INV_DZ,   fxp(1, 0));
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:402:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_RAY_TMIN' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  402 |         rtu_write(RTU_REG_RAY_TMIN, fxp(0, 16));
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:403:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_RAY_TMAX' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  403 |         rtu_write(RTU_REG_RAY_TMAX, fxp(100, 0));
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:404:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_BVH_ROOT' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  404 |         rtu_write(RTU_REG_BVH_ROOT, MEM_BASE);
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:405:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_CTRL' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  405 |         rtu_write(RTU_REG_CTRL,     32'h0000_0009);
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:411:13: Operator TASKREF 'rtu_read' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_HIT_FLAG' generates 32 bits.
+                                                    : ... note: In instance 'rt_accel_tb'
+  411 |             rtu_read(RTU_REG_HIT_FLAG,   hit_flag);
+      |             ^~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:412:13: Operator TASKREF 'rtu_read' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_HIT_T' generates 32 bits.
+                                                    : ... note: In instance 'rt_accel_tb'
+  412 |             rtu_read(RTU_REG_HIT_T,      hit_t);
+      |             ^~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:413:13: Operator TASKREF 'rtu_read' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_HIT_TRI_ID' generates 32 bits.
+                                                    : ... note: In instance 'rt_accel_tb'
+  413 |             rtu_read(RTU_REG_HIT_TRI_ID, hit_tri);
+      |             ^~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:425:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_CTRL' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  425 |         rtu_write(RTU_REG_CTRL, 32'h0000_0000);
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:433:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_RAY_OX' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  433 |         rtu_write(RTU_REG_RAY_OX,   fxp(10, 0));
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:434:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_RAY_OY' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  434 |         rtu_write(RTU_REG_RAY_OY,   fxp(10, 0));
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:435:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_RAY_OZ' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  435 |         rtu_write(RTU_REG_RAY_OZ,   fxp(0, 0));
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:436:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_RAY_DX' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  436 |         rtu_write(RTU_REG_RAY_DX,   fxp(0, 0));
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:437:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_RAY_DY' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  437 |         rtu_write(RTU_REG_RAY_DY,   fxp(0, 0));
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:438:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_RAY_DZ' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  438 |         rtu_write(RTU_REG_RAY_DZ,   fxp(1, 0));
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:439:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_INV_DX' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  439 |         rtu_write(RTU_REG_INV_DX,   FXP_MAX);
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:440:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_INV_DY' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  440 |         rtu_write(RTU_REG_INV_DY,   FXP_MAX);
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:441:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_INV_DZ' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  441 |         rtu_write(RTU_REG_INV_DZ,   fxp(1, 0));
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:442:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_RAY_TMIN' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  442 |         rtu_write(RTU_REG_RAY_TMIN, fxp(0, 16));
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:443:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_RAY_TMAX' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  443 |         rtu_write(RTU_REG_RAY_TMAX, fxp(100, 0));
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:444:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_BVH_ROOT' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  444 |         rtu_write(RTU_REG_BVH_ROOT, MEM_BASE);
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:445:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_CTRL' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  445 |         rtu_write(RTU_REG_CTRL,     32'h0000_0009);
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:451:13: Operator TASKREF 'rtu_read' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_HIT_FLAG' generates 32 bits.
+                                                    : ... note: In instance 'rt_accel_tb'
+  451 |             rtu_read(RTU_REG_HIT_FLAG, hit_flag);
+      |             ^~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:462:9: Operator TASKREF 'rtu_write' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_CTRL' generates 32 bits.
+                                                   : ... note: In instance 'rt_accel_tb'
+  462 |         rtu_write(RTU_REG_CTRL, 32'h0000_0000);
+      |         ^~~~~~~~~
+%Warning-WIDTHTRUNC: testbench\rt_accel_tb.sv:471:13: Operator TASKREF 'rtu_read' expects 5 bits on the Function Argument, but Function Argument's VARREF 'RTU_REG_PERF_RAYS' generates 32 bits.
+                                                    : ... note: In instance 'rt_accel_tb'
+  471 |             rtu_read(RTU_REG_PERF_RAYS, perf_rays);
+      |             ^~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\rt_accel_tb.sv:43:32: Signal is not used: 'reg_wr_ready'
+                                                     : ... note: In instance 'rt_accel_tb'
+   43 |     logic        reg_wr_valid, reg_wr_ready;
+      |                                ^~~~~~~~~~~~
+                       ... For warning description see https://verilator.org/warn/UNUSEDSIGNAL?v=5.041
+                       ... Use "/* verilator lint_off UNUSEDSIGNAL */" and lint_on around source to disable this message.
+%Warning-UNUSEDSIGNAL: testbench\rt_accel_tb.sv:46:32: Signal is not used: 'reg_rd_ready'
+                                                     : ... note: In instance 'rt_accel_tb'
+   46 |     logic        reg_rd_valid, reg_rd_ready;
+      |                                ^~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\rt_accel_tb.sv:49:18: Signal is not used: 'irq'
+                                                     : ... note: In instance 'rt_accel_tb'
+   49 |     logic        irq;
+      |                  ^~~
+%Warning-UNUSEDSIGNAL: testbench\rt_accel_tb.sv:50:18: Signal is not used: 'rtu_busy'
+                                                     : ... note: In instance 'rt_accel_tb'
+   50 |     logic        rtu_busy, rtu_done;
+      |                  ^~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\rt_accel_tb.sv:56:18: Signal is not used: 'mem_req_qos'
+                                                     : ... note: In instance 'rt_accel_tb'
+   56 |     logic [3:0]  mem_req_qos;
+      |                  ^~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\rt_accel_tb.sv:315:26: Bits of signal are not used: 'hit_flag'[31:1]
+                                                      : ... note: In instance 'rt_accel_tb'
+  315 |             logic [31:0] hit_flag, hit_t, hit_u, hit_v, hit_tri, hit_nx, hit_ny, hit_nz, perf_n, perf_t;
+      |                          ^~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\rt_accel_tb.sv:372:26: Bits of signal are not used: 'hit_flag'[31:1]
+                                                      : ... note: In instance 'rt_accel_tb'
+  372 |             logic [31:0] hit_flag;
+      |                          ^~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\rt_accel_tb.sv:410:26: Bits of signal are not used: 'hit_flag'[31:1]
+                                                      : ... note: In instance 'rt_accel_tb'
+  410 |             logic [31:0] hit_flag, hit_t, hit_tri;
+      |                          ^~~~~~~~
+%Warning-UNUSEDSIGNAL: testbench\rt_accel_tb.sv:450:26: Bits of signal are not used: 'hit_flag'[31:1]
+                                                      : ... note: In instance 'rt_accel_tb'
+  450 |             logic [31:0] hit_flag;
+      |                          ^~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/rt_accel\ray_tracing_unit.sv:47:44: Bits of signal are not used: 'mb_rx_dest_id'[15:4]
+                                                            : ... note: In instance 'rt_accel_tb.u_rtu'
+   47 |     input  logic [NODE_ID_WIDTH-1:0]       mb_rx_dest_id,
+      |                                            ^~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/rt_accel\ray_tracing_unit.sv:72:17: Signal is not used: 'ctrl_start'
+                                                            : ... note: In instance 'rt_accel_tb.u_rtu'
+   72 |     wire        ctrl_start   = regs[RTU_REG_CTRL][0];
+      |                 ^~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/rt_accel\ray_tracing_unit.sv:77:18: Signal is not used: 'bvh_busy'
+                                                            : ... note: In instance 'rt_accel_tb.u_rtu'
+   77 |     logic        bvh_busy;
+      |                  ^~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/rt_accel\ray_tracing_unit.sv:79:18: Signal is not driven, nor used: 'bvh_irq'
+                                                            : ... note: In instance 'rt_accel_tb.u_rtu'
+   79 |     logic        bvh_irq;
+      |                  ^~~~~~~
+%Warning-UNUSEDSIGNAL: ip/rt_accel\bvh_traversal_engine.sv:75:20: Signal is not driven, nor used: 'state_next'
+                                                                : ... note: In instance 'rt_accel_tb.u_rtu.u_bvh'
+   75 |     state_e state, state_next;
+      |                    ^~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/rt_accel\bvh_traversal_engine.sv:152:25: Signal is not used: 'aabb_t_near'
+                                                                 : ... note: In instance 'rt_accel_tb.u_rtu.u_bvh'
+  152 |     logic signed [31:0] aabb_t_near, aabb_t_far;
+      |                         ^~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/rt_accel\bvh_traversal_engine.sv:152:38: Signal is not used: 'aabb_t_far'
+                                                                 : ... note: In instance 'rt_accel_tb.u_rtu.u_bvh'
+  152 |     logic signed [31:0] aabb_t_near, aabb_t_far;
+      |                                      ^~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/rt_accel\bvh_traversal_engine.sv:153:18: Signal is not used: 'aabb_tag_out'
+                                                                 : ... note: In instance 'rt_accel_tb.u_rtu.u_bvh'
+  153 |     logic [31:0] aabb_tag_out;
+      |                  ^~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/rt_accel\ray_intersect_tri.sv:154:25: Signal is not used: 's3_h'
+                                                              : ... note: In instance 'rt_accel_tb.u_rtu.u_bvh.u_tri'
+  154 |     logic signed [31:0] s3_h [2:0];
+      |                         ^~~~
+%Warning-UNUSEDSIGNAL: ip/rt_accel\ray_intersect_tri.sv:205:18: Signal is not used: 'recip_out_valid'
+                                                              : ... note: In instance 'rt_accel_tb.u_rtu.u_bvh.u_tri'
+  205 |     logic        recip_out_valid;
+      |                  ^~~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/rt_accel\fxp_reciprocal.sv:31:18: Bits of signal are not used: 's0_norm'[31,24:0]
+                                                          : ... note: In instance 'rt_accel_tb.u_rtu.u_bvh.u_tri.u_recip'
+   31 |     logic [31:0] s0_norm;       
+      |                  ^~~~~~~
+%Warning-UNUSEDSIGNAL: ip/rt_accel\fxp_reciprocal.sv:36:21: Signal is not used: 'cnt'
+                                                          : ... note: In instance 'rt_accel_tb.u_rtu.u_bvh.u_tri.u_recip'
+   36 |         logic [4:0] cnt;
+      |                     ^~~
+%Warning-UNUSEDSIGNAL: ip/rt_accel\fxp_reciprocal.sv:151:18: Signal is not used: 's1_shift'
+                                                           : ... note: In instance 'rt_accel_tb.u_rtu.u_bvh.u_tri.u_recip'
+  151 |     logic [4:0]  s1_shift;
+      |                  ^~~~~~~~
+%Warning-UNUSEDSIGNAL: ip/rt_accel\fxp_reciprocal.sv:163:30: Signal is not driven, nor used: 'result_shift'
+                                                           : ... note: In instance 'rt_accel_tb.u_rtu.u_bvh.u_tri.u_recip'
+  163 |                 logic [4:0]  result_shift;
+      |                              ^~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/rt_accel\rt_pkg.sv:12:18: Parameter is not used: 'FXP_INT'
+                                                 : ... note: In instance 'rt_accel_tb.u_rtu.u_bvh.u_tri.u_recip'
+   12 |   localparam int FXP_INT   = FXP_TOTAL - FXP_FRAC;
+      |                  ^~~~~~~
+                      ... For warning description see https://verilator.org/warn/UNUSEDPARAM?v=5.041
+                      ... Use "/* verilator lint_off UNUSEDPARAM */" and lint_on around source to disable this message.
+%Warning-UNUSEDPARAM: ip/rt_accel\rt_pkg.sv:16:34: Parameter is not used: 'FXP_NEG_ONE'
+                                                 : ... note: In instance 'rt_accel_tb.u_rtu.u_bvh.u_tri.u_recip'
+   16 |   localparam logic signed [31:0] FXP_NEG_ONE = 32'sh_FFFF_0000;  
+      |                                  ^~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/rt_accel\rt_pkg.sv:19:34: Parameter is not used: 'FXP_MIN'
+                                                 : ... note: In instance 'rt_accel_tb.u_rtu.u_bvh.u_tri.u_recip'
+   19 |   localparam logic signed [31:0] FXP_MIN     = 32'sh8000_0000;   
+      |                                  ^~~~~~~
+%Warning-UNUSEDPARAM: ip/rt_accel\rt_pkg.sv:40:18: Parameter is not used: 'BVH_NODE_BYTES'
+                                                 : ... note: In instance 'rt_accel_tb.u_rtu.u_bvh.u_tri.u_recip'
+   40 |   localparam int BVH_NODE_BYTES = BVH_NODE_WORDS * 4;
+      |                  ^~~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/rt_accel\rt_pkg.sv:80:18: Parameter is not used: 'RTU_REG_ADDR_BITS'
+                                                 : ... note: In instance 'rt_accel_tb.u_rtu.u_bvh.u_tri.u_recip'
+   80 |   localparam int RTU_REG_ADDR_BITS   = $clog2(RTU_NUM_REGS);
+      |                  ^~~~~~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/rt_accel\rt_pkg.sv:90:18: Parameter is not used: 'AABB_PIPE_STAGES'
+                                                 : ... note: In instance 'rt_accel_tb.u_rtu.u_bvh.u_tri.u_recip'
+   90 |   localparam int AABB_PIPE_STAGES  = 6;
+      |                  ^~~~~~~~~~~~~~~~
+%Warning-UNUSEDPARAM: ip/rt_accel\rt_pkg.sv:91:18: Parameter is not used: 'TRI_PIPE_STAGES'
+                                                 : ... note: In instance 'rt_accel_tb.u_rtu.u_bvh.u_tri.u_recip'
+   91 |   localparam int TRI_PIPE_STAGES   = 16;   
+      |                  ^~~~~~~~~~~~~~~
+%Warning-CASEINCOMPLETE: testbench\rt_accel_tb.sv:109:13: Case values incompletely covered (example pattern 0x2)
+  109 |             case (mem_state)
+      |             ^~~~
+                         ... For warning description see https://verilator.org/warn/CASEINCOMPLETE?v=5.041
+                         ... Use "/* verilator lint_off CASEINCOMPLETE */" and lint_on around source to disable this message.
+%Warning-INITIALDLY: testbench\rt_accel_tb.sv:152:22: Non-blocking assignment '<=' in initial/final block
+                                                    : ... This will be executed as a blocking assignment '='!
+  152 |         reg_wr_valid <= 1'b1;
+      |                      ^~
+                     ... For warning description see https://verilator.org/warn/INITIALDLY?v=5.041
+                     ... Use "/* verilator lint_off INITIALDLY */" and lint_on around source to disable this message.
+%Warning-INITIALDLY: testbench\rt_accel_tb.sv:153:22: Non-blocking assignment '<=' in initial/final block
+                                                    : ... This will be executed as a blocking assignment '='!
+  153 |         reg_wr_addr  <= addr;
+      |                      ^~
+%Warning-INITIALDLY: testbench\rt_accel_tb.sv:154:22: Non-blocking assignment '<=' in initial/final block
+                                                    : ... This will be executed as a blocking assignment '='!
+  154 |         reg_wr_data  <= data;
+      |                      ^~
+%Warning-INITIALDLY: testbench\rt_accel_tb.sv:156:22: Non-blocking assignment '<=' in initial/final block
+                                                    : ... This will be executed as a blocking assignment '='!
+  156 |         reg_wr_valid <= 1'b0;
+      |                      ^~
+%Warning-INITIALDLY: testbench\rt_accel_tb.sv:162:22: Non-blocking assignment '<=' in initial/final block
+                                                    : ... This will be executed as a blocking assignment '='!
+  162 |         reg_rd_valid <= 1'b1;
+      |                      ^~
+%Warning-INITIALDLY: testbench\rt_accel_tb.sv:163:22: Non-blocking assignment '<=' in initial/final block
+                                                    : ... This will be executed as a blocking assignment '='!
+  163 |         reg_rd_addr  <= addr;
+      |                      ^~
+%Warning-INITIALDLY: testbench\rt_accel_tb.sv:166:22: Non-blocking assignment '<=' in initial/final block
+                                                    : ... This will be executed as a blocking assignment '='!
+  166 |         reg_rd_valid <= 1'b0;
+      |                      ^~
+make: Entering directory '/c/Users/weyst/TinyGPU-FPGA/obj_dir'
+g++ -Os  -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o verilated.o C:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/verilated.cpp
+g++ -Os  -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o verilated_vcd_c.o C:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/verilated_vcd_c.cpp
+g++ -Os  -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o verilated_timing.o C:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/verilated_timing.cpp
+g++ -Os  -I.  -MMD -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include -IC:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/vltstd -DVERILATOR=1 -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=1 -DVM_TRACE=1 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=1 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-int-in-bool-context -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable    -DVL_TIME_CONTEXT   -fcoroutines -c -o verilated_threads.o C:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/verilated_threads.cpp
+python3 C:/Users/weyst/Downloads/oss-cad-suite/share/verilator/bin/verilator_includer -DVL_INCLUDE_OPT=include Vrt_accel_tb.cpp Vrt_accel_tb___024root__DepSet_h0a11893d__0.cpp Vrt_accel_tb___024root__DepSet_hafa2cf30__0.cpp Vrt_accel_tb__main.cpp Vrt_accel_tb__Trace__0.cpp Vrt_accel_tb___024root__Slow.cpp Vrt_accel_tb___024root__DepSet_h0a11893d__0__Slow.cpp Vrt_accel_tb___024root__DepSet_hafa2cf30__0__Slow.cpp Vrt_accel_tb__Syms.cpp Vrt_accel_tb__Trace__0__Slow.cpp Vrt_accel_tb__TraceDecls__0__Slow.cpp > Vrt_accel_tb__ALL.cpp
+echo "" > Vrt_accel_tb__ALL.verilator_deplist.tmp
+python3: can't open file '/c/Users/weyst/TinyGPU-FPGA/obj_dir/C:/Users/weyst/Downloads/oss-cad-suite/share/verilator/bin/verilator_includer': [Errno 2] No such file or directory
+make: *** [C:/Users/weyst/Downloads/oss-cad-suite/share/verilator/include/verilated.mk:217: Vrt_accel_tb__ALL.cpp] Error 2
+make: *** Waiting for unfinished jobs....
+rm Vrt_accel_tb__ALL.verilator_deplist.tmp
+make: Leaving directory '/c/Users/weyst/TinyGPU-FPGA/obj_dir'
+%Error: make -C obj_dir -f Vrt_accel_tb.mk -j 24 exited with 2
+        ... See the manual at https://verilator.org/verilator_doc.html?v=5.041 for more assistance.
+%Error: Command Failed ulimit -s unlimited 2>/dev/null; exec /c/Users/weyst/Downloads/oss-cad-suite/bin/verilator_bin -j 0 -Wall -Wno-fatal --timing --trace --trace-structs --binary -Iip/rt_accel -Iip/mailbox --top-module rt_accel_tb ip/mailbox/mailbox_pkg.sv ip/rt_accel/rt_pkg.sv ip/rt_accel/fxp_reciprocal.sv ip/rt_accel/ray_intersect_aabb.sv ip/rt_accel/ray_intersect_tri.sv ip/rt_accel/bvh_traversal_engine.sv ip/rt_accel/ray_tracing_unit.sv testbench/rt_accel_tb.sv -o Vrt_accel_tb
