@@ -1076,8 +1076,11 @@ module compute_unit_top #(
     wire d1_is_scalar_fp  = if_inst1_valid && d1_ctrl.is_scalar_fp;
 
     // Do not dual-issue behind control-flow: gfx/tex work is not flushed on redirects.
+    // When MAILBOX_ENABLE, suppress scalar LSU in lane1 because u_lsu_core1 has
+    // mailbox disabled — stores/loads to 0x7000_xxxx would be silently dropped.
+    wire d1_scalar_lsu_ok = d1_is_scalar_lsu && !(MAILBOX_ENABLE);
     wire can_dual_raw = if_inst0_valid && if_inst1_valid && !d0_ctrl.is_branch && !d0_ctrl.is_jalr && !d0_ctrl.is_system
-                     && (d1_is_vec_alu || d1_is_gfx || d1_is_scalar_alu || d1_is_scalar_lsu || d1_is_scalar_fp);
+                     && (d1_is_vec_alu || d1_is_gfx || d1_is_scalar_alu || d1_scalar_lsu_ok || d1_is_scalar_fp);
     wire can_dual = can_dual_raw;
 
     wire d0_vec_issue = d0_is_vec_alu;
@@ -1093,7 +1096,7 @@ module compute_unit_top #(
                       && ((d1_is_vec_alu && vector_queue_has1)
                           || (d1_is_gfx && !gfx_queue_full)
                           || d1_is_scalar_alu
-                          || d1_is_scalar_lsu
+                          || d1_scalar_lsu_ok
                           || d1_is_scalar_fp);
 
     always_comb begin

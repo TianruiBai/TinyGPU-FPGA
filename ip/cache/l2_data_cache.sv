@@ -214,7 +214,7 @@ module l2_data_cache #(
             l1_resp_id[pend_port]    = pend_id;
         end
 
-        if (!resp_active && sel_valid && l2_enable && !flush_active) begin
+        if (!resp_active && sel_valid && l2_enable && !flush_active && (state == ST_IDLE)) begin
             l1_req_ready[sel_port] = 1'b1;
         end
     end
@@ -258,9 +258,10 @@ module l2_data_cache #(
         integer b;
         begin
             merge_line = old_line;
-            for (b = 0; b < LINE_BYTES; b = b + 1) begin
+            // Each wstrb bit covers one 8-byte (64-bit) chunk
+            for (b = 0; b < LINE_BYTES/8; b = b + 1) begin
                 if (wstrb[b]) begin
-                    merge_line[b*8 +: 8] = new_line[b*8 +: 8];
+                    merge_line[b*64 +: 64] = new_line[b*64 +: 64];
                 end
             end
         end

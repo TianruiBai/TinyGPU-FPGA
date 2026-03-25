@@ -1,0 +1,201 @@
+TB: Memory initialized (sincos, invsqrt, persp, vec_const)
+TB: BVH scene loaded (root + 2 leaves + 2 triangles)
+TB: MXU scratch matrices initialized
+TB: ROM program loaded (1300 bytes, multi-core 3D RT)
+
+============================================================
+  FRAME 0
+============================================================
+  [CU] Rendering frame 0 (both CUs)...
+L1 refill beat 0/8 addr=80004000 @127000
+L1 refill beat 1/8 addr=80004000 @129000
+L1 refill beat 2/8 addr=80004000 @131000
+L1 refill beat 3/8 addr=80004000 @133000
+L1 refill beat 4/8 addr=80004000 @135000
+L1 refill beat 5/8 addr=80004000 @137000
+L1 refill beat 6/8 addr=80004000 @139000
+L1 refill line addr=80004000 last=1 @141000
+L1 refill done addr=80004000 pending_store=0 @141000
+L1 refill beat 0/8 addr=80004000 @169000
+L1 refill beat 1/8 addr=80004000 @171000
+L1 refill beat 2/8 addr=80004000 @173000
+L1 refill beat 3/8 addr=80004000 @175000
+L1 refill beat 4/8 addr=80004000 @177000
+L1 refill beat 5/8 addr=80004000 @179000
+L1 refill beat 6/8 addr=80004000 @181000
+L1 refill line addr=80004000 last=1 @183000
+L1 refill done addr=80004000 pending_store=0 @183000
+DBG CU0 ep_tx PUSH dest=0022 payload=00000000 @193000
+DBG CU0 MEM mb: addr=70000022 wdata=00000000 stall=0 submitted=0 req_rdy=1 is_store=1 pc=00000068 @193000
+DBG xbar TX slot=0 dest=0022 payload=00000000 src=0000 @195000
+DBG xbar RX slot=2 dest=0022 payload=00000000 @195000
+DBG CU0 ep_tx PUSH dest=0020 payload=00000010 @203000
+DBG CU0 MEM mb: addr=70000020 wdata=00000010 stall=0 submitted=0 req_rdy=1 is_store=1 pc=00000070 @203000
+DBG xbar TX slot=0 dest=0020 payload=00000010 src=0000 @205000
+DBG xbar RX slot=2 dest=0020 payload=00000010 @205000
+DBG CU0 ep_tx PUSH dest=0022 payload=00000000 @219000
+DBG CU0 MEM mb: addr=70000022 wdata=00000000 stall=0 submitted=0 req_rdy=1 is_store=1 pc=0000007c @219000
+DBG xbar TX slot=0 dest=0022 payload=00000000 src=0000 @221000
+DBG xbar RX slot=2 dest=0022 payload=00000000 @221000
+DBG CU0 ep_tx PUSH dest=0020 payload=00000000 @229000
+DBG CU0 MEM mb: addr=70000020 wdata=00000000 stall=0 submitted=0 req_rdy=1 is_store=1 pc=00000080 @229000
+DBG xbar TX slot=0 dest=0020 payload=00000000 src=0000 @231000
+DBG xbar RX slot=2 dest=0020 payload=00000000 @231000
+DBG CU0 ep_tx PUSH dest=0022 payload=00000002 @249000
+DBG CU0 MEM mb: addr=70000022 wdata=00000002 stall=0 submitted=0 req_rdy=1 is_store=1 pc=00000090 @249000
+DBG xbar TX slot=0 dest=0022 payload=00000002 src=0000 @251000
+DBG xbar RX slot=2 dest=0022 payload=00000002 @251000
+DBG CU0 ep_tx PUSH dest=0020 payload=80009000 @259000
+DBG CU0 MEM mb: addr=70000020 wdata=80009000 stall=0 submitted=0 req_rdy=1 is_store=1 pc=00000098 @259000
+DBG xbar TX slot=0 dest=0020 payload=80009000 src=0000 @261000
+DBG xbar RX slot=2 dest=0020 payload=80009000 @261000
+DBG CU0 ep_tx PUSH dest=0022 payload=00000003 @269000
+DBG CU0 MEM mb: addr=70000022 wdata=00000003 stall=0 submitted=0 req_rdy=1 is_store=1 pc=000000a0 @269000
+DBG xbar TX slot=0 dest=0022 payload=00000003 src=0000 @271000
+DBG xbar RX slot=2 dest=0022 payload=00000003 @271000
+DBG CU0 ep_tx PUSH dest=0020 payload=80009040 @279000
+DBG CU0 MEM mb: addr=70000020 wdata=80009040 stall=0 submitted=0 req_rdy=1 is_store=1 pc=000000a8 @279000
+DBG xbar TX slot=0 dest=0020 payload=80009040 src=0000 @281000
+DBG xbar RX slot=2 dest=0020 payload=80009040 @281000
+DBG CU0 ep_tx PUSH dest=0022 payload=00000004 @289000
+DBG CU0 MEM mb: addr=70000022 wdata=00000004 stall=0 submitted=0 req_rdy=1 is_store=1 pc=000000b0 @289000
+DBG xbar TX slot=0 dest=0022 payload=00000004 src=0000 @291000
+DBG xbar RX slot=2 dest=0022 payload=00000004 @291000
+DBG CU0 ep_tx PUSH dest=0020 payload=80009080 @299000
+DBG CU0 MEM mb: addr=70000020 wdata=80009080 stall=0 submitted=0 req_rdy=1 is_store=1 pc=000000b8 @299000
+DBG xbar TX slot=0 dest=0020 payload=80009080 src=0000 @301000
+DBG xbar RX slot=2 dest=0020 payload=80009080 @301000
+DBG CU0 ep_tx PUSH dest=0022 payload=00000005 @321000
+DBG CU0 MEM mb: addr=70000022 wdata=00000005 stall=0 submitted=0 req_rdy=1 is_store=1 pc=000000c4 @321000
+DBG xbar TX slot=0 dest=0022 payload=00000005 src=0000 @323000
+DBG xbar RX slot=2 dest=0022 payload=00000005 @323000
+DBG CU0 ep_tx PUSH dest=0020 payload=00000004 @331000
+DBG CU0 MEM mb: addr=70000020 wdata=00000004 stall=0 submitted=0 req_rdy=1 is_store=1 pc=000000c8 @331000
+DBG xbar TX slot=0 dest=0020 payload=00000004 src=0000 @333000
+DBG xbar RX slot=2 dest=0020 payload=00000004 @333000
+DBG CU0 ep_tx PUSH dest=0022 payload=00000006 @341000
+DBG CU0 MEM mb: addr=70000022 wdata=00000006 stall=0 submitted=0 req_rdy=1 is_store=1 pc=000000d0 @341000
+DBG xbar TX slot=0 dest=0022 payload=00000006 src=0000 @343000
+DBG xbar RX slot=2 dest=0022 payload=00000006 @343000
+DBG CU0 ep_tx PUSH dest=0020 payload=00000004 @347000
+DBG CU0 MEM mb: addr=70000020 wdata=00000004 stall=0 submitted=0 req_rdy=1 is_store=1 pc=000000d4 @347000
+DBG xbar TX slot=0 dest=0020 payload=00000004 src=0000 @349000
+DBG xbar RX slot=2 dest=0020 payload=00000004 @349000
+DBG CU0 ep_tx PUSH dest=0022 payload=00000007 @369000
+DBG CU0 MEM mb: addr=70000022 wdata=00000007 stall=0 submitted=0 req_rdy=1 is_store=1 pc=000000dc @369000
+DBG xbar TX slot=0 dest=0022 payload=00000007 src=0000 @371000
+DBG xbar RX slot=2 dest=0022 payload=00000007 @371000
+DBG CU0 ep_tx PUSH dest=0020 payload=00000004 @379000
+DBG CU0 MEM mb: addr=70000020 wdata=00000004 stall=0 submitted=0 req_rdy=1 is_store=1 pc=000000e0 @379000
+DBG xbar TX slot=0 dest=0020 payload=00000004 src=0000 @381000
+DBG xbar RX slot=2 dest=0020 payload=00000004 @381000
+DBG CU0 ep_tx PUSH dest=0022 payload=00000008 @401000
+DBG CU0 MEM mb: addr=70000022 wdata=00000008 stall=0 submitted=0 req_rdy=1 is_store=1 pc=000000ec @401000
+DBG xbar TX slot=0 dest=0022 payload=00000008 src=0000 @403000
+DBG xbar RX slot=2 dest=0022 payload=00000008 @403000
+DBG CU0 ep_tx PUSH dest=0020 payload=00000010 @411000
+DBG CU0 MEM mb: addr=70000020 wdata=00000010 stall=0 submitted=0 req_rdy=1 is_store=1 pc=000000f0 @411000
+DBG xbar TX slot=0 dest=0020 payload=00000010 src=0000 @413000
+DBG xbar RX slot=2 dest=0020 payload=00000010 @413000
+DBG CU0 ep_tx PUSH dest=0022 payload=00000009 @421000
+DBG CU0 MEM mb: addr=70000022 wdata=00000009 stall=0 submitted=0 req_rdy=1 is_store=1 pc=000000f8 @421000
+DBG xbar TX slot=0 dest=0022 payload=00000009 src=0000 @423000
+DBG xbar RX slot=2 dest=0022 payload=00000009 @423000
+DBG CU0 ep_tx PUSH dest=0020 payload=00000010 @427000
+DBG CU0 MEM mb: addr=70000020 wdata=00000010 stall=0 submitted=0 req_rdy=1 is_store=1 pc=000000fc @427000
+DBG xbar TX slot=0 dest=0020 payload=00000010 src=0000 @429000
+DBG xbar RX slot=2 dest=0020 payload=00000010 @429000
+DBG CU0 ep_tx PUSH dest=0022 payload=0000000a @449000
+DBG CU0 MEM mb: addr=70000022 wdata=0000000a stall=0 submitted=0 req_rdy=1 is_store=1 pc=00000104 @449000
+DBG xbar TX slot=0 dest=0022 payload=0000000a src=0000 @451000
+DBG xbar RX slot=2 dest=0022 payload=0000000a @451000
+DBG CU0 ep_tx PUSH dest=0020 payload=00000010 @459000
+DBG CU0 MEM mb: addr=70000020 wdata=00000010 stall=0 submitted=0 req_rdy=1 is_store=1 pc=00000108 @459000
+DBG xbar TX slot=0 dest=0020 payload=00000010 src=0000 @461000
+DBG xbar RX slot=2 dest=0020 payload=00000010 @461000
+DBG CU0 ep_tx PUSH dest=0022 payload=00000000 @469000
+DBG CU0 MEM mb: addr=70000022 wdata=00000000 stall=0 submitted=0 req_rdy=1 is_store=1 pc=00000110 @469000
+DBG xbar TX slot=0 dest=0022 payload=00000000 src=0000 @471000
+DBG xbar RX slot=2 dest=0022 payload=00000000 @471000
+DBG CU0 ep_tx PUSH dest=0020 payload=00000009 @479000
+DBG CU0 MEM mb: addr=70000020 wdata=00000009 stall=0 submitted=0 req_rdy=1 is_store=1 pc=00000118 @479000
+DBG xbar TX slot=0 dest=0020 payload=00000009 src=0000 @481000
+DBG xbar RX slot=2 dest=0020 payload=00000009 @481000
+DBG CU0 MEM mb: addr=70000000 wdata=00000000 stall=0 submitted=0 req_rdy=1 is_store=0 pc=0000011c @485000
+DBG xbar RX slot=0 dest=0000 payload=00010010 @845000
+DBG xbar TX slot=2 dest=0000 payload=00010010 src=0120 @845000
+DBG MXU completion pending dest=0000 tiles=1 ops=16 @845000
+DBG CU0 ep_rx PUSH payload=00010010 @845000
+TB: cyc=5000000  cu0_done=0 cu1_done=0
+TB: cyc=10000000  cu0_done=0 cu1_done=0
+TB: cyc=15000000  cu0_done=0 cu1_done=0
+TB: cyc=20000000  cu0_done=0 cu1_done=0
+TB: cyc=25000000  cu0_done=0 cu1_done=0
+TB: cyc=30000000  cu0_done=0 cu1_done=0
+TB: cyc=35000000  cu0_done=0 cu1_done=0
+TB: cyc=40000000  cu0_done=0 cu1_done=0
+TB: cyc=45000000  cu0_done=0 cu1_done=0
+TB: cyc=50000000  cu0_done=0 cu1_done=0
+TB: cyc=55000000  cu0_done=0 cu1_done=0
+TB: cyc=60000000  cu0_done=0 cu1_done=0
+TB: cyc=65000000  cu0_done=0 cu1_done=0
+TB: cyc=70000000  cu0_done=0 cu1_done=0
+TB: cyc=75000000  cu0_done=0 cu1_done=0
+TB: cyc=80000000  cu0_done=0 cu1_done=0
+TB: cyc=85000000  cu0_done=0 cu1_done=0
+TB: cyc=90000000  cu0_done=0 cu1_done=0
+TB: cyc=95000000  cu0_done=0 cu1_done=0
+TB: cyc=100000000  cu0_done=0 cu1_done=0
+  [CU] TIMEOUT waiting for DONE! cu0=0 cu1=0
+TB: wrote rt_frame_0.ppm
+  [MXU-CU] Completion payload: 0x00000000
+  [MXU-CU] FAIL: Expected non-zero tiles and ops
+  [MXU-CU] PASS: Rotation * Identity = Rotation
+  [RTU-CU] Forward ray payload: 0x00000000
+  [RTU-CU] FAIL: Expected hit=1, tri_id=1
+  [RTU-CU] Backward ray payload: 0x00000000
+  [RTU-CU] PASS: Backward ray missed
+
+============================================================
+  FRAME 1
+============================================================
+  [CU] Rendering frame 1 (both CUs)...
+TB: cyc=105000000  cu0_done=0 cu1_done=0
+TB: cyc=110000000  cu0_done=0 cu1_done=0
+TB: cyc=115000000  cu0_done=0 cu1_done=0
+TB: cyc=120000000  cu0_done=0 cu1_done=0
+TB: cyc=125000000  cu0_done=0 cu1_done=0
+TB: cyc=130000000  cu0_done=0 cu1_done=0
+TB: cyc=135000000  cu0_done=0 cu1_done=0
+TB: cyc=140000000  cu0_done=0 cu1_done=0
+TB: cyc=145000000  cu0_done=0 cu1_done=0
+TB: cyc=150000000  cu0_done=0 cu1_done=0
+TB: cyc=155000000  cu0_done=0 cu1_done=0
+TB: cyc=160000000  cu0_done=0 cu1_done=0
+TB: cyc=165000000  cu0_done=0 cu1_done=0
+TB: cyc=170000000  cu0_done=0 cu1_done=0
+TB: cyc=175000000  cu0_done=0 cu1_done=0
+TB: cyc=180000000  cu0_done=0 cu1_done=0
+TB: cyc=185000000  cu0_done=0 cu1_done=0
+TB: cyc=190000000  cu0_done=0 cu1_done=0
+TB: cyc=195000000  cu0_done=0 cu1_done=0
+TB: cyc=200000000  cu0_done=0 cu1_done=0
+  [CU] TIMEOUT waiting for DONE! cu0=0 cu1=0
+TB: wrote rt_frame_1.ppm
+
+============================================================
+  FRAME 2
+============================================================
+  [CU] Rendering frame 2 (both CUs)...
+TB: cyc=205000000  cu0_done=0 cu1_done=0
+TB: cyc=210000000  cu0_done=0 cu1_done=0
+TB: cyc=215000000  cu0_done=0 cu1_done=0
+TB: cyc=220000000  cu0_done=0 cu1_done=0
+TB: cyc=225000000  cu0_done=0 cu1_done=0
+TB: cyc=230000000  cu0_done=0 cu1_done=0
+TB: cyc=235000000  cu0_done=0 cu1_done=0
+TB: cyc=240000000  cu0_done=0 cu1_done=0
+TB: cyc=245000000  cu0_done=0 cu1_done=0
+TB: cyc=250000000  cu0_done=0 cu1_done=0
+TB: cyc=255000000  cu0_done=0 cu1_done=0
+TB: cyc=260000000  cu0_done=0 cu1_done=0
